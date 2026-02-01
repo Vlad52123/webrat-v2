@@ -51,6 +51,9 @@ export const SliderCaptcha = forwardRef<
   const [verified, setVerified] = useState(false);
   const [good, setGood] = useState<"good" | "bad" | null>(null);
 
+  const lockedRef = useRef(true);
+  const changeImageCooldownUntilRef = useRef(0);
+
   const readyUntilRef = useRef<number>(0);
   const startAngleRef = useRef<number>(0);
   const currentAngleRef = useRef<number>(0);
@@ -172,6 +175,7 @@ export const SliderCaptcha = forwardRef<
     }
     unlockAtRef.current = Date.now() + Math.max(0, minLoadingMs);
 
+    lockedRef.current = true;
     setLocked(true);
     setState({ kind: "loading" });
 
@@ -221,6 +225,7 @@ export const SliderCaptcha = forwardRef<
       const wait = Math.max(0, unlockAtRef.current - Date.now());
       unlockTimerRef.current = window.setTimeout(() => {
         unlockTimerRef.current = null;
+        lockedRef.current = false;
         setLocked(false);
         requestAnimationFrame(() => {
           placeTargets();
@@ -466,7 +471,10 @@ export const SliderCaptcha = forwardRef<
         <button
           type="button"
           onClick={() => {
-            if (locked) return;
+            const now = Date.now();
+            if (lockedRef.current) return;
+            if (now < changeImageCooldownUntilRef.current) return;
+            changeImageCooldownUntilRef.current = now + 900;
             void initCaptcha(1000);
           }}
           className="mt-1 cursor-pointer text-[13px] font-normal text-[rgba(227,190,255,0.80)] hover:text-white"

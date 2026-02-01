@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: "WebCrystal",
   description: "WebCrystal",
   icons: {
-    icon: "/main_logo.ico",
+    icon: "/logo/main_logo.ico",
   },
 };
 
