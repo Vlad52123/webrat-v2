@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="24" height="24" viewBox="0 0 16 16"
+     fill="none" stroke="#ffffff" stroke-width="1"
+     stroke-linecap="square" stroke-linejoin="miter">
+  <defs>
+    <mask id="monitor-cut" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="16" height="16" fill="#ffffff" />
+      <rect x="1.5" y="3.5" width="5" height="4.5" fill="#000000" />
+    </mask>
+  </defs>
+
+  <!-- main monitor -->
+  <rect x="3.5" y="4" width="9" height="6" mask="url(#monitor-cut)" />
+
+  <!-- left small block (slightly more onto the monitor) -->
+  <rect x="2.5" y="4" width="3" height="3" />
+  <!-- inner dot inside the left block -->
+  <rect x="3.5" y="5" width="1" height="1" fill="#ffffff" stroke="none" />
+  <!-- vertical leg from block down (center of block) -->
+  <line x1="4" y1="7" x2="4" y2="11" />
+  <!-- monitor stand exactly in center of screen (shorter) -->
+  <line x1="8" y1="10" x2="8" y2="12" />
+  <!-- monitor base centered under stand (wider) -->
+  <line x1="5.5" y1="12" x2="10.5" y2="12" />
+</svg>
