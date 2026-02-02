@@ -23,7 +23,6 @@ export function PanelPage() {
           try {
             await fetch(`/api/logout`, { method: "POST", credentials: "include" });
           } catch {
-            // ignore
           }
           if (typeof window !== "undefined") {
             window.location.replace("/login");
@@ -39,7 +38,6 @@ export function PanelPage() {
         try {
           await fetch(`/api/logout`, { method: "POST", credentials: "include" });
         } catch {
-          // ignore
         }
         if (typeof window !== "undefined") {
           window.location.replace("/login");
