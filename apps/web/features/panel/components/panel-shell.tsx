@@ -13,14 +13,14 @@ import { PanelSidebar } from "./panel-sidebar";
 import { PanelTopbar } from "./panel-topbar";
 
 export function PanelShell() {
-  const { tab } = usePanelTab();
+  const { tab, setTab } = usePanelTab();
   const [victimsFilter, setVictimsFilter] = useState<VictimsFilter>("all");
   const [settingsTab, setSettingsTab] = useState<SettingsTabKey>("personalization");
 
   return (
     <div className="min-h-screen bg-[#222222] text-white/90">
       <div className="grid h-screen grid-cols-[46px_1fr]">
-        <PanelSidebar tab={tab} />
+        <PanelSidebar tab={tab} setTab={setTab} />
 
         <div className="flex min-w-0 flex-col" aria-label="Main">
           <PanelTopbar

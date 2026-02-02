@@ -1,12 +1,10 @@
 "use client";
 
-import Link from "next/link";
-
 import type { PanelTabKey } from "../hooks/use-panel-tab";
 import { cn } from "../../../lib/utils";
 
-export function PanelSidebar(props: { tab: PanelTabKey }) {
-  const { tab } = props;
+export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabKey) => void }) {
+  const { tab, setTab } = props;
 
   return (
     <aside
@@ -30,11 +28,12 @@ export function PanelSidebar(props: { tab: PanelTabKey }) {
         />
       </button>
 
-      <Link
+      <button
         id="logoBtn"
         className="grid place-items-center"
-        href="/panel#panel"
+        type="button"
         aria-label="Reload"
+        onClick={() => setTab("panel")}
       >
         <img
           className="h-auto w-[44px] select-none [image-rendering:pixelated]"
@@ -42,20 +41,36 @@ export function PanelSidebar(props: { tab: PanelTabKey }) {
           alt="WebCrystal"
           draggable={false}
         />
-      </Link>
+      </button>
 
       <div className="h-px w-full bg-white/20" aria-hidden="true" />
 
-      <Link
+      <button
+        id="panelBtn"
+        className={cn(
+          "grid h-[38px] w-full place-items-center rounded-[14px] border border-transparent transition-colors hover:bg-white/5",
+          tab === "panel" &&
+          "border-white/20 bg-white/10 shadow-[inset_0_-2px_0_rgba(180,180,180,0.45)]",
+        )}
+        type="button"
+        aria-label="Panel"
+        data-active={tab === "panel"}
+        onClick={() => setTab("panel")}
+      >
+        <img className="h-7 w-7 opacity-85 invert" src="/icons/computer.svg" alt="panel" draggable={false} />
+      </button>
+
+      <button
         id="builderBtn"
         className={cn(
           "grid h-[38px] w-full place-items-center rounded-[14px] border border-transparent transition-colors hover:bg-white/5",
           tab === "builder" &&
           "border-white/20 bg-white/10 shadow-[inset_0_-2px_0_rgba(180,180,180,0.45)]",
         )}
-        href="/panel#builder"
+        type="button"
         aria-label="Builder"
         data-active={tab === "builder"}
+        onClick={() => setTab("builder")}
       >
         <img
           className="h-7 w-7 opacity-85 invert"
@@ -63,13 +78,14 @@ export function PanelSidebar(props: { tab: PanelTabKey }) {
           alt="builder"
           draggable={false}
         />
-      </Link>
+      </button>
 
-      <Link
+      <button
         id="shopBtn"
         className="hidden"
-        href="/panel#panel"
         aria-label="Shop"
+        type="button"
+        onClick={() => setTab("panel")}
       >
         <img
           className="h-7 w-7 opacity-85 invert"
@@ -77,18 +93,19 @@ export function PanelSidebar(props: { tab: PanelTabKey }) {
           alt="shop"
           draggable={false}
         />
-      </Link>
+      </button>
 
-      <Link
+      <button
         id="communityBtn"
         className={cn(
           "grid h-[38px] w-full place-items-center rounded-[14px] border border-transparent transition-colors hover:bg-white/5",
           tab === "community" &&
           "border-white/20 bg-white/10 shadow-[inset_0_-2px_0_rgba(180,180,180,0.45)]",
         )}
-        href="/panel#community"
         aria-label="Community"
+        type="button"
         data-active={tab === "community"}
+        onClick={() => setTab("community")}
       >
         <img
           className="h-7 w-7 opacity-85 invert"
@@ -96,18 +113,19 @@ export function PanelSidebar(props: { tab: PanelTabKey }) {
           alt="community"
           draggable={false}
         />
-      </Link>
+      </button>
 
-      <Link
+      <button
         id="settingsBtn"
         className={cn(
           "grid h-[38px] w-full place-items-center rounded-[14px] border border-transparent transition-colors hover:bg-white/5",
           tab === "settings" &&
           "border-white/20 bg-white/10 shadow-[inset_0_-2px_0_rgba(180,180,180,0.45)]",
         )}
-        href="/panel#settings"
         aria-label="Settings"
+        type="button"
         data-active={tab === "settings"}
+        onClick={() => setTab("settings")}
       >
         <img
           className="h-7 w-7 opacity-85 invert"
@@ -115,7 +133,7 @@ export function PanelSidebar(props: { tab: PanelTabKey }) {
           alt="settings"
           draggable={false}
         />
-      </Link>
+      </button>
     </aside>
   );
 }
