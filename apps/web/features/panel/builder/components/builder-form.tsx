@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { BuilderField } from "./builder-field";
 import { BuilderIconField } from "./builder-icon-field";
-import { BuilderSelect } from "./builder-select";
+import { BuilderNiceSelect } from "./builder-nice-select";
 import { BuilderStartupDelay } from "./builder-startup-delay";
 import { BuilderTextInput } from "./builder-text-input";
 import { inputFixedClass } from "../styles";
@@ -38,7 +38,6 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
       try {
         el.removeEventListener("transitionend", onEnd);
       } catch {
-        // noop
       }
     };
   }, [open, hidden]);
@@ -70,12 +69,16 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
             </BuilderField>
 
             <BuilderField label="Anti-analysis">
-              <BuilderSelect id="antiAnalysis" defaultValue="None">
-                <option value="None">None</option>
-                <option value="AntiMitm">Anti Mitm</option>
-                <option value="AntiVps">Anti VPS</option>
-                <option value="Full">Full</option>
-              </BuilderSelect>
+              <BuilderNiceSelect
+                id="antiAnalysis"
+                defaultValue="None"
+                options={[
+                  { value: "None", label: "None" },
+                  { value: "AntiMitm", label: "Anti Mitm" },
+                  { value: "AntiVps", label: "Anti VPS" },
+                  { value: "Full", label: "Full" },
+                ]}
+              />
             </BuilderField>
 
             <BuilderField label="Extension">
@@ -94,24 +97,37 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
 
           <div className="builderCol grid gap-[8px]">
             <BuilderField variant="two" label="Auto Steal">
-              <BuilderSelect id="autoSteal" defaultValue="Once">
-                <option value="Once">Once</option>
-                <option value="Every connect">Every connect</option>
-              </BuilderSelect>
+              <BuilderNiceSelect
+                id="autoSteal"
+                defaultValue="Once"
+                options={[
+                  { value: "Once", label: "Once" },
+                  { value: "Every connect", label: "Every connect" },
+                ]}
+              />
             </BuilderField>
 
             <BuilderField variant="two" label="Force admin">
-              <BuilderSelect id="forceAdmin" defaultValue="Normal">
-                <option value="Normal">Normal</option>
-                <option value="Agressive">Agressive</option>
-              </BuilderSelect>
+              <BuilderNiceSelect
+                id="forceAdmin"
+                defaultValue="Normal"
+                options={[
+                  { value: "Normal", label: "Normal" },
+                  { value: "Agressive", label: "Agressive" },
+                ]}
+              />
             </BuilderField>
 
             <BuilderField variant="two" label="Install">
-              <BuilderSelect id="installMode" value={installMode} onChange={(e) => setInstallMode(e.target.value)}>
-                <option value="random">Random</option>
-                <option value="custom">Custom</option>
-              </BuilderSelect>
+              <BuilderNiceSelect
+                id="installMode"
+                value={installMode}
+                onValueChange={(v) => setInstallMode(v)}
+                options={[
+                  { value: "random", label: "Random" },
+                  { value: "custom", label: "Custom" },
+                ]}
+              />
             </BuilderField>
 
             <BuilderField
@@ -123,12 +139,6 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
               <BuilderTextInput id="installPath" placeholder="$AppData\\build.exe" autoComplete="off" />
             </BuilderField>
 
-            <BuilderStartupDelay
-              delay={delay}
-              onMinus={() => setDelay((v) => Math.max(0, v - 1))}
-              onPlus={() => setDelay((v) => Math.min(999, v + 1))}
-            />
-
             <BuilderField variant="checkbox" label="Hide files">
               <input
                 id="hideFiles"
@@ -137,13 +147,23 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
               />
             </BuilderField>
 
+            <BuilderStartupDelay
+              delay={delay}
+              onMinus={() => setDelay((v) => Math.max(0, v - 1))}
+              onPlus={() => setDelay((v) => Math.min(999, v + 1))}
+            />
+
             <BuilderField variant="two" label="Autorun">
-              <BuilderSelect id="autorun" defaultValue="scheduler">
-                <option value="scheduler">Scheduler</option>
-                <option value="scheduler_registry">Scheduler + Registry</option>
-                <option value="registry">Registry</option>
-                <option value="none">None</option>
-              </BuilderSelect>
+              <BuilderNiceSelect
+                id="autorun"
+                defaultValue="scheduler"
+                options={[
+                  { value: "scheduler", label: "Scheduler" },
+                  { value: "scheduler_registry", label: "Scheduler + Registry" },
+                  { value: "registry", label: "Registry" },
+                  { value: "none", label: "None" },
+                ]}
+              />
             </BuilderField>
           </div>
         </div>

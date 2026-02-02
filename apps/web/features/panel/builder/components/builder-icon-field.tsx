@@ -2,7 +2,7 @@ export function BuilderIconField() {
   return (
     <div className="builderField">
       <div className="builderLabel text-[13px] font-semibold text-[rgba(255,255,255,0.85)]">Build icon</div>
-      <div className="builderFile grid grid-cols-[max-content_1fr_max-content] items-center gap-[8px]">
+      <div className="builderFile ml-[6px] mt-[3px] grid grid-cols-[max-content_1fr_max-content] items-center gap-[8px]">
         <input
           id="buildIcon"
           className="builderFileInput absolute h-[1px] w-[1px] overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)]"
