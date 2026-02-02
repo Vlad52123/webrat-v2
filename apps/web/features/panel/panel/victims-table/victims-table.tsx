@@ -17,7 +17,7 @@ export function VictimsTable(props: {
   return (
     <div
       className={
-        "relative box-border mx-auto my-[12px] h-[calc(100%-24px)] w-full max-w-[calc(100%-40px)] overflow-auto rounded-[18px] border border-white/[0.16] bg-[rgba(18,18,18,0.66)] px-[12px] pb-[12px] pt-[8px] shadow-[0_18px_44px_rgba(0,0,0,0.6),0_0_0_4px_rgba(255,255,255,0.04)] backdrop-blur-[10px] touch-pan-y"
+        "relative box-border mx-auto my-[12px] h-[calc(100%-24px)] w-full max-w-[calc(100%-40px)] overflow-x-auto overflow-y-auto rounded-[18px] border border-white/[0.16] bg-[rgba(18,18,18,0.66)] px-[12px] pb-[12px] pt-[8px] shadow-[0_18px_44px_rgba(0,0,0,0.6),0_0_0_4px_rgba(255,255,255,0.04)] backdrop-blur-[10px] touch-auto"
       }
       style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(120,120,120,0.9) transparent" }}
     >
@@ -26,7 +26,7 @@ export function VictimsTable(props: {
       ) : isError ? (
         <div className="text-sm text-white/80">failed to load</div>
       ) : (
-        <table className="victims-table w-max min-w-full border-collapse text-[20px] font-[550] leading-[1.05] text-white/[0.99]">
+        <table className="victims-table w-max min-w-full table-fixed border-collapse text-[20px] font-[550] leading-[1.05] text-white/[0.99]">
           <VictimsTableHeader />
           <tbody>
             {victims.map((v, idx) => {

@@ -60,7 +60,7 @@ function HeaderCell(props: {
     <th
       className={cn(
         "sticky top-0 z-[2] bg-[#202020] px-[4px] pb-[3px] pt-0 text-left text-[20px] font-normal leading-[1.05] text-white/[0.98]",
-        "select-none",
+        "select-none whitespace-nowrap",
         "isReorderable",
         col,
         victimsColumnSizeClass(col),
