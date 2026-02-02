@@ -11,6 +11,7 @@ import { getEnv } from "./config";
 import { healthRoutes } from "./routes/health";
 import { captchaRoutes } from "./routes/captcha";
 import { loginRoutes } from "./routes/login";
+import { victimsRoutes } from "./routes/victims";
 
 export async function buildApp() {
   const env = getEnv();
@@ -67,6 +68,7 @@ export async function buildApp() {
   await app.register(healthRoutes);
   await app.register(captchaRoutes);
   await app.register(loginRoutes);
+  await app.register(victimsRoutes);
 
   return app;
 }

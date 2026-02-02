@@ -1,0 +1,151 @@
+"use client";
+
+import { useMemo } from "react";
+
+import type { PanelTabKey } from "../hooks/use-panel-tab";
+import { cn } from "../../../lib/utils";
+import type { VictimsFilter } from "../state/victims-filter";
+
+export function PanelTopbar(props: {
+  tab: PanelTabKey;
+  filter: VictimsFilter;
+  onFilterChange: (next: VictimsFilter) => void;
+}) {
+  const { tab, filter, onFilterChange } = props;
+
+  const isPanel = tab === "panel";
+  const isSettings = tab === "settings";
+  const isCommunity = tab === "community";
+  const isBuilder = tab === "builder";
+
+  const settingsHostStyle = useMemo(() => ({ display: isSettings ? "block" : "none" }), [isSettings]);
+  const communityHostStyle = useMemo(() => ({ display: isCommunity ? "block" : "none" }), [isCommunity]);
+  const builderHostStyle = useMemo(() => ({ display: isBuilder ? "block" : "none" }), [isBuilder]);
+
+  const filterBtnClass = (active: boolean) =>
+    cn(
+      "min-w-[52px] px-3.5 py-1.5 text-[14px] font-semibold text-white/90 transition-colors",
+      "hover:bg-white/5 hover:text-white",
+      active && "bg-white/10 text-white shadow-[inset_0_-2px_0_rgba(180,180,180,0.45)]",
+    );
+
+  const pillClass = (active: boolean) =>
+    cn(
+      "inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-2",
+      "text-[15px] font-bold text-white/90 transition-colors",
+      "hover:bg-white/10 hover:border-white/25",
+      active && "bg-white/15 border-white/30",
+    );
+
+  return (
+    <header className="relative flex flex-col">
+      <div
+        className={cn(
+          "relative flex h-[52px] items-center justify-start px-4",
+          "border-y border-white/15 bg-black/60 shadow-[0_8px_20px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.02)]",
+          "backdrop-blur-md",
+        )}
+      >
+        {isPanel && (
+          <div className="ml-1 inline-flex overflow-hidden rounded-[14px] border border-white/20 bg-black/30 shadow-[0_10px_26px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.06)]">
+            <button
+              id="filterOnline"
+              className={cn(filterBtnClass(filter === "online"), "border-r border-white/15")}
+              type="button"
+              onClick={() => onFilterChange("online")}
+            >
+              online
+            </button>
+            <button
+              id="filterAll"
+              className={cn(
+                filterBtnClass(filter === "all"),
+                "min-w-[42px] border-r border-white/15 px-2",
+              )}
+              type="button"
+              onClick={() => onFilterChange("all")}
+            >
+              all
+            </button>
+            <button
+              id="filterOffline"
+              className={filterBtnClass(filter === "offline")}
+              type="button"
+              onClick={() => onFilterChange("offline")}
+            >
+              offline
+            </button>
+          </div>
+        )}
+
+        <button
+          id="filterOptionsBtn"
+          type="button"
+          aria-label="filter options"
+          className="hidden"
+        >
+          <img src="/icons/filter.svg" alt="filter" draggable={false} />
+        </button>
+
+        <button id="shopHeaderMini" type="button" className="hidden">
+          Your Subs
+        </button>
+
+        <div id="settingsTabsHost" style={settingsHostStyle} className="ml-3">
+          <div className="flex items-center gap-2" role="tablist" aria-label="Settings tabs">
+            <button
+              id="settingsTabPersonalization"
+              className={pillClass(true)}
+              type="button"
+              data-settings-tab="personalization"
+            >
+              <span>Personalization</span>
+            </button>
+            <button
+              id="settingsTabSecurity"
+              className={pillClass(false)}
+              type="button"
+              data-settings-tab="security"
+            >
+              <span>Security</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="communityTabsHost" style={communityHostStyle} className="ml-3">
+          <div className="flex items-center gap-2" role="tablist" aria-label="Community tabs">
+            <button
+              id="communityTabInformation"
+              className={pillClass(true)}
+              type="button"
+              data-community-tab="information"
+            >
+              <span>Information</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="builderTabsHost" style={builderHostStyle} className="ml-3">
+          <div className="flex items-center gap-2" role="tablist" aria-label="Builder tabs">
+            <button
+              id="builderTabBuilds"
+              className={pillClass(true)}
+              type="button"
+              data-builder-tab="builds"
+            >
+              <span>Builds</span>
+            </button>
+          </div>
+        </div>
+
+        {!isBuilder && !isSettings && !isCommunity && (
+          <div className="pointer-events-none absolute left-1/2 top-1.5 hidden h-10 w-[min(560px,70vw)] -translate-x-1/2 items-center justify-center md:flex">
+            <span className="rounded-full border border-white/25 px-[18px] py-1.5 text-[15px] font-bold text-white/95 shadow-[0_0_0_1px_rgba(0,0,0,0.8)]">
+              Welcome to WebCrystal Beta pre-release!
+            </span>
+          </div>
+        )}
+      </div>
+    </header>
+  );
+}
