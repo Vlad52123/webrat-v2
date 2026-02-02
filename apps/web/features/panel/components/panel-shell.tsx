@@ -99,7 +99,7 @@ function PanelShellInner() {
               onSettingsTabChange={setSettingsTab}
             />
 
-            <section ref={contentRef} className="content relative min-h-0 flex-1 overflow-hidden">
+            <section ref={contentRef} className="content relative min-h-0 flex-1 overflow-x-visible overflow-y-hidden">
               {tab === "panel" && <PanelScreen filter={victimsFilter} />}
               {tab === "builder" && <BuilderScreen />}
               {tab === "shop" && <ShopScreen />}
