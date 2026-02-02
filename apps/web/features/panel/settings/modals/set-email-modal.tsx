@@ -41,7 +41,9 @@ export function SetEmailModal(props: {
             aria-label="Close"
             onClick={onClose}
           >
-            ×
+            <span aria-hidden="true" className="block h-[18px] w-[18px] text-center leading-[18px]">
+              ×
+            </span>
           </button>
         </div>
 

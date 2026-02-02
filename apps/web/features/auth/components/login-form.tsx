@@ -317,6 +317,8 @@ export function LoginForm() {
           minLength={5}
           maxLength={12}
           title="login: 5-12 characters (letters, digits, _ and -)"
+          onCopy={(e) => e.preventDefault()}
+          onCut={(e) => e.preventDefault()}
           className={[
             "h-[38px] rounded-xl border border-[rgba(214,154,255,0.32)] bg-[linear-gradient(180deg,rgba(255,255,255,0.06)_0%,rgba(0,0,0,0.12)_100%)] px-[10px] py-0 text-center text-[16px] leading-[38px] md:text-[16px] md:leading-[38px] text-white placeholder:text-white/60 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_14px_30px_rgba(0,0,0,0.22)] backdrop-blur-[10px] transition-[border-color,box-shadow,background,transform] duration-150 focus-visible:outline-none focus-visible:border-[rgba(235,200,255,0.62)] focus-visible:shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset,0_0_0_3px_rgba(186,85,211,0.22),0_18px_40px_rgba(117,61,255,0.14)]",
             inputsError
@@ -335,6 +337,8 @@ export function LoginForm() {
           minLength={6}
           maxLength={24}
           title="password: 6-24 characters (letters, digits, _ and -)"
+          onCopy={(e) => e.preventDefault()}
+          onCut={(e) => e.preventDefault()}
           className={[
             "h-[38px] rounded-xl border border-[rgba(214,154,255,0.32)] bg-[linear-gradient(180deg,rgba(255,255,255,0.06)_0%,rgba(0,0,0,0.12)_100%)] px-[10px] py-0 text-center text-[16px] leading-[38px] md:text-[16px] md:leading-[38px] text-white placeholder:text-white/60 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_14px_30px_rgba(0,0,0,0.22)] backdrop-blur-[10px] transition-[border-color,box-shadow,background,transform] duration-150 focus-visible:outline-none focus-visible:border-[rgba(235,200,255,0.62)] focus-visible:shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset,0_0_0_3px_rgba(186,85,211,0.22),0_18px_40px_rgba(117,61,255,0.14)]",
             inputsError
@@ -352,7 +356,8 @@ export function LoginForm() {
           </div>
           <button
             type="button"
-            className="justify-self-center cursor-pointer text-[13px] font-normal text-[rgba(227,190,255,0.80)] hover:text-white"
+            className="select-none justify-self-center cursor-pointer text-[13px] font-normal text-[rgba(227,190,255,0.80)] hover:text-white"
+            onCopy={(e) => e.preventDefault()}
             onClick={() => {
               setUseTurnstile(false);
               setCaptchaReady(false);

@@ -480,7 +480,8 @@ export const SliderCaptcha = forwardRef<
         <button
           type="button"
           onClick={onToggleCaptcha}
-          className="mt-1 cursor-pointer text-[13px] font-normal text-[rgba(227,190,255,0.80)] hover:text-white"
+          className="mt-1 select-none cursor-pointer text-[13px] font-normal text-[rgba(227,190,255,0.80)] hover:text-white"
+          onCopy={(e) => e.preventDefault()}
         >
           change the captcha
         </button>
@@ -493,7 +494,8 @@ export const SliderCaptcha = forwardRef<
             changeImageCooldownUntilRef.current = now + 900;
             void initCaptcha(1000);
           }}
-          className="mt-1 cursor-pointer text-[13px] font-normal text-[rgba(227,190,255,0.80)] hover:text-white"
+          className="mt-1 select-none cursor-pointer text-[13px] font-normal text-[rgba(227,190,255,0.80)] hover:text-white"
+          onCopy={(e) => e.preventDefault()}
         >
           change image
         </button>

@@ -17,7 +17,24 @@ function createSnowflakes() {
   const existing = root.querySelector(".snowflake");
   if (existing) return;
 
-  const count = 120;
+  let hc = 4;
+  try {
+    const n = (navigator as unknown as { hardwareConcurrency?: unknown }).hardwareConcurrency;
+    if (typeof n === "number" && Number.isFinite(n) && n > 0) hc = n;
+  } catch {
+    hc = 4;
+  }
+
+  let vw = 1200;
+  try {
+    vw = Math.max(320, window.innerWidth || 1200);
+  } catch {
+    vw = 1200;
+  }
+
+  const base = hc <= 4 ? 60 : hc <= 8 ? 90 : 110;
+  const scaled = Math.round((vw / 1200) * base);
+  const count = Math.max(40, Math.min(120, scaled));
 
   for (let i = 0; i < count; i += 1) {
     const el = document.createElement("div");

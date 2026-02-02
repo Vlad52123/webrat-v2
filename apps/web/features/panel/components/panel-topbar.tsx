@@ -33,7 +33,7 @@ export function PanelTopbar(props: {
 
   const filterBtnClass = (active: boolean) =>
     cn(
-      "min-w-[52px] px-[14px] py-[6px] text-[14px] font-semibold text-white/[0.92] transition-[background,transform,color] cursor-pointer",
+      "min-w-[46px] px-[10px] py-[4px] text-[13px] font-semibold text-white/[0.92] transition-[background,transform,color] cursor-pointer",
       "hover:bg-white/[0.06] hover:text-white/[0.98]",
       active && "bg-white/[0.08] text-white shadow-[inset_0_-2px_0_var(--line),inset_0_1px_0_rgba(255,255,255,0.08)]",
     );
@@ -75,7 +75,7 @@ export function PanelTopbar(props: {
                   id="filterAll"
                   className={cn(
                     filterBtnClass(filter === "all"),
-                    "min-w-[42px] border-r border-white/15 px-2",
+                    "min-w-[34px] border-r border-white/15 px-[8px]",
                   )}
                   type="button"
                   onClick={() => onFilterChange("all")}

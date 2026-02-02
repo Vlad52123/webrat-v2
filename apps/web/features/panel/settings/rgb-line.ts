@@ -2,11 +2,18 @@ let rgbAnimationId: number | null = null;
 let rgbLastTs: number | null = null;
 let rgbHue = 0;
 let baseLineColor = "";
+let rgbLastApplyTs: number | null = null;
 
 function step(ts: number) {
   if (!document.body.classList.contains("isRgbLine")) {
     rgbAnimationId = null;
     rgbLastTs = null;
+    rgbLastApplyTs = null;
+    return;
+  }
+
+  if (document.visibilityState === "hidden") {
+    rgbAnimationId = window.requestAnimationFrame(step);
     return;
   }
 
@@ -17,11 +24,16 @@ function step(ts: number) {
   const huePerMs = 60 / 1000;
   rgbHue = (rgbHue + delta * huePerMs) % 360;
 
-  const colorLine = `hsl(${rgbHue.toFixed(2)} 95% 60%)`;
-  try {
-    document.documentElement.style.setProperty("--line", colorLine);
-  } catch {
-    return;
+  if (rgbLastApplyTs == null) rgbLastApplyTs = ts;
+  const applyDelta = ts - rgbLastApplyTs;
+  if (applyDelta >= 33) {
+    rgbLastApplyTs = ts;
+    const colorLine = `hsl(${rgbHue.toFixed(2)} 95% 60%)`;
+    try {
+      document.documentElement.style.setProperty("--line", colorLine);
+    } catch {
+      return;
+    }
   }
 
   rgbAnimationId = window.requestAnimationFrame(step);
@@ -60,6 +72,7 @@ export function enableRgbLines(on: boolean) {
   if (enabled) {
     if (rgbAnimationId == null) {
       rgbLastTs = null;
+      rgbLastApplyTs = null;
       rgbAnimationId = window.requestAnimationFrame(step);
     }
     return;
@@ -69,6 +82,7 @@ export function enableRgbLines(on: boolean) {
     window.cancelAnimationFrame(rgbAnimationId);
     rgbAnimationId = null;
     rgbLastTs = null;
+    rgbLastApplyTs = null;
   }
 
   if (baseLineColor) {

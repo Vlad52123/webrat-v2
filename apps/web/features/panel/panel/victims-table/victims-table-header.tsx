@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { useMemo, useRef } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { cn } from "../../../../lib/utils";
 
@@ -61,6 +61,7 @@ function HeaderCell(props: {
       className={cn(
         "sticky top-0 z-[2] bg-[#202020] px-[4px] pb-[3px] pt-0 text-left text-[20px] font-normal leading-[1.05] text-white/[0.98]",
         "select-none",
+        "isReorderable",
         col,
         victimsColumnSizeClass(col),
       )}
@@ -90,10 +91,13 @@ function HeaderCell(props: {
 
 export function VictimsTableHeader() {
   const prefs = useVictimsTablePrefs();
-  const rowRef = useRef<HTMLTableRowElement | null>(null);
+  const [headerRow, setHeaderRow] = useState<HTMLTableRowElement | null>(null);
+  const headerRowRef = useCallback((el: HTMLTableRowElement | null) => {
+    setHeaderRow(el);
+  }, []);
 
   useVictimsTableColumnReorder({
-    headerRow: rowRef.current,
+    headerRow,
     columnOrder: prefs.columnOrder,
     setColumnOrder: prefs.setColumnOrder,
   });
@@ -102,7 +106,7 @@ export function VictimsTableHeader() {
 
   return (
     <thead>
-      <tr ref={rowRef}>
+      <tr ref={headerRowRef}>
         {cols.map((col) => {
           const meta = headerMeta(col);
           return <HeaderCell key={col} col={col} label={meta.label} withIcon={meta.withIcon} iconOnly={meta.iconOnly} />;
