@@ -62,7 +62,7 @@ const items: CommunityItem[] = [
 ];
 
 export function CommunityScreen() {
-  const [openKey, setOpenKey] = useState<string | null>(null);
+  const [openKeys, setOpenKeys] = useState<Record<string, boolean>>({});
 
   const messageCounts = useMemo(() => {
     const counts = new Map<string, number>();
@@ -77,7 +77,7 @@ export function CommunityScreen() {
       <div className="mx-auto w-full max-w-[min(1500px,calc(100vw-60px))] px-[10px] pb-[10px] pt-[22px]">
         <div className="flex flex-col gap-[14px]">
           {items.map((it) => {
-            const isOpen = openKey === it.key;
+            const isOpen = !!openKeys[it.key];
 
             return (
               <div
@@ -85,7 +85,12 @@ export function CommunityScreen() {
                 className={
                   "grid cursor-pointer grid-cols-[64px_1fr] items-start gap-[14px] rounded-[14px] border border-white/20 bg-[rgba(32,32,32,0.42)] px-[20px] py-[18px] shadow-[0_18px_50px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-[10px] transition-[background,border-color,transform] duration-[140ms] ease-out hover:translate-y-[-2px] hover:bg-[rgba(40,40,40,0.5)] hover:border-[rgba(235,200,255,0.26)]"
                 }
-                onClick={() => setOpenKey((prev) => (prev === it.key ? null : it.key))}
+                onClick={() =>
+                  setOpenKeys((prev) => ({
+                    ...prev,
+                    [it.key]: !prev[it.key],
+                  }))
+                }
               >
                 <img
                   className="wc-community-logo-shake h-[56px] w-[56px] select-none rounded-[10px] border border-white/20 bg-[rgba(25,25,25,0.55)] object-cover"
@@ -107,18 +112,13 @@ export function CommunityScreen() {
 
                   <div
                     className={
-                      "mt-3 overflow-hidden border-t border-white/10 transition-[max-height,opacity,transform] duration-[220ms] ease-out " +
+                      "mt-3 overflow-hidden border-t border-white/10 transition-[max-height,opacity,transform] duration-[260ms] ease-out " +
                       (isOpen
-                        ? "max-h-[240px] opacity-100 translate-y-0"
-                        : "max-h-0 opacity-0 -translate-y-[6px]")
+                        ? "max-h-[260px] opacity-100 translate-y-0"
+                        : "max-h-0 opacity-0 -translate-y-[8px] pointer-events-none")
                     }
                   >
-                    <div
-                      className={
-                        "mt-3 rounded-[12px] border border-white/10 bg-[rgba(0,0,0,0.18)] p-3 " +
-                        (isOpen ? "block" : "hidden")
-                      }
-                    >
+                    <div className="mt-3 rounded-[12px] border border-white/10 bg-[rgba(0,0,0,0.18)] p-3">
                       <div className="mb-2 font-black text-white/95">{it.detailsTitle}</div>
                       <div className="flex flex-col gap-[6px]">
                         {it.lines.map((line, idx) => {

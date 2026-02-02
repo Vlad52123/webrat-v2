@@ -30,13 +30,13 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
 
       <button
         id="logoBtn"
-        className="grid place-items-center"
+        className="grid cursor-pointer place-items-center"
         type="button"
         aria-label="Reload"
         onClick={() => setTab("panel")}
       >
         <img
-          className="h-auto w-[44px] select-none [image-rendering:pixelated]"
+          className="h-auto w-[44px] cursor-pointer select-none [image-rendering:pixelated]"
           src="/logo/main_logo.ico"
           alt="WebCrystal"
           draggable={false}
@@ -46,24 +46,9 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
       <div className="h-px w-full bg-white/20" aria-hidden="true" />
 
       <button
-        id="panelBtn"
-        className={cn(
-          "grid h-[38px] w-full place-items-center rounded-[14px] border border-transparent transition-colors hover:bg-white/5",
-          tab === "panel" &&
-          "border-white/20 bg-white/10 shadow-[inset_0_-2px_0_rgba(180,180,180,0.45)]",
-        )}
-        type="button"
-        aria-label="Panel"
-        data-active={tab === "panel"}
-        onClick={() => setTab("panel")}
-      >
-        <img className="h-7 w-7 opacity-85 invert" src="/icons/computer.svg" alt="panel" draggable={false} />
-      </button>
-
-      <button
         id="builderBtn"
         className={cn(
-          "grid h-[38px] w-full place-items-center rounded-[14px] border border-transparent transition-colors hover:bg-white/5",
+          "grid h-[38px] w-full cursor-pointer place-items-center rounded-[14px] border border-transparent transition-colors hover:bg-white/5",
           tab === "builder" &&
           "border-white/20 bg-white/10 shadow-[inset_0_-2px_0_rgba(180,180,180,0.45)]",
         )}
@@ -73,7 +58,7 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
         onClick={() => setTab("builder")}
       >
         <img
-          className="h-7 w-7 opacity-85 invert"
+          className="h-7 w-7 cursor-pointer opacity-85 invert"
           src="/icons/builder.svg"
           alt="builder"
           draggable={false}
@@ -82,13 +67,15 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
 
       <button
         id="shopBtn"
-        className="hidden"
+        className={cn(
+          "grid h-[38px] w-full cursor-pointer place-items-center rounded-[14px] border border-transparent transition-colors hover:bg-white/5",
+        )}
         aria-label="Shop"
         type="button"
         onClick={() => setTab("panel")}
       >
         <img
-          className="h-7 w-7 opacity-85 invert"
+          className="h-7 w-7 cursor-pointer opacity-85 invert"
           src="/icons/shop.svg"
           alt="shop"
           draggable={false}
@@ -98,7 +85,7 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
       <button
         id="communityBtn"
         className={cn(
-          "grid h-[38px] w-full place-items-center rounded-[14px] border border-transparent transition-colors hover:bg-white/5",
+          "grid h-[38px] w-full cursor-pointer place-items-center rounded-[14px] border border-transparent transition-colors hover:bg-white/5",
           tab === "community" &&
           "border-white/20 bg-white/10 shadow-[inset_0_-2px_0_rgba(180,180,180,0.45)]",
         )}
@@ -108,7 +95,7 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
         onClick={() => setTab("community")}
       >
         <img
-          className="h-7 w-7 opacity-85 invert"
+          className="h-7 w-7 cursor-pointer opacity-85 invert"
           src="/icons/chat.svg"
           alt="community"
           draggable={false}
@@ -118,7 +105,7 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
       <button
         id="settingsBtn"
         className={cn(
-          "grid h-[38px] w-full place-items-center rounded-[14px] border border-transparent transition-colors hover:bg-white/5",
+          "grid h-[38px] w-full cursor-pointer place-items-center rounded-[14px] border border-transparent transition-colors hover:bg-white/5",
           tab === "settings" &&
           "border-white/20 bg-white/10 shadow-[inset_0_-2px_0_rgba(180,180,180,0.45)]",
         )}
@@ -128,7 +115,7 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
         onClick={() => setTab("settings")}
       >
         <img
-          className="h-7 w-7 opacity-85 invert"
+          className="h-7 w-7 cursor-pointer opacity-85 invert"
           src="/icons/settings.svg"
           alt="settings"
           draggable={false}
