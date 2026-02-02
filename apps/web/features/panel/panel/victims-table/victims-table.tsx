@@ -26,7 +26,7 @@ export function VictimsTable(props: {
       ) : isError ? (
         <div className="text-sm text-white/80">failed to load</div>
       ) : (
-        <table className="victims-table w-max min-w-max border-collapse text-[20px] font-[550] leading-[1.05] text-white/[0.99]">
+        <table className="victims-table w-full min-w-max border-collapse text-[20px] font-[550] leading-[1.05] text-white/[0.99]">
           <VictimsTableHeader />
           <tbody>
             {victims.map((v, idx) => {

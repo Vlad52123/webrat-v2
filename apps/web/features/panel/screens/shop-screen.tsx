@@ -46,8 +46,8 @@ export function ShopScreen() {
           </div>
         </div>
 
-        <div className="shopSectionTitle relative mt-[30px] mb-[14px] w-full text-center text-[26px] font-extrabold tracking-[0.04em] text-white/[0.98] [text-shadow:0_1px_0_rgba(0,0,0,0.65),0_0_14px_rgba(0,0,0,0.65)]">
-          SHOP
+        <div className="shopSectionTitle relative mt-[30px] mb-[14px] w-full text-left text-[22px] font-extrabold tracking-[0.03em] text-white/[0.98] [text-shadow:0_1px_0_rgba(0,0,0,0.65),0_0_14px_rgba(0,0,0,0.65)]">
+          Shop
           <span className="pointer-events-none absolute left-[-32px] bottom-[-8px] h-[2px] w-[calc(100%+64px)] opacity-95 [filter:drop-shadow(0_0_10px_rgba(0,0,0,0.85))]" style={{ background: "var(--line)" }} />
         </div>
 
