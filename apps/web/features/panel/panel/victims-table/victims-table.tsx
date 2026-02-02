@@ -26,26 +26,32 @@ export function VictimsTable(props: {
       ) : isError ? (
         <div className="text-sm text-white/80">failed to load</div>
       ) : (
-        <table className="victims-table w-max min-w-full table-fixed border-collapse text-[20px] font-[550] leading-[1.05] text-white/[0.99]">
-          <VictimsTableHeader />
-          <tbody>
-            {victims.map((v, idx) => {
-              const id = String(v.id ?? "");
-              const key = id ? id : `row-${idx}`;
+        <div className="inline-block min-w-full align-top">
+          <table className="victims-table table-auto w-max border-collapse text-[20px] font-[550] leading-[1.05] text-white/[0.99]">
+            <VictimsTableHeader />
+            <tbody>
+              {victims.map((v, idx) => {
+                const id = String(v.id ?? "");
+                const key = id ? id : `row-${idx}`;
 
-              return (
-                <VictimRow
-                  key={key}
-                  victim={v}
-                  columnOrder={prefs.columnOrder}
-                  isSelected={!!selectedVictimId && String(selectedVictimId) === id}
-                  onClick={() => onSelectVictim(id)}
-                  onDoubleClick={() => onOpenDetail(id)}
-                />
-              );
-            })}
-          </tbody>
-        </table>
+                return (
+                  <VictimRow
+                    key={key}
+                    victim={v}
+                    columnOrder={prefs.columnOrder}
+                    isSelected={id === selectedVictimId}
+                    onClick={() => {
+                      onSelectVictim(id);
+                    }}
+                    onDoubleClick={() => {
+                      onOpenDetail(id);
+                    }}
+                  />
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
