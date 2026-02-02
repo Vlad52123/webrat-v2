@@ -371,9 +371,22 @@ export function PanelSettingsProvider(props: { contentRef: React.RefObject<HTMLE
       const target = contentRef.current;
       const preview = document.getElementById("settingsBgPreview");
       if (target) {
-        applyBackgroundImage(target, "", preview);
-        clearBackgroundColor(target, preview);
         applyBackgroundVideo(target, url, preview);
+
+        try {
+          const video = target.querySelector<HTMLVideoElement>("#uiBgVideo");
+          if (video) {
+            const onReady = () => {
+              try {
+                applyBackgroundImage(target, "", preview);
+                clearBackgroundColor(target, preview);
+              } catch {
+              }
+            };
+            video.addEventListener("canplay", onReady, { once: true });
+          }
+        } catch {
+        }
       }
       return next;
     });

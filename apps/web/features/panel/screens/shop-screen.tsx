@@ -5,9 +5,9 @@ export function ShopScreen() {
     <div id="shopView" className="h-full overflow-x-hidden overflow-y-auto">
       <div className="shopPage flex h-full w-full flex-col items-start justify-start pt-[16px] pl-[32px] pr-[18px]">
         <div className="shopGrid mt-[12px] grid gap-[26px] [grid-template-columns:auto_auto]">
-          <div className="shopCard shopCardKey grid min-h-[200px] min-w-[360px] place-items-center rounded-[16px] border border-white/[0.14] bg-[rgba(18,18,18,0.66)] p-[18px] text-center shadow-[0_18px_44px_rgba(0,0,0,0.6),0_0_0_4px_rgba(255,255,255,0.05)] backdrop-blur-[8px]">
+          <div className="shopCard shopCardKey grid min-h-[200px] min-w-[360px] justify-items-stretch rounded-[16px] border border-white/[0.14] bg-[rgba(18,18,18,0.66)] p-[18px] text-center shadow-[0_18px_44px_rgba(0,0,0,0.6),0_0_0_4px_rgba(255,255,255,0.05)] backdrop-blur-[8px]">
             <div className="shopCardTitle mb-[4px] text-[17px] font-bold text-white">Key activation.</div>
-            <div className="shopInputRow">
+            <div className="shopInputRow w-full" style={{ margin: "16px 0 14px" }}>
               <input
                 id="shopKeyInput"
                 className="shopInput w-full rounded-[12px] border border-white/[0.14] bg-[rgba(0,0,0,0.28)] px-[12px] py-[10px] text-center text-[15px] text-white outline-none placeholder:text-[rgba(200,200,200,0.7)] focus:border-white/[0.28]"
@@ -17,14 +17,16 @@ export function ShopScreen() {
                 name="shop-key-input"
               />
             </div>
-            <button
-              id="shopActivateBtn"
-              className="shopActivateBtn mt-[6px] min-w-[150px] cursor-pointer rounded-[12px] border border-white/[0.18] border-b-[4px] bg-white/[0.06] px-[22px] py-[10px] text-[14px] font-semibold text-white transition-[background,border-color,transform] hover:bg-white/[0.10] hover:border-white/[0.26] active:translate-y-[1px]"
-              style={{ borderBottomColor: "var(--line)" }}
-              type="button"
-            >
-              Activate
-            </button>
+            <div className="flex w-full justify-center">
+              <button
+                id="shopActivateBtn"
+                className="shopActivateBtn mt-[6px] min-w-[150px] cursor-pointer rounded-[12px] border border-white/[0.18] border-b-[4px] bg-white/[0.06] px-[22px] py-[10px] text-[14px] font-semibold text-white transition-[background,border-color,transform] hover:bg-white/[0.10] hover:border-white/[0.26] active:translate-y-[1px]"
+                style={{ borderBottomColor: "var(--line)" }}
+                type="button"
+              >
+                Activate
+              </button>
+            </div>
           </div>
 
           <div className="shopCard shopCardStatus grid min-h-[200px] min-w-[240px] place-items-center rounded-[16px] border border-white/[0.14] bg-[rgba(18,18,18,0.66)] p-[18px] text-center shadow-[0_18px_44px_rgba(0,0,0,0.6),0_0_0_4px_rgba(255,255,255,0.05)] backdrop-blur-[8px]">

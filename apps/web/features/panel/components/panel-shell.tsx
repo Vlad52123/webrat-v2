@@ -15,8 +15,6 @@ import type { SettingsTabKey } from "../state/settings-tab";
 import { PanelSidebar } from "./panel-sidebar";
 import { PanelTopbar } from "./panel-topbar";
 
-import "../toast/toast.css";
-
 export function PanelShell() {
   const { tab, setTab } = usePanelTab();
   const [victimsFilter, setVictimsFilter] = useState<VictimsFilter>("all");

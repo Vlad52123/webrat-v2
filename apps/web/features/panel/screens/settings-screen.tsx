@@ -454,7 +454,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
 
                         {wsOpen && wsMenuPos ? (
                           <div
-                            className="fixed z-[9999] rounded-[14px] border border-white/[0.14] bg-[rgba(12,12,12,0.96)] p-[8px] shadow-[0_22px_54px_rgba(0,0,0,0.65)]"
+                            className="fixed z-[9999] rounded-[14px] border border-white/[0.14] bg-[rgba(12,12,12,0.96)] p-[8px] text-white shadow-[0_22px_54px_rgba(0,0,0,0.65)]"
                             style={{ left: wsMenuPos.left, top: wsMenuPos.top, width: wsMenuPos.width }}
                             role="listbox"
                           >
@@ -470,7 +470,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
                                   key={opt.value}
                                   type="button"
                                   className={
-                                    "w-full text-left px-[10px] py-[10px] rounded-[12px] font-semibold transition-[background,transform] cursor-pointer " +
+                                    "w-full text-left px-[10px] py-[10px] rounded-[12px] text-[13px] leading-[1.15] font-semibold text-white transition-[background,transform] cursor-pointer " +
                                     (selected
                                       ? "bg-[rgba(80,230,255,0.12)] border border-[rgba(80,230,255,0.20)]"
                                       : "bg-transparent hover:bg-white/[0.08]")
