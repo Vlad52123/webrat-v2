@@ -25,12 +25,6 @@ export function proxy(req: NextRequest) {
     });
   }
 
-  if (pathname === "/panel") {
-    const url = req.nextUrl.clone();
-    url.pathname = "/panel/";
-    return NextResponse.redirect(url);
-  }
-
   if (pathname.startsWith("/app") || pathname.startsWith("/panel")) {
     if (!sid) {
       const url = req.nextUrl.clone();
