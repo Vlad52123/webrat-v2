@@ -29,17 +29,17 @@ export function PanelTopbar(props: {
 
   const filterBtnClass = (active: boolean) =>
     cn(
-      "min-w-[52px] px-3.5 py-1.5 text-[14px] font-semibold text-white/90 transition-colors",
-      "hover:bg-white/5 hover:text-white",
-      active && "bg-white/10 text-white shadow-[inset_0_-2px_0_rgba(180,180,180,0.45)]",
+      "min-w-[52px] px-[14px] py-[6px] text-[14px] font-semibold text-white/[0.92] transition-[background,transform,color]",
+      "hover:bg-white/[0.06] hover:text-white/[0.98]",
+      active && "bg-white/[0.08] text-white shadow-[inset_0_-2px_0_var(--line),inset_0_1px_0_rgba(255,255,255,0.08)]",
     );
 
   const pillClass = (active: boolean) =>
     cn(
-      "inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-2",
-      "text-[15px] font-bold text-white/90 transition-colors",
-      "hover:bg-white/10 hover:border-white/25",
-      active && "bg-white/15 border-white/30",
+      "inline-flex items-center gap-2 rounded-full border border-white/[0.14] bg-[rgba(20,20,20,0.35)] px-[14px] py-[8px]",
+      "text-[15px] font-bold text-white/[0.92] transition-[background,border-color,transform]",
+      "hover:bg-white/[0.06] hover:border-white/[0.22]",
+      active && "bg-white/[0.10] border-white/[0.30]",
     );
 
   return (
@@ -47,12 +47,16 @@ export function PanelTopbar(props: {
       <div
         className={cn(
           "relative flex h-[52px] items-center justify-start px-4",
-          "border-y border-white/15 bg-black/60 shadow-[0_8px_20px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.02)]",
-          "backdrop-blur-md",
+          "border-b border-white/[0.14] border-t-[3px] bg-[rgba(18,18,18,0.78)] shadow-[0_8px_20px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.02)]",
+          "backdrop-blur-[10px]",
         )}
+        style={{ borderTopColor: "var(--line)" }}
       >
         {isPanel && (
-          <div className="ml-1 inline-flex overflow-hidden rounded-[14px] border border-white/20 bg-black/30 shadow-[0_10px_26px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.06)]">
+          <div
+            className="ml-[6px] inline-flex overflow-hidden rounded-[14px] border border-white/[0.18] bg-[rgba(18,18,18,0.55)] shadow-[0_10px_26px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.06)]"
+            style={{ borderBottom: "3px solid var(--line)" }}
+          >
             <button
               id="filterOnline"
               className={cn(filterBtnClass(filter === "online"), "border-r border-white/15")}

@@ -9,8 +9,9 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
   return (
     <aside
       className={cn(
-        "grid content-start gap-[2px] border-r border-white/15 bg-black/60 py-2.5 shadow-[8px_0_24px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.02)]",
-        "backdrop-blur-md",
+        "grid content-start gap-[2px] border-r border-white/[0.16] bg-[rgba(18,18,18,0.72)] py-2.5",
+        "shadow-[8px_0_24px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.02)]",
+        "backdrop-blur-[10px]",
       )}
       aria-label="Sidebar"
     >
@@ -36,7 +37,7 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
         onClick={() => setTab("panel")}
       >
         <img
-          className="h-auto w-[44px] cursor-pointer select-none [image-rendering:pixelated]"
+          className="h-auto w-[44px] cursor-pointer select-none [image-rendering:pixelated] [filter:drop-shadow(0_0_0_var(--line))]"
           src="/logo/main_logo.ico"
           alt="WebCrystal"
           draggable={false}
@@ -50,7 +51,7 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
         className={cn(
           "grid h-[38px] w-full cursor-pointer place-items-center rounded-[14px] border border-transparent transition-colors hover:bg-white/5",
           tab === "builder" &&
-          "border-white/20 bg-white/10 shadow-[inset_0_-2px_0_rgba(180,180,180,0.45)]",
+          "border-white/20 bg-white/10 shadow-[inset_0_-2px_0_var(--line)]",
         )}
         type="button"
         aria-label="Builder"
@@ -70,7 +71,7 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
         className={cn(
           "grid h-[38px] w-full cursor-pointer place-items-center rounded-[14px] border border-transparent transition-colors hover:bg-white/5",
           tab === "community" &&
-          "border-white/20 bg-white/10 shadow-[inset_0_-2px_0_rgba(180,180,180,0.45)]",
+          "border-white/20 bg-white/10 shadow-[inset_0_-2px_0_var(--line)]",
         )}
         aria-label="Community"
         type="button"
@@ -89,6 +90,8 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
         id="shopBtn"
         className={cn(
           "grid h-[38px] w-full cursor-pointer place-items-center rounded-[14px] border border-transparent transition-colors hover:bg-white/5",
+          tab === "shop" &&
+          "border-white/20 bg-white/10 shadow-[inset_0_-2px_0_var(--line)]",
         )}
         aria-label="Shop"
         type="button"
@@ -107,7 +110,7 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
         className={cn(
           "grid h-[38px] w-full cursor-pointer place-items-center rounded-[14px] border border-transparent transition-colors hover:bg-white/5",
           tab === "settings" &&
-          "border-white/20 bg-white/10 shadow-[inset_0_-2px_0_rgba(180,180,180,0.45)]",
+          "border-white/20 bg-white/10 shadow-[inset_0_-2px_0_var(--line)]",
         )}
         aria-label="Settings"
         type="button"

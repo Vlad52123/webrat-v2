@@ -28,6 +28,15 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deletePwd, setDeletePwd] = useState("");
   const [deleteErr, setDeleteErr] = useState("");
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [passwordOld, setPasswordOld] = useState("");
+  const [passwordNew, setPasswordNew] = useState("");
+  const [passwordNewAgain, setPasswordNewAgain] = useState("");
+  const [emailOpen, setEmailOpen] = useState(false);
+  const [emailNew, setEmailNew] = useState("");
+  const [emailPasswordOrCode, setEmailPasswordOrCode] = useState("");
+  const [emailStep, setEmailStep] = useState<"input" | "code">("input");
+  const [pendingEmail, setPendingEmail] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -110,16 +119,18 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
   }, [wsOpen]);
 
   useEffect(() => {
-    if (!logoutOpen && !deleteOpen) return;
+    if (!logoutOpen && !deleteOpen && !passwordOpen && !emailOpen) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setLogoutOpen(false);
         setDeleteOpen(false);
+        setPasswordOpen(false);
+        setEmailOpen(false);
       }
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [deleteOpen, logoutOpen]);
+  }, [deleteOpen, emailOpen, logoutOpen, passwordOpen]);
 
   const wipeClientState = async () => {
     try {
@@ -548,13 +559,10 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
                 }
                 type="button"
                 onClick={() => {
-                  try {
-                    const el = document.getElementById("passwordModalBackdrop");
-                    if (el) {
-                      el.setAttribute("data-open", "1");
-                    }
-                  } catch {
-                  }
+                  setPasswordOld("");
+                  setPasswordNew("");
+                  setPasswordNewAgain("");
+                  setPasswordOpen(true);
                 }}
               >
                 <div className="text-[15px] font-medium text-white opacity-90">Password:</div>
@@ -587,13 +595,11 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
                 }
                 type="button"
                 onClick={() => {
-                  try {
-                    const el = document.getElementById("emailModalBackdrop");
-                    if (el) {
-                      el.setAttribute("data-open", "1");
-                    }
-                  } catch {
-                  }
+                  setEmailStep("input");
+                  setPendingEmail("");
+                  setEmailNew("");
+                  setEmailPasswordOrCode("");
+                  setEmailOpen(true);
                 }}
               >
                 <div className="text-[15px] font-medium text-white opacity-90">Your mail:</div>
@@ -795,6 +801,285 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
                 }}
               >
                 Delete forever
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        id="passwordModalBackdrop"
+        className={
+          "fixed inset-0 z-[2000] items-center justify-center bg-black/[0.62] backdrop-blur-[10px] " +
+          (passwordOpen ? "flex" : "hidden")
+        }
+        aria-hidden={!passwordOpen}
+        onMouseDown={(e) => {
+          if (e.target === e.currentTarget) setPasswordOpen(false);
+        }}
+      >
+        <div
+          className="w-[360px] max-w-[calc(100vw-40px)] overflow-hidden rounded-[16px] border border-white/[0.18] bg-[rgba(18,18,18,0.92)] shadow-[0_24px_60px_rgba(0,0,0,0.75)] backdrop-blur-[8px]"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="passwordModalTitle"
+        >
+          <div className="flex items-center justify-between border-b border-white/[0.20] px-[14px] py-[12px]">
+            <div id="passwordModalTitle" className="text-[15px] font-bold text-white">
+              Change password
+            </div>
+            <button
+              id="passwordModalClose"
+              className="grid h-[30px] w-[30px] cursor-pointer place-items-center rounded-[10px] border border-white/[0.14] bg-white/[0.06] text-[18px] leading-none text-white/[0.95] transition-[background,border-color,transform] hover:bg-white/[0.10] hover:border-white/[0.22] active:translate-y-[1px]"
+              type="button"
+              aria-label="Close"
+              onClick={() => setPasswordOpen(false)}
+            >
+              ×
+            </button>
+          </div>
+
+          <div className="grid gap-[12px] p-[18px]">
+            <div className="grid gap-[4px]">
+              <input
+                id="passwordOldInput"
+                className="h-[38px] rounded-[12px] border border-white/[0.14] bg-[rgba(0,0,0,0.28)] px-[12px] text-center text-[14px] text-white outline-none placeholder:text-[rgba(200,200,200,0.8)] focus:border-white/[0.28]"
+                type="password"
+                autoComplete="current-password"
+                placeholder="Old password"
+                value={passwordOld}
+                onChange={(e) => setPasswordOld(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-[4px]">
+              <input
+                id="passwordNewInput"
+                className="h-[38px] rounded-[12px] border border-white/[0.14] bg-[rgba(0,0,0,0.28)] px-[12px] text-center text-[14px] text-white outline-none placeholder:text-[rgba(200,200,200,0.8)] focus:border-white/[0.28]"
+                type="password"
+                autoComplete="new-password"
+                placeholder="New password"
+                value={passwordNew}
+                onChange={(e) => setPasswordNew(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-[4px]">
+              <input
+                id="passwordNewAgainInput"
+                className="h-[38px] rounded-[12px] border border-white/[0.14] bg-[rgba(0,0,0,0.28)] px-[12px] text-center text-[14px] text-white outline-none placeholder:text-[rgba(200,200,200,0.8)] focus:border-white/[0.28]"
+                type="password"
+                autoComplete="new-password"
+                placeholder="New password again"
+                value={passwordNewAgain}
+                onChange={(e) => setPasswordNewAgain(e.target.value)}
+              />
+            </div>
+
+            <div className="mt-[8px] flex justify-center">
+              <button
+                id="passwordModalConfirm"
+                className="min-w-[150px] cursor-pointer rounded-[12px] border border-white/[0.18] border-b-[4px] bg-white/[0.10] px-[22px] py-[10px] text-[14px] font-semibold text-white transition-[background,border-color,transform] hover:bg-white/[0.14] hover:border-white/[0.28] active:translate-y-[1px]"
+                style={{ borderBottomColor: "var(--line)" }}
+                type="button"
+                onClick={async () => {
+                  const oldPwd = String(passwordOld || "");
+                  const newPwd = String(passwordNew || "");
+                  const newAgain = String(passwordNewAgain || "");
+                  if (!oldPwd || !newPwd || !newAgain) {
+                    try {
+                      window.WebRatCommon?.showToast?.("error", "Fill all fields");
+                    } catch {
+                    }
+                    return;
+                  }
+                  if (newPwd !== newAgain) {
+                    try {
+                      window.WebRatCommon?.showToast?.("error", "New passwords do not match");
+                    } catch {
+                    }
+                    return;
+                  }
+
+                  try {
+                    const res = await fetch(`/api/change-password`, {
+                      method: "POST",
+                      credentials: "include",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ old_password: oldPwd, new_password: newPwd }),
+                    });
+                    if (res.ok) {
+                      try {
+                        window.WebRatCommon?.showToast?.("success", "Password changed");
+                      } catch {
+                      }
+                      setPasswordOpen(false);
+                      return;
+                    }
+                    if (res.status === 409) {
+                      window.WebRatCommon?.showToast?.("error", "You cannot change password to the one you already have");
+                      return;
+                    }
+                    if (res.status === 401) {
+                      window.WebRatCommon?.showToast?.("error", "Old password is incorrect");
+                      return;
+                    }
+                    window.WebRatCommon?.showToast?.("error", "Password change failed");
+                  } catch {
+                    try {
+                      window.WebRatCommon?.showToast?.("error", "Password change failed");
+                    } catch {
+                    }
+                  }
+                }}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        id="emailModalBackdrop"
+        className={
+          "fixed inset-0 z-[2000] items-center justify-center bg-black/[0.62] backdrop-blur-[10px] " +
+          (emailOpen ? "flex" : "hidden")
+        }
+        aria-hidden={!emailOpen}
+        onMouseDown={(e) => {
+          if (e.target === e.currentTarget) setEmailOpen(false);
+        }}
+      >
+        <div
+          className="w-[360px] max-w-[calc(100vw-40px)] overflow-hidden rounded-[16px] border border-white/[0.18] bg-[rgba(18,18,18,0.92)] shadow-[0_24px_60px_rgba(0,0,0,0.75)] backdrop-blur-[8px]"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="emailModalTitle"
+        >
+          <div className="flex items-center justify-between border-b border-white/[0.20] px-[14px] py-[12px]">
+            <div id="emailModalTitle" className="text-[15px] font-bold text-white">
+              Set email
+            </div>
+            <button
+              id="emailModalClose"
+              className="grid h-[30px] w-[30px] cursor-pointer place-items-center rounded-[10px] border border-white/[0.14] bg-white/[0.06] text-[18px] leading-none text-white/[0.95] transition-[background,border-color,transform] hover:bg-white/[0.10] hover:border-white/[0.22] active:translate-y-[1px]"
+              type="button"
+              aria-label="Close"
+              onClick={() => setEmailOpen(false)}
+            >
+              ×
+            </button>
+          </div>
+
+          <div className="grid gap-[12px] p-[18px]">
+            <div className="grid gap-[4px]">
+              <input
+                id="emailNewInput"
+                className="h-[38px] rounded-[12px] border border-white/[0.14] bg-[rgba(0,0,0,0.28)] px-[12px] text-center text-[14px] text-white outline-none placeholder:text-[rgba(200,200,200,0.8)] focus:border-white/[0.28]"
+                type="email"
+                placeholder="New mail"
+                value={emailNew}
+                onChange={(e) => setEmailNew(e.target.value)}
+                disabled={emailStep === "code"}
+              />
+            </div>
+            <div className="grid gap-[4px]">
+              <input
+                id="emailPasswordInput"
+                className="h-[38px] rounded-[12px] border border-white/[0.14] bg-[rgba(0,0,0,0.28)] px-[12px] text-center text-[14px] text-white outline-none placeholder:text-[rgba(200,200,200,0.8)] focus:border-white/[0.28]"
+                type="password"
+                placeholder={emailStep === "code" ? "Code" : "Password"}
+                value={emailPasswordOrCode}
+                onChange={(e) => setEmailPasswordOrCode(e.target.value)}
+                maxLength={emailStep === "code" ? 8 : undefined}
+              />
+            </div>
+
+            <div className="mt-[8px] flex justify-center">
+              <button
+                id="emailModalConfirm"
+                className="min-w-[150px] cursor-pointer rounded-[12px] border border-white/[0.18] border-b-[4px] bg-white/[0.10] px-[22px] py-[10px] text-[14px] font-semibold text-white transition-[background,border-color,transform] hover:bg-white/[0.14] hover:border-white/[0.28] active:translate-y-[1px]"
+                style={{ borderBottomColor: "var(--line)" }}
+                type="button"
+                onClick={async () => {
+                  const email = String(emailNew || "").trim();
+                  const value = String(emailPasswordOrCode || "").trim();
+
+                  if (emailStep === "input") {
+                    const emailRe = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+                    if (!email || !emailRe.test(email)) {
+                      window.WebRatCommon?.showToast?.("error", "Invalid email address");
+                      return;
+                    }
+                    if (!value) {
+                      window.WebRatCommon?.showToast?.("error", "Enter account password");
+                      return;
+                    }
+
+                    try {
+                      const res = await fetch(`/api/set-email`, {
+                        method: "POST",
+                        credentials: "include",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email, password: value }),
+                      });
+
+                      if (res.status === 401) {
+                        window.WebRatCommon?.showToast?.("error", "Password is incorrect");
+                        return;
+                      }
+                      if (!res.ok) {
+                        window.WebRatCommon?.showToast?.("error", "Failed to send verification code");
+                        return;
+                      }
+
+                      setPendingEmail(email);
+                      setEmailStep("code");
+                      setEmailPasswordOrCode("");
+                      window.WebRatCommon?.showToast?.("success", "Code sent to your email");
+                    } catch {
+                      window.WebRatCommon?.showToast?.("error", "Failed to send verification code");
+                    }
+
+                    return;
+                  }
+
+                  if (!value) {
+                    window.WebRatCommon?.showToast?.("error", "Enter code from email");
+                    return;
+                  }
+
+                  try {
+                    const res = await fetch(`/api/confirm-email`, {
+                      method: "POST",
+                      credentials: "include",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ code: value }),
+                    });
+
+                    if (res.status === 400) {
+                      window.WebRatCommon?.showToast?.("error", "Invalid verification code");
+                      return;
+                    }
+                    if (!res.ok) {
+                      window.WebRatCommon?.showToast?.("error", "Email verification failed");
+                      return;
+                    }
+
+                    if (pendingEmail) {
+                      try {
+                        const el = document.getElementById("securityMailValue");
+                        if (el) el.textContent = pendingEmail;
+                      } catch {
+                      }
+                    }
+                    setEmailOpen(false);
+                    window.WebRatCommon?.showToast?.("success", "Email verified");
+                  } catch {
+                    window.WebRatCommon?.showToast?.("error", "Email verification failed");
+                  }
+                }}
+              >
+                Confirm
               </button>
             </div>
           </div>

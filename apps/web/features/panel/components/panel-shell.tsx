@@ -9,10 +9,13 @@ import { PanelScreen } from "../screens/panel-screen";
 import { ShopScreen } from "../screens/shop-screen";
 import { SettingsScreen } from "../screens/settings-screen";
 import { PanelSettingsProvider } from "../settings";
+import { installToastGlobal } from "../toast";
 import type { VictimsFilter } from "../state/victims-filter";
 import type { SettingsTabKey } from "../state/settings-tab";
 import { PanelSidebar } from "./panel-sidebar";
 import { PanelTopbar } from "./panel-topbar";
+
+import "../toast/toast.css";
 
 export function PanelShell() {
   const { tab, setTab } = usePanelTab();
@@ -26,6 +29,10 @@ export function PanelShell() {
     } catch {
     }
   }, [tab]);
+
+  useEffect(() => {
+    installToastGlobal();
+  }, []);
 
   return (
     <PanelSettingsProvider contentRef={contentRef}>
