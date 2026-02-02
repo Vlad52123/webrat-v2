@@ -13,6 +13,7 @@ export function BuilderTextInput(props: {
   autoComplete?: string;
   type?: "text" | "password";
   style?: CSSProperties;
+  className?: string;
 }) {
   const {
     id,
@@ -25,12 +26,13 @@ export function BuilderTextInput(props: {
     autoComplete,
     type = "text",
     style,
+    className,
   } = props;
 
   return (
     <input
       id={id}
-      className={inputClass}
+      className={className ? `${inputClass} ${className}` : inputClass}
       type={type}
       placeholder={placeholder}
       autoComplete={autoComplete}

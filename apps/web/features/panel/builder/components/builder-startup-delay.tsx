@@ -6,24 +6,27 @@ export function BuilderStartupDelay(props: {
   const { delay, onMinus, onPlus } = props;
 
   return (
-    <div className="grid gap-2" role="group" aria-label="Startup delay">
-      <span className="text-[12px] font-bold text-white/70">Startup delay (sec)</span>
-      <div className="flex h-[38px] overflow-hidden rounded-[12px] border border-white/15 bg-black/30">
+    <div className="builderField builderField--two" role="group" aria-label="Startup delay">
+      <div className="builderLabel text-[13px] font-semibold text-[rgba(255,255,255,0.85)]">Startup delay (sec)</div>
+      <div className="stepper inline-grid grid-cols-[28px_36px_28px] items-center justify-start gap-[6px]">
         <button
           id="copyMinus"
-          className="w-[44px] border-r border-white/10 text-[16px] font-extrabold text-white/80 hover:bg-white/5"
+          className="stepperBtn h-[32px] w-[28px] cursor-pointer rounded-[10px] border border-[rgba(255,255,255,0.14)] bg-[rgba(20,20,20,0.4)] text-[rgba(255,255,255,0.9)] hover:bg-[rgba(255,255,255,0.04)]"
           type="button"
           aria-label="minus"
           onClick={onMinus}
         >
           -
         </button>
-        <div id="copyCount" className="flex flex-1 items-center justify-center text-[14px] font-extrabold text-white/90">
+        <div
+          id="copyCount"
+          className="stepperValue grid h-[32px] place-items-center rounded-[10px] border border-[rgba(255,255,255,0.14)] bg-[rgba(20,20,20,0.4)] text-center text-[rgba(255,255,255,0.9)]"
+        >
           {delay}
         </div>
         <button
           id="copyPlus"
-          className="w-[44px] border-l border-white/10 text-[16px] font-extrabold text-white/80 hover:bg-white/5"
+          className="stepperBtn h-[32px] w-[28px] cursor-pointer rounded-[10px] border border-[rgba(255,255,255,0.14)] bg-[rgba(20,20,20,0.4)] text-[rgba(255,255,255,0.9)] hover:bg-[rgba(255,255,255,0.04)]"
           type="button"
           aria-label="plus"
           onClick={onPlus}
