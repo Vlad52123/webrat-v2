@@ -53,6 +53,8 @@ export const SliderCaptcha = forwardRef<
 
   const lockedRef = useRef(true);
   const changeImageCooldownUntilRef = useRef(0);
+  const imagesCacheRef = useRef<string[] | null>(null);
+  const imagesCacheAtRef = useRef<number>(0);
 
   const readyUntilRef = useRef<number>(0);
   const startAngleRef = useRef<number>(0);
@@ -69,7 +71,7 @@ export const SliderCaptcha = forwardRef<
     if (verified && good === "good") return "VERIFIED";
     if (verified) return "VERIFYING";
     if (locked) return "Loading captcha...";
-    return "Slide to Verify →";
+    return "Slide to Verify";
   }, [verified, good, locked]);
 
   const reset = useCallback(() => {
@@ -94,14 +96,22 @@ export const SliderCaptcha = forwardRef<
 
   const listImages = useCallback(async (): Promise<string[]> => {
     try {
+      const cached = imagesCacheRef.current;
+      const cachedAt = imagesCacheAtRef.current;
+      if (cached && cached.length && Date.now() - cachedAt < 5 * 60 * 1000) {
+        return cached;
+      }
+
       const res = await fetch(`/api/captcha-images`, {
         method: "GET",
         credentials: "include",
-        cache: "no-store",
       });
       if (!res.ok) return [];
       const data = (await res.json()) as unknown;
-      return Array.isArray(data) ? data.map((x) => String(x)) : [];
+      const list = Array.isArray(data) ? data.map((x) => String(x)) : [];
+      imagesCacheRef.current = list;
+      imagesCacheAtRef.current = Date.now();
+      return list;
     } catch {
       return [];
     }
@@ -438,7 +448,7 @@ export const SliderCaptcha = forwardRef<
           aria-hidden="true"
         />
 
-        <div className="absolute inset-0 grid place-items-center text-sm font-semibold text-white/85 pointer-events-none">
+        <div className="absolute inset-0 grid place-items-center text-sm font-semibold text-white/85 pointer-events-none select-none">
           {sliderHint}
         </div>
 
@@ -453,8 +463,14 @@ export const SliderCaptcha = forwardRef<
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={() => void onPointerUp()}
+          onMouseDown={(e) => {
+            try {
+              e.preventDefault();
+            } catch {
+            }
+          }}
         >
-          <span className="text-white/86 [text-shadow:0_10px_24px_rgba(0,0,0,0.32)]">→</span>
+          <span className="text-white/86 select-none [user-select:none] [text-shadow:0_10px_24px_rgba(0,0,0,0.32)]">→</span>
         </div>
       </div>
 

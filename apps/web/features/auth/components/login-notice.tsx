@@ -52,7 +52,7 @@ export function LoginNotice({
           type === "error"
             ? "border-[rgba(255,70,70,0.60)] shadow-[0_18px_55px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,70,70,0.18)_inset,0_0_22px_rgba(255,70,70,0.18)]"
             : type === "warning"
-              ? "border-[rgba(255,196,70,0.55)] shadow-[0_18px_55px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,196,70,0.16)_inset,0_0_24px_rgba(255,196,70,0.18)]"
+              ? "border-[rgba(163,130,255,0.55)] shadow-[0_18px_55px_rgba(0,0,0,0.55),0_0_0_1px_rgba(163,130,255,0.16)_inset,0_0_24px_rgba(117,61,255,0.18)]"
               : "border-[rgba(117,61,255,0.55)]",
         ].join(" ")}
       >
@@ -63,7 +63,7 @@ export function LoginNotice({
             type === "error"
               ? "bg-[linear-gradient(180deg,rgba(255,120,120,0.95)_0%,rgba(255,70,70,0.90)_100%)] text-white"
               : type === "warning"
-                ? "bg-[linear-gradient(180deg,rgba(255,214,120,0.95)_0%,rgba(255,175,50,0.92)_100%)] text-black/85"
+                ? "bg-[linear-gradient(180deg,rgba(200,175,255,0.95)_0%,rgba(117,61,255,0.92)_100%)] text-white"
                 : "bg-[linear-gradient(180deg,rgba(163,130,255,0.95)_0%,rgba(117,61,255,0.92)_100%)] text-white",
           ].join(" ")}
         >

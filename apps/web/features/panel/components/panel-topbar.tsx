@@ -52,7 +52,7 @@ export function PanelTopbar(props: {
         )}
         style={{ borderTopColor: "var(--line)" }}
       >
-        <div className="flex min-w-[260px] items-center">
+        <div className="flex items-center">
           {isPanel && (
             <div
               className="ml-[6px] inline-flex overflow-hidden rounded-[14px] border border-white/[0.18] bg-[rgba(18,18,18,0.55)] shadow-[0_10px_26px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.06)]"
@@ -98,11 +98,11 @@ export function PanelTopbar(props: {
           <img src="/icons/filter.svg" alt="filter" draggable={false} />
         </button>
 
-        <button id="shopHeaderMini" type="button" style={shopMiniStyle} className={cn(pillClass(true), "ml-3 mt-[2px]")}>
+        <button id="shopHeaderMini" type="button" style={shopMiniStyle} className={cn(pillClass(true), "ml-[10px] mt-[2px]")}>
           Your Subs
         </button>
 
-        <div id="settingsTabsHost" style={settingsHostStyle} className="ml-3 mt-[2px]">
+        <div id="settingsTabsHost" style={settingsHostStyle} className="ml-[10px] mt-[2px]">
           <div className="flex items-center gap-2" role="tablist" aria-label="Settings tabs">
             <button
               id="settingsTabPersonalization"
@@ -125,7 +125,7 @@ export function PanelTopbar(props: {
           </div>
         </div>
 
-        <div id="communityTabsHost" style={communityHostStyle} className="ml-3 mt-[2px]">
+        <div id="communityTabsHost" style={communityHostStyle} className="ml-[10px] mt-[2px]">
           <div className="flex items-center gap-2" role="tablist" aria-label="Community tabs">
             <button
               id="communityTabInformation"
@@ -138,7 +138,7 @@ export function PanelTopbar(props: {
           </div>
         </div>
 
-        <div id="builderTabsHost" style={builderHostStyle} className="ml-3 mt-[2px]">
+        <div id="builderTabsHost" style={builderHostStyle} className="ml-[10px] mt-[2px]">
           <div className="flex items-center gap-2" role="tablist" aria-label="Builder tabs">
             <button
               id="builderTabBuilds"

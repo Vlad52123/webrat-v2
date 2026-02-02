@@ -38,7 +38,7 @@ export function showToast(typeOrTitle: string, message?: string, opts?: ToastOpt
     const bar = document.createElement("div");
     bar.className = "absolute left-0 top-0 bottom-0 w-[4px] opacity-95";
     bar.style.background =
-      type === "success" ? "#2ecc71" : type === "error" ? "#ff4b4b" : type === "warning" ? "#f1c40f" : "#3498db";
+      type === "success" ? "#2ecc71" : type === "error" ? "#ff4b4b" : type === "warning" ? "#8b5cf6" : "#3498db";
     toast.appendChild(bar);
 
     const top = document.createElement("div");
@@ -50,7 +50,7 @@ export function showToast(typeOrTitle: string, message?: string, opts?: ToastOpt
         : type === "error"
           ? "rgba(255, 75, 75, 0.45)"
           : type === "warning"
-            ? "rgba(241, 196, 15, 0.45)"
+            ? "rgba(139, 92, 246, 0.45)"
             : "rgba(52, 152, 219, 0.45)";
     top.textContent = String(title || "");
     toast.appendChild(top);

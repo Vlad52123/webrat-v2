@@ -1,6 +1,18 @@
+"use client";
+
+import { useEffect } from "react";
+
 import { LoginForm } from "@/features/auth/components/login-form";
+import { applySnow } from "@/features/panel/settings/snow";
 
 export function LoginPage() {
+  useEffect(() => {
+    try {
+      applySnow(true);
+    } catch {
+    }
+  }, []);
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#120a22] text-white">
       <main className="relative z-10 grid min-h-screen place-items-center p-[18px]">

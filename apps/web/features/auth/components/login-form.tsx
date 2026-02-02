@@ -96,10 +96,6 @@ export function LoginForm() {
     setCaptchaReady(false);
   }, []);
 
-  useEffect(() => {
-    router.refresh();
-  }, [router]);
-
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { login: "", password: "" },
