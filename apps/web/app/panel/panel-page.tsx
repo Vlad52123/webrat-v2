@@ -59,7 +59,7 @@ export function PanelPage() {
             src="/icons/loading.svg"
             alt="loading"
             draggable={false}
-            className="h-[44px] w-[44px] animate-spin"
+            className="h-[44px] w-[44px] animate-spin invert brightness-200"
           />
           <span className="sr-only">{isChecking ? "Checking session" : "Redirecting"}</span>
         </div>
