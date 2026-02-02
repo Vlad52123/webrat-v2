@@ -133,6 +133,20 @@
     left: 46px;
   }
 
+  body.hasCustomBg .content::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.22);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .content > .view {
+    position: relative;
+    z-index: 1;
+  }
+
   .wc-community-logo-shake {
     animation: wcCommunityLogoShake 1.6s ease-in-out infinite;
   }

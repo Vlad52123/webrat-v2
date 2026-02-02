@@ -6,6 +6,7 @@ import type { PanelTabKey } from "../hooks/use-panel-tab";
 import { cn } from "../../../lib/utils";
 import type { VictimsFilter } from "../state/victims-filter";
 import type { SettingsTabKey } from "../state/settings-tab";
+import { usePanelDetailView } from "../panel/detail/panel-detail-view-provider";
 
 export function PanelTopbar(props: {
   tab: PanelTabKey;
@@ -15,6 +16,7 @@ export function PanelTopbar(props: {
   onSettingsTabChange?: (next: SettingsTabKey) => void;
 }) {
   const { tab, filter, onFilterChange, settingsTab, onSettingsTabChange } = props;
+  const detail = usePanelDetailView();
 
   const isPanel = tab === "panel";
   const isSettings = tab === "settings";
@@ -29,7 +31,7 @@ export function PanelTopbar(props: {
 
   const filterBtnClass = (active: boolean) =>
     cn(
-      "min-w-[48px] px-[12px] py-[5px] text-[13px] font-semibold text-white/[0.92] transition-[background,transform,color] cursor-pointer",
+      "min-w-[52px] px-[14px] py-[6px] text-[14px] font-semibold text-white/[0.92] transition-[background,transform,color] cursor-pointer",
       "hover:bg-white/[0.06] hover:text-white/[0.98]",
       active && "bg-white/[0.08] text-white shadow-[inset_0_-2px_0_var(--line),inset_0_1px_0_rgba(255,255,255,0.08)]",
     );
@@ -53,9 +55,9 @@ export function PanelTopbar(props: {
         style={{ borderTopColor: "var(--line)" }}
       >
         <div className="flex items-center">
-          {isPanel && (
+          {isPanel && !detail.isOpen && (
             <div
-              className="ml-[6px] inline-flex overflow-hidden rounded-[14px] border border-white/[0.18] bg-[rgba(18,18,18,0.55)] shadow-[0_10px_26px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.06)]"
+              className="ml-[6px] inline-flex overflow-hidden rounded-[14px] border border-white/[0.18] bg-[rgba(18,18,18,0.55)] shadow-[0_10px_26px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-[10px]"
               style={{ borderBottom: "3px solid var(--line)" }}
             >
               <button
@@ -151,9 +153,9 @@ export function PanelTopbar(props: {
           </div>
         </div>
 
-        {!isBuilder && !isSettings && !isCommunity && !isShop && (
-          <div className="pointer-events-none absolute left-1/2 top-1.5 hidden h-10 w-[min(560px,70vw)] -translate-x-1/2 items-center justify-center md:flex">
-            <span className="rounded-full border border-white/25 px-[18px] py-1.5 text-[15px] font-bold text-white/95 shadow-[0_0_0_1px_rgba(0,0,0,0.8)]">
+        {!isBuilder && !isSettings && !isCommunity && !isShop && !detail.isOpen && (
+          <div className="pointer-events-none absolute left-1/2 top-[6px] hidden h-[40px] w-[min(560px,70vw)] translate-x-[calc(-50%+60px)] items-center justify-center md:flex">
+            <span className="whitespace-nowrap rounded-full border px-[18px] py-[6px] text-[15px] font-bold text-white/[0.96] shadow-[0_0_0_1px_rgba(0,0,0,0.8)]" style={{ borderColor: "var(--line)" }}>
               Welcome to WebCrystal Beta pre-release!
             </span>
           </div>
