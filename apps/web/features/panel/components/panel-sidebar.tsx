@@ -92,7 +92,7 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
         )}
         aria-label="Shop"
         type="button"
-        onClick={() => setTab("panel")}
+        onClick={() => setTab("shop")}
       >
         <img
           className="h-7 w-7 cursor-pointer opacity-85 invert"

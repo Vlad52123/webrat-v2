@@ -11,6 +11,7 @@ import { getEnv } from "./config";
 import { healthRoutes } from "./routes/health";
 import { captchaRoutes } from "./routes/captcha";
 import { loginRoutes } from "./routes/login";
+import { deleteAccountRoutes } from "./routes/delete-account";
 import { victimsRoutes } from "./routes/victims";
 
 export async function buildApp() {
@@ -68,6 +69,7 @@ export async function buildApp() {
   await app.register(healthRoutes);
   await app.register(captchaRoutes);
   await app.register(loginRoutes);
+  await app.register(deleteAccountRoutes);
   await app.register(victimsRoutes);
 
   return app;

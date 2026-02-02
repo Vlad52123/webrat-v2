@@ -20,10 +20,12 @@ export function PanelTopbar(props: {
   const isSettings = tab === "settings";
   const isCommunity = tab === "community";
   const isBuilder = tab === "builder";
+  const isShop = tab === "shop";
 
   const settingsHostStyle = useMemo(() => ({ display: isSettings ? "block" : "none" }), [isSettings]);
   const communityHostStyle = useMemo(() => ({ display: isCommunity ? "block" : "none" }), [isCommunity]);
   const builderHostStyle = useMemo(() => ({ display: isBuilder ? "block" : "none" }), [isBuilder]);
+  const shopMiniStyle = useMemo(() => ({ display: isShop ? "inline-flex" : "none" }), [isShop]);
 
   const filterBtnClass = (active: boolean) =>
     cn(
@@ -90,7 +92,7 @@ export function PanelTopbar(props: {
           <img src="/icons/filter.svg" alt="filter" draggable={false} />
         </button>
 
-        <button id="shopHeaderMini" type="button" className="hidden">
+        <button id="shopHeaderMini" type="button" style={shopMiniStyle} className={pillClass(true)}>
           Your Subs
         </button>
 
@@ -143,7 +145,7 @@ export function PanelTopbar(props: {
           </div>
         </div>
 
-        {!isBuilder && !isSettings && !isCommunity && (
+        {!isBuilder && !isSettings && !isCommunity && !isShop && (
           <div className="pointer-events-none absolute left-1/2 top-1.5 hidden h-10 w-[min(560px,70vw)] -translate-x-1/2 items-center justify-center md:flex">
             <span className="rounded-full border border-white/25 px-[18px] py-1.5 text-[15px] font-bold text-white/95 shadow-[0_0_0_1px_rgba(0,0,0,0.8)]">
               Welcome to WebCrystal Beta pre-release!

@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-export type PanelTabKey = "panel" | "builder" | "community" | "settings";
+export type PanelTabKey = "panel" | "builder" | "community" | "settings" | "shop";
 
 function parseHash(hash: string): PanelTabKey | null {
   const raw = hash.replace(/^#/, "").trim();
-  if (raw === "panel" || raw === "builder" || raw === "community" || raw === "settings") {
+  if (raw === "panel" || raw === "builder" || raw === "community" || raw === "settings" || raw === "shop") {
     return raw;
   }
   return null;
