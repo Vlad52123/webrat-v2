@@ -42,6 +42,36 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
     };
   }, [open, hidden]);
 
+  const clampDelay = (v: number) => {
+    if (!Number.isFinite(v)) return 1;
+    return Math.max(1, Math.min(10, v));
+  };
+
+  const showToastSafe = (type: "success" | "error" | "warning" | "info", message: string) => {
+    try {
+      window.WebRatCommon?.showToast?.(type, message);
+    } catch {
+    }
+  };
+
+  const onCreate = () => {
+    const buildName = (document.getElementById("buildName") as HTMLInputElement | null)?.value ?? "";
+    const rawName = String(buildName || "").trim();
+    if (!rawName) {
+      showToastSafe("warning", "Enter exe name!");
+      return;
+    }
+    if (rawName.length > 25) {
+      showToastSafe("warning", "Name too long (max 25)");
+      return;
+    }
+
+    const delaySec = clampDelay(delay);
+    if (delaySec !== delay) setDelay(delaySec);
+
+    showToastSafe("info", "Build flow is being ported");
+  };
+
   return (
     <div
       id="builderForm"
@@ -149,8 +179,8 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
 
             <BuilderStartupDelay
               delay={delay}
-              onMinus={() => setDelay((v) => Math.max(0, v - 1))}
-              onPlus={() => setDelay((v) => Math.min(999, v + 1))}
+              onMinus={() => setDelay((v) => clampDelay(v - 1))}
+              onPlus={() => setDelay((v) => clampDelay(v + 1))}
             />
 
             <BuilderField variant="two" label="Autorun">
@@ -183,6 +213,7 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
               className="builderTab isActive w-[180px] cursor-pointer appearance-none rounded-[12px] border border-[rgba(255,255,255,0.14)] bg-[rgba(20,20,20,0.35)] px-[20px] py-[10px] text-center text-[14px] font-extrabold text-[rgba(255,255,255,0.92)] transition-[background,border-color,transform] duration-[140ms] hover:bg-[rgba(255,255,255,0.04)] hover:border-[rgba(255,255,255,0.18)] active:translate-y-[1px] [border-bottom:4px_solid_var(--line)]"
               type="button"
               data-tab="create"
+              onClick={onCreate}
             >
               Create
             </button>

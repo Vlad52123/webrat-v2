@@ -40,8 +40,8 @@ export function PanelTopbar(props: {
 
   const pillClass = (active: boolean) =>
     cn(
-      "inline-flex items-center gap-2 rounded-full border border-white/[0.14] bg-[rgba(20,20,20,0.35)] px-[14px] py-[8px] cursor-pointer",
-      "text-[15px] font-bold text-white/[0.92] transition-[background,border-color,transform]",
+      "inline-flex items-center gap-2 rounded-full border border-white/[0.14] bg-[rgba(20,20,20,0.35)] px-[10px] py-[6px] cursor-pointer",
+      "text-[13px] font-bold text-white/[0.92] transition-[background,border-color,transform]",
       "hover:bg-white/[0.06] hover:border-white/[0.22]",
       active && "bg-white/[0.10] border-white/[0.30]",
     );
