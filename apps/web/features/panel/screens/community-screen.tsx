@@ -62,7 +62,7 @@ const items: CommunityItem[] = [
 ];
 
 export function CommunityScreen() {
-  const [openKeys, setOpenKeys] = useState<Record<string, boolean>>({});
+  const [openKey, setOpenKey] = useState<string | null>(null);
 
   const messageCounts = useMemo(() => {
     const counts = new Map<string, number>();
@@ -73,11 +73,11 @@ export function CommunityScreen() {
   }, []);
 
   return (
-    <div id="communityView" className="h-full overflow-auto">
+    <div id="communityView" className="h-full overflow-hidden">
       <div className="mx-auto w-full max-w-[min(1500px,calc(100vw-60px))] px-[10px] pb-[10px] pt-[22px]">
         <div className="flex flex-col gap-[14px]">
           {items.map((it) => {
-            const isOpen = !!openKeys[it.key];
+            const isOpen = openKey === it.key;
 
             return (
               <div
@@ -85,12 +85,7 @@ export function CommunityScreen() {
                 className={
                   "grid cursor-pointer grid-cols-[64px_1fr] items-start gap-[14px] rounded-[14px] border border-white/20 bg-[rgba(32,32,32,0.42)] px-[20px] py-[18px] shadow-[0_18px_50px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-[10px] transition-[background,border-color,transform] duration-[140ms] ease-out hover:translate-y-[-2px] hover:bg-[rgba(40,40,40,0.5)] hover:border-[rgba(235,200,255,0.26)]"
                 }
-                onClick={() =>
-                  setOpenKeys((prev) => ({
-                    ...prev,
-                    [it.key]: !prev[it.key],
-                  }))
-                }
+                onClick={() => setOpenKey((prev) => (prev === it.key ? null : it.key))}
               >
                 <img
                   className="wc-community-logo-shake h-[56px] w-[56px] select-none rounded-[10px] border border-white/20 bg-[rgba(25,25,25,0.55)] object-cover"

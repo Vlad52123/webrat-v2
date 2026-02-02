@@ -54,9 +54,14 @@ export function PanelPage() {
   if (!isReady) {
     return (
       <div className="grid min-h-screen place-items-center bg-[#222222] text-white/80">
-        <div className="grid gap-2 text-center">
-          <div className="text-[15px] font-extrabold text-white/90">WebCrystal</div>
-          <div className="text-[13px] text-white/70">{isChecking ? "Checking session..." : "Redirecting..."}</div>
+        <div className="grid place-items-center">
+          <img
+            src="/icons/loading.svg"
+            alt="loading"
+            draggable={false}
+            className="h-[44px] w-[44px] animate-spin"
+          />
+          <span className="sr-only">{isChecking ? "Checking session" : "Redirecting"}</span>
         </div>
       </div>
     );

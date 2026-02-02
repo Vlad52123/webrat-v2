@@ -66,23 +66,6 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
       </button>
 
       <button
-        id="shopBtn"
-        className={cn(
-          "grid h-[38px] w-full cursor-pointer place-items-center rounded-[14px] border border-transparent transition-colors hover:bg-white/5",
-        )}
-        aria-label="Shop"
-        type="button"
-        onClick={() => setTab("panel")}
-      >
-        <img
-          className="h-7 w-7 cursor-pointer opacity-85 invert"
-          src="/icons/shop.svg"
-          alt="shop"
-          draggable={false}
-        />
-      </button>
-
-      <button
         id="communityBtn"
         className={cn(
           "grid h-[38px] w-full cursor-pointer place-items-center rounded-[14px] border border-transparent transition-colors hover:bg-white/5",
@@ -118,6 +101,23 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
           className="h-7 w-7 cursor-pointer opacity-85 invert"
           src="/icons/settings.svg"
           alt="settings"
+          draggable={false}
+        />
+      </button>
+
+      <button
+        id="shopBtn"
+        className={cn(
+          "grid h-[38px] w-full cursor-pointer place-items-center rounded-[14px] border border-transparent transition-colors hover:bg-white/5",
+        )}
+        aria-label="Shop"
+        type="button"
+        onClick={() => setTab("panel")}
+      >
+        <img
+          className="h-7 w-7 cursor-pointer opacity-85 invert"
+          src="/icons/shop.svg"
+          alt="shop"
           draggable={false}
         />
       </button>
