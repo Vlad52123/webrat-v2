@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { usePanelSettings } from "../settings";
 import type { SettingsTabKey } from "../state/settings-tab";
@@ -18,6 +18,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
     setRgb,
     setSoundVolume,
     setWsHost,
+    reapply,
   } = usePanelSettings();
 
   const [securityLogin, setSecurityLogin] = useState("-");
@@ -49,25 +50,58 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
 
   const wsSelectValue = useMemo(() => state.wsHost || "__default__", [state.wsHost]);
 
+  const wsWrapRef = useRef<HTMLDivElement | null>(null);
+  const wsBtnRef = useRef<HTMLButtonElement | null>(null);
+  const [wsOpen, setWsOpen] = useState(false);
+  const [wsMenuPos, setWsMenuPos] = useState<{ left: number; top: number; width: number } | null>(null);
+
+  useEffect(() => {
+    const id = window.requestAnimationFrame(() => {
+      void reapply();
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [reapply, tab]);
+
+  useEffect(() => {
+    if (!wsOpen) return;
+
+    const calcPos = () => {
+      const btn = wsBtnRef.current;
+      if (!btn) return;
+      const r = btn.getBoundingClientRect();
+      setWsMenuPos({ left: r.left, top: r.bottom + 8, width: Math.max(220, r.width) });
+    };
+
+    calcPos();
+
+    const onDocDown = (e: MouseEvent) => {
+      const wrap = wsWrapRef.current;
+      if (!wrap) return;
+      const t = e.target as Node | null;
+      if (!t) return;
+      if (!wrap.contains(t)) setWsOpen(false);
+    };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setWsOpen(false);
+    };
+
+    window.addEventListener("resize", calcPos);
+    window.addEventListener("scroll", calcPos, true);
+    document.addEventListener("mousedown", onDocDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("resize", calcPos);
+      window.removeEventListener("scroll", calcPos, true);
+      document.removeEventListener("mousedown", onDocDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [wsOpen]);
+
   return (
     <div id="settingsView" className="flex h-full flex-col overflow-auto">
       <div className="flex-1 min-h-0 p-[10px]">
         <div className="w-[920px] max-w-[min(980px,calc(100vw-60px))] mx-auto mt-[22px] px-[10px] pb-[10px] min-h-[220px]">
-          <div
-            className="mt-[2px] mb-[12px] ml-[2px] text-[18px] font-extrabold tracking-[0.02em] text-white/[0.96]"
-            aria-hidden={tab !== "personalization"}
-            style={{ display: tab === "personalization" ? "block" : "none" }}
-          >
-            Personalization
-          </div>
-          <div
-            className="mt-[2px] mb-[12px] ml-[2px] text-[18px] font-extrabold tracking-[0.02em] text-white/[0.96]"
-            aria-hidden={tab !== "security"}
-            style={{ display: tab === "security" ? "block" : "none" }}
-          >
-            Security
-          </div>
-
           <div
             className="min-h-[220px]"
             data-settings-pane="personalization"
@@ -75,6 +109,9 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
           >
             <div className="grid gap-5">
               <div className="overflow-hidden rounded-[16px] border border-white/[0.14] bg-[rgba(32,32,32,0.6)] p-[14px] shadow-[0_18px_40px_rgba(0,0,0,0.55),0_0_0_4px_rgba(255,255,255,0.05)] backdrop-blur-[8px] min-h-[260px]">
+                <div className="mb-[12px] ml-[2px] mt-[2px]">
+                  <div className="text-[18px] font-extrabold tracking-[0.02em] text-white/[0.96]">Personalization</div>
+                </div>
                 <div className="grid grid-cols-1 gap-[16px] md:grid-cols-[minmax(0,420px)_minmax(0,1fr)] items-start">
                   <div className="p-[14px] rounded-[14px] border border-white/[0.12] shadow-[0_18px_54px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.06)] bg-[radial-gradient(520px_180px_at_15%_0%,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0)_62%),linear-gradient(180deg,rgba(255,255,255,0.06)_0%,rgba(255,255,255,0.03)_100%)]">
                     <div className="ml-[2px] mt-[2px] mb-[10px] text-[17px] font-semibold text-white">Background</div>
@@ -84,7 +121,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
                         id="settingsBgGalleryBtn"
                         type="button"
                         className={
-                          "flex h-[40px] items-center justify-center border-r border-white/[0.22] transition-colors " +
+                          "flex h-[40px] cursor-pointer items-center justify-center border-r border-white/[0.22] transition-colors " +
                           (state.bgMode === "image" ? "bg-white/[0.16]" : "bg-[rgba(35,35,35,0.4)] hover:bg-white/[0.10]")
                         }
                         aria-pressed={state.bgMode === "image"}
@@ -110,7 +147,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
                         id="settingsBgVideoBtn"
                         type="button"
                         className={
-                          "flex h-[40px] items-center justify-center border-r border-white/[0.22] transition-colors " +
+                          "flex h-[40px] cursor-pointer items-center justify-center border-r border-white/[0.22] transition-colors " +
                           (state.bgMode === "video" ? "bg-white/[0.16]" : "bg-[rgba(35,35,35,0.4)] hover:bg-white/[0.10]")
                         }
                         aria-pressed={state.bgMode === "video"}
@@ -137,7 +174,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
                         id="settingsBgDefaultBtn"
                         type="button"
                         className={
-                          "flex h-[40px] items-center justify-center transition-colors " +
+                          "flex h-[40px] cursor-pointer items-center justify-center transition-colors " +
                           (state.bgMode === "default" ? "bg-white/[0.16]" : "bg-[rgba(35,35,35,0.4)] hover:bg-white/[0.10]")
                         }
                         aria-pressed={state.bgMode === "default"}
@@ -268,7 +305,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
                         type="button"
                         aria-pressed={state.snow}
                         className={
-                          "relative inline-flex h-[26px] w-[46px] items-center rounded-full border border-white/40 bg-[rgba(40,40,40,0.9)] transition-colors " +
+                          "relative inline-flex h-[26px] w-[46px] cursor-pointer items-center rounded-full border border-white/40 bg-[rgba(40,40,40,0.9)] transition-colors " +
                           (state.snow ? "justify-end bg-gradient-to-br from-[#40d67a] to-[#2abf5a] border-black/60" : "justify-start")
                         }
                         onClick={() => setSnow(!state.snow)}
@@ -289,7 +326,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
                         type="button"
                         aria-pressed={state.rgb}
                         className={
-                          "relative inline-flex h-[26px] w-[46px] items-center rounded-full border border-white/40 bg-[rgba(40,40,40,0.9)] transition-colors " +
+                          "relative inline-flex h-[26px] w-[46px] cursor-pointer items-center rounded-full border border-white/40 bg-[rgba(40,40,40,0.9)] transition-colors " +
                           (state.rgb ? "justify-end bg-gradient-to-br from-[#40d67a] to-[#2abf5a] border-black/60" : "justify-start")
                         }
                         onClick={() => setRgb(!state.rgb)}
@@ -305,17 +342,86 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
 
                     <div className="my-[10px] flex items-center justify-between gap-3 rounded-[12px] border border-white/[0.12] bg-white/[0.03] p-[10px]">
                       <div className="text-[14px] font-semibold text-white">Default WS server</div>
-                      <select
-                        id="settingsWsServer"
-                        className="h-[34px] min-w-[220px] cursor-pointer rounded-[12px] border border-white/[0.14] bg-[rgba(0,0,0,0.28)] px-[10px] text-[13px] text-white/[0.92] outline-none transition-[border-color,background,box-shadow] hover:bg-white/[0.06] hover:border-white/[0.22] focus:border-white/[0.30] focus:shadow-[0_0_0_3px_rgba(80,230,255,0.12)]"
-                        value={wsSelectValue}
-                        onChange={(e) => setWsHost(e.target.value)}
-                      >
-                        <option value="__default__">Default</option>
-                        <option value="ru.webcrystal.sbs">Russia</option>
-                        <option value="kz.webcrystal.sbs">Kazakhstan</option>
-                        <option value="ua.webcrystal.sbs">Ukraine</option>
-                      </select>
+                      <div ref={wsWrapRef} className="relative min-w-[220px]">
+                        <select
+                          id="settingsWsServer"
+                          className="absolute inset-0 opacity-0 pointer-events-none"
+                          value={wsSelectValue}
+                          onChange={(e) => setWsHost(e.target.value)}
+                          aria-hidden
+                          tabIndex={-1}
+                        >
+                          <option value="__default__">Default</option>
+                          <option value="ru.webcrystal.sbs">Russia</option>
+                          <option value="kz.webcrystal.sbs">Kazakhstan</option>
+                          <option value="ua.webcrystal.sbs">Ukraine</option>
+                        </select>
+
+                        <button
+                          ref={wsBtnRef}
+                          type="button"
+                          className={
+                            "w-full h-[34px] px-[12px] pr-[32px] rounded-[12px] border border-white/[0.14] bg-[rgba(0,0,0,0.28)] text-[13px] text-white/[0.92] cursor-pointer text-left whitespace-nowrap overflow-hidden text-ellipsis transition-[border-color,background,box-shadow,transform] " +
+                            (wsOpen ? "border-white/[0.30] shadow-[0_0_0_3px_rgba(80,230,255,0.12)]" : "hover:bg-white/[0.06] hover:border-white/[0.22]")
+                          }
+                          onClick={() => setWsOpen((v) => !v)}
+                        >
+                          {wsSelectValue === "__default__"
+                            ? "Default"
+                            : wsSelectValue === "ru.webcrystal.sbs"
+                              ? "Russia"
+                              : wsSelectValue === "kz.webcrystal.sbs"
+                                ? "Kazakhstan"
+                                : wsSelectValue === "ua.webcrystal.sbs"
+                                  ? "Ukraine"
+                                  : wsSelectValue}
+                          <span className="pointer-events-none absolute right-[12px] top-1/2 -translate-y-1/2">
+                            <img
+                              src="/icons/arrow.svg"
+                              alt="v"
+                              draggable={false}
+                              className={"h-[10px] w-[10px] invert opacity-85 transition-transform " + (wsOpen ? "rotate-180" : "")}
+                            />
+                          </span>
+                        </button>
+
+                        {wsOpen && wsMenuPos ? (
+                          <div
+                            className="fixed z-[9999] rounded-[14px] border border-white/[0.14] bg-[rgba(12,12,12,0.96)] p-[8px] shadow-[0_22px_54px_rgba(0,0,0,0.65)]"
+                            style={{ left: wsMenuPos.left, top: wsMenuPos.top, width: wsMenuPos.width }}
+                            role="listbox"
+                          >
+                            {[
+                              { value: "__default__", label: "Default" },
+                              { value: "ru.webcrystal.sbs", label: "Russia" },
+                              { value: "kz.webcrystal.sbs", label: "Kazakhstan" },
+                              { value: "ua.webcrystal.sbs", label: "Ukraine" },
+                            ].map((opt) => {
+                              const selected = wsSelectValue === opt.value;
+                              return (
+                                <button
+                                  key={opt.value}
+                                  type="button"
+                                  className={
+                                    "w-full text-left px-[10px] py-[10px] rounded-[12px] font-semibold transition-[background,transform] cursor-pointer " +
+                                    (selected
+                                      ? "bg-[rgba(80,230,255,0.12)] border border-[rgba(80,230,255,0.20)]"
+                                      : "bg-transparent hover:bg-white/[0.08]")
+                                  }
+                                  onClick={() => {
+                                    setWsHost(opt.value);
+                                    setWsOpen(false);
+                                  }}
+                                  role="option"
+                                  aria-selected={selected}
+                                >
+                                  {opt.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : null}
+                      </div>
                     </div>
                   </div>
 
