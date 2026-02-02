@@ -69,7 +69,7 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
             onClick={() => setTab("builder")}
           >
             <img
-              className="h-7 w-7 cursor-pointer opacity-85 invert"
+              className="h-7 w-7 cursor-pointer opacity-[0.85] [filter:invert(0.9)]"
               src="/icons/builder.svg"
               alt="builder"
               draggable={false}

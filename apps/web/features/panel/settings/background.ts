@@ -77,7 +77,7 @@ export function applyBackgroundVideo(target: HTMLElement, objectUrl: string, pre
     video.style.width = "100%";
     video.style.height = "100%";
     video.style.objectFit = "cover";
-    video.style.zIndex = "-1";
+    video.style.zIndex = "0";
     target.style.position = "relative";
     target.insertBefore(video, target.firstChild);
   }

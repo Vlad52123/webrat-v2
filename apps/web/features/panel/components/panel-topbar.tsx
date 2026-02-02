@@ -7,6 +7,7 @@ import { cn } from "../../../lib/utils";
 import type { VictimsFilter } from "../state/victims-filter";
 import type { SettingsTabKey } from "../state/settings-tab";
 import { usePanelDetailView } from "../panel/detail/panel-detail-view-provider";
+import { useVictimsTablePrefs } from "../panel/victims-table/victims-table-prefs-provider";
 
 export function PanelTopbar(props: {
   tab: PanelTabKey;
@@ -17,6 +18,7 @@ export function PanelTopbar(props: {
 }) {
   const { tab, filter, onFilterChange, settingsTab, onSettingsTabChange } = props;
   const detail = usePanelDetailView();
+  const victimsPrefs = useVictimsTablePrefs();
 
   const isPanel = tab === "panel";
   const isSettings = tab === "settings";
@@ -95,6 +97,7 @@ export function PanelTopbar(props: {
                 type="button"
                 aria-label="filter options"
                 className="ml-[10px] inline-grid h-[32px] w-[38px] place-items-center overflow-hidden rounded-[10px] border border-white/[0.14] bg-transparent p-0 text-white backdrop-blur-[8px] transition-[background,border-color,transform] duration-150 hover:bg-white/[0.08] hover:border-white/[0.2]"
+                onClick={() => victimsPrefs.openFilterModal()}
               >
                 <img
                   src="/icons/filter.svg"

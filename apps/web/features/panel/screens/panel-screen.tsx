@@ -2,6 +2,7 @@ import type { Victim } from "../api/victims";
 import { useVictimsQuery } from "../hooks/use-victims-query";
 import type { VictimsFilter } from "../state/victims-filter";
 import { VictimsTable } from "../panel/victims-table/victims-table";
+import { VictimsFilterModal } from "../panel/victims-table/victims-filter-modal";
 import { DetailView } from "../panel/detail/detail-view";
 import { usePanelDetailView } from "../panel/detail/panel-detail-view-provider";
 
@@ -30,8 +31,10 @@ export function PanelScreen(props: { filter: VictimsFilter }) {
 
   return (
     <>
+      <VictimsFilterModal />
+
       {!detail.isOpen && (
-        <div id="panelView" className="h-full">
+        <div id="panelView" className="view h-full">
           <VictimsTable
             victims={visibleVictims}
             isLoading={victimsQuery.isLoading}
