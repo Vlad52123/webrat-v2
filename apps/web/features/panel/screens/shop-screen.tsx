@@ -51,7 +51,7 @@ export function ShopScreen() {
           <span className="pointer-events-none absolute left-[-32px] bottom-[-8px] h-[2px] w-[calc(100%+64px)] opacity-95 [filter:drop-shadow(0_0_10px_rgba(0,0,0,0.85))]" style={{ background: "var(--line)" }} />
         </div>
 
-        <div className="shopProductsGrid grid gap-[22px] justify-start justify-items-stretch [grid-template-columns:repeat(3,minmax(240px,280px))] max-[1200px]:[grid-template-columns:repeat(2,minmax(220px,260px))] max-[880px]:[grid-template-columns:minmax(220px,1fr)]">
+        <div className="shopProductsGrid grid gap-[16px] justify-start justify-items-stretch [grid-template-columns:repeat(3,minmax(210px,240px))] max-[1200px]:[grid-template-columns:repeat(2,minmax(200px,230px))] max-[880px]:[grid-template-columns:minmax(200px,1fr)]">
           {[
             { period: "for a month", subtitle: "Buy WebCrystal for a month", price: "$3,78" },
             { period: "for a year", subtitle: "Buy WebCrystal for a year", price: "$7,58" },
@@ -59,12 +59,12 @@ export function ShopScreen() {
           ].map((p) => (
             <div
               key={p.period}
-              className="shopProductCard min-h-[170px] rounded-[18px] border border-white/[0.16] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),rgba(15,15,15,0.84))] px-[18px] py-[14px] text-center shadow-[0_20px_48px_rgba(0,0,0,0.8),0_0_0_4px_rgba(255,255,255,0.10)] backdrop-blur-[10px] transition-[transform,box-shadow,border-color,background] duration-150 hover:translate-y-[-3px] hover:scale-[1.02] hover:border-white/[0.32] hover:bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),rgba(15,15,15,0.90))] hover:shadow-[0_24px_56px_rgba(0,0,0,0.85),0_0_0_5px_rgba(255,255,255,0.16)]"
+              className="shopProductCard min-h-[150px] rounded-[16px] border border-white/[0.14] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),rgba(15,15,15,0.84))] px-[14px] py-[10px] text-center shadow-[0_18px_44px_rgba(0,0,0,0.75),0_0_0_3px_rgba(255,255,255,0.08)] backdrop-blur-[10px] transition-[transform,box-shadow,border-color,background] duration-150 hover:translate-y-[-2px] hover:scale-[1.01] hover:border-white/[0.26] hover:bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),rgba(15,15,15,0.90))] hover:shadow-[0_22px_52px_rgba(0,0,0,0.82),0_0_0_4px_rgba(255,255,255,0.12)]"
             >
-              <div className="shopProductVip mt-[2px] mb-[6px] text-[16px] font-black text-[#ff3b3b]">RATER</div>
-              <div className="shopProductPeriod mb-[6px] text-[15px] font-extrabold text-white">{p.period}</div>
-              <div className="shopProductSubtitle mb-[14px] text-[13px] text-[rgba(230,230,230,0.9)]">{p.subtitle}</div>
-              <div className="shopProductPriceValue mt-[6px] text-[18px] font-extrabold text-[#4ee97a]">{p.price}</div>
+              <div className="shopProductVip mt-[2px] mb-[4px] text-[14px] font-black text-[#ff3b3b]">RATER</div>
+              <div className="shopProductPeriod mb-[4px] text-[13px] font-extrabold text-white">{p.period}</div>
+              <div className="shopProductSubtitle mb-[10px] text-[12px] text-[rgba(230,230,230,0.9)]">{p.subtitle}</div>
+              <div className="shopProductPriceValue mt-[4px] text-[16px] font-extrabold text-[#4ee97a]">{p.price}</div>
             </div>
           ))}
         </div>

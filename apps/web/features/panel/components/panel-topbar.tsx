@@ -52,40 +52,42 @@ export function PanelTopbar(props: {
         )}
         style={{ borderTopColor: "var(--line)" }}
       >
-        {isPanel && (
-          <div
-            className="ml-[6px] inline-flex overflow-hidden rounded-[14px] border border-white/[0.18] bg-[rgba(18,18,18,0.55)] shadow-[0_10px_26px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.06)]"
-            style={{ borderBottom: "3px solid var(--line)" }}
-          >
-            <button
-              id="filterOnline"
-              className={cn(filterBtnClass(filter === "online"), "border-r border-white/15")}
-              type="button"
-              onClick={() => onFilterChange("online")}
+        <div className="flex min-w-[260px] items-center">
+          {isPanel && (
+            <div
+              className="ml-[6px] inline-flex overflow-hidden rounded-[14px] border border-white/[0.18] bg-[rgba(18,18,18,0.55)] shadow-[0_10px_26px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.06)]"
+              style={{ borderBottom: "3px solid var(--line)" }}
             >
-              online
-            </button>
-            <button
-              id="filterAll"
-              className={cn(
-                filterBtnClass(filter === "all"),
-                "min-w-[42px] border-r border-white/15 px-2",
-              )}
-              type="button"
-              onClick={() => onFilterChange("all")}
-            >
-              all
-            </button>
-            <button
-              id="filterOffline"
-              className={filterBtnClass(filter === "offline")}
-              type="button"
-              onClick={() => onFilterChange("offline")}
-            >
-              offline
-            </button>
-          </div>
-        )}
+              <button
+                id="filterOnline"
+                className={cn(filterBtnClass(filter === "online"), "border-r border-white/15")}
+                type="button"
+                onClick={() => onFilterChange("online")}
+              >
+                online
+              </button>
+              <button
+                id="filterAll"
+                className={cn(
+                  filterBtnClass(filter === "all"),
+                  "min-w-[42px] border-r border-white/15 px-2",
+                )}
+                type="button"
+                onClick={() => onFilterChange("all")}
+              >
+                all
+              </button>
+              <button
+                id="filterOffline"
+                className={filterBtnClass(filter === "offline")}
+                type="button"
+                onClick={() => onFilterChange("offline")}
+              >
+                offline
+              </button>
+            </div>
+          )}
+        </div>
 
         <button
           id="filterOptionsBtn"
@@ -96,11 +98,11 @@ export function PanelTopbar(props: {
           <img src="/icons/filter.svg" alt="filter" draggable={false} />
         </button>
 
-        <button id="shopHeaderMini" type="button" style={shopMiniStyle} className={pillClass(true)}>
+        <button id="shopHeaderMini" type="button" style={shopMiniStyle} className={cn(pillClass(true), "ml-3 mt-[2px]")}>
           Your Subs
         </button>
 
-        <div id="settingsTabsHost" style={settingsHostStyle} className="ml-3">
+        <div id="settingsTabsHost" style={settingsHostStyle} className="ml-3 mt-[2px]">
           <div className="flex items-center gap-2" role="tablist" aria-label="Settings tabs">
             <button
               id="settingsTabPersonalization"
@@ -123,7 +125,7 @@ export function PanelTopbar(props: {
           </div>
         </div>
 
-        <div id="communityTabsHost" style={communityHostStyle} className="ml-3">
+        <div id="communityTabsHost" style={communityHostStyle} className="ml-3 mt-[2px]">
           <div className="flex items-center gap-2" role="tablist" aria-label="Community tabs">
             <button
               id="communityTabInformation"
@@ -136,7 +138,7 @@ export function PanelTopbar(props: {
           </div>
         </div>
 
-        <div id="builderTabsHost" style={builderHostStyle} className="ml-3">
+        <div id="builderTabsHost" style={builderHostStyle} className="ml-3 mt-[2px]">
           <div className="flex items-center gap-2" role="tablist" aria-label="Builder tabs">
             <button
               id="builderTabBuilds"

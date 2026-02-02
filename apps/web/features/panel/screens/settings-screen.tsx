@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { usePanelSettings } from "../settings";
 import { makeBgVideoDb } from "../settings/bg-video-db";
@@ -67,6 +68,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
 
   const wsWrapRef = useRef<HTMLDivElement | null>(null);
   const wsBtnRef = useRef<HTMLButtonElement | null>(null);
+  const wsMenuRef = useRef<HTMLDivElement | null>(null);
   const [wsOpen, setWsOpen] = useState(false);
   const [wsMenuPos, setWsMenuPos] = useState<{ left: number; top: number; width: number } | null>(null);
 
@@ -96,10 +98,13 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
 
     const onDocDown = (e: MouseEvent) => {
       const wrap = wsWrapRef.current;
+      const menu = wsMenuRef.current;
       if (!wrap) return;
       const t = e.target as Node | null;
       if (!t) return;
-      if (!wrap.contains(t)) setWsOpen(false);
+      if (wrap.contains(t)) return;
+      if (menu && menu.contains(t)) return;
+      setWsOpen(false);
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
@@ -452,42 +457,46 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
                           </span>
                         </button>
 
-                        {wsOpen && wsMenuPos ? (
-                          <div
-                            className="fixed z-[9999] rounded-[14px] border border-white/[0.14] bg-[rgba(12,12,12,0.96)] p-[8px] text-white shadow-[0_22px_54px_rgba(0,0,0,0.65)]"
-                            style={{ left: wsMenuPos.left, top: wsMenuPos.top, width: wsMenuPos.width }}
-                            role="listbox"
-                          >
-                            {[
-                              { value: "__default__", label: "Default" },
-                              { value: "ru.webcrystal.sbs", label: "Russia" },
-                              { value: "kz.webcrystal.sbs", label: "Kazakhstan" },
-                              { value: "ua.webcrystal.sbs", label: "Ukraine" },
-                            ].map((opt) => {
-                              const selected = wsSelectValue === opt.value;
-                              return (
-                                <button
-                                  key={opt.value}
-                                  type="button"
-                                  className={
-                                    "w-full text-left px-[10px] py-[10px] rounded-[12px] text-[13px] leading-[1.15] font-semibold text-white transition-[background,transform] cursor-pointer " +
-                                    (selected
-                                      ? "bg-[rgba(80,230,255,0.12)] border border-[rgba(80,230,255,0.20)]"
-                                      : "bg-transparent hover:bg-white/[0.08]")
-                                  }
-                                  onClick={() => {
-                                    setWsHost(opt.value);
-                                    setWsOpen(false);
-                                  }}
-                                  role="option"
-                                  aria-selected={selected}
-                                >
-                                  {opt.label}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        ) : null}
+                        {wsOpen && wsMenuPos
+                          ? createPortal(
+                            <div
+                              ref={wsMenuRef}
+                              className="fixed z-[9999] rounded-[14px] border border-white/[0.14] bg-[rgba(12,12,12,0.96)] p-[8px] text-white shadow-[0_22px_54px_rgba(0,0,0,0.65)]"
+                              style={{ left: wsMenuPos.left, top: wsMenuPos.top, width: wsMenuPos.width }}
+                              role="listbox"
+                            >
+                              {[
+                                { value: "__default__", label: "Default" },
+                                { value: "ru.webcrystal.sbs", label: "Russia" },
+                                { value: "kz.webcrystal.sbs", label: "Kazakhstan" },
+                                { value: "ua.webcrystal.sbs", label: "Ukraine" },
+                              ].map((opt) => {
+                                const selected = wsSelectValue === opt.value;
+                                return (
+                                  <button
+                                    key={opt.value}
+                                    type="button"
+                                    className={
+                                      "w-full text-left px-[10px] py-[10px] rounded-[12px] text-[13px] leading-[1.15] font-semibold text-white transition-[background,transform] cursor-pointer " +
+                                      (selected
+                                        ? "bg-[rgba(80,230,255,0.12)] border border-[rgba(80,230,255,0.20)]"
+                                        : "bg-transparent hover:bg-white/[0.08]")
+                                    }
+                                    onClick={() => {
+                                      setWsHost(opt.value);
+                                      setWsOpen(false);
+                                    }}
+                                    role="option"
+                                    aria-selected={selected}
+                                  >
+                                    {opt.label}
+                                  </button>
+                                );
+                              })}
+                            </div>,
+                            document.body,
+                          )
+                          : null}
                       </div>
                     </div>
                   </div>

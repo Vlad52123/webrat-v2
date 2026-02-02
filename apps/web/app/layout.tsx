@@ -34,6 +34,11 @@ export default function RootLayout({
         className={`${appFont.variable} ${appFontMono.variable} antialiased`}
       >
         <Providers>{children}</Providers>
+        <div
+          className="pointer-events-none fixed bottom-0 left-0 right-0 z-[60] h-[3px]"
+          style={{ background: "var(--line)", boxShadow: "0 0 10px rgba(0, 0, 0, 0.75)" }}
+          aria-hidden="true"
+        />
       </body>
     </html>
   );
