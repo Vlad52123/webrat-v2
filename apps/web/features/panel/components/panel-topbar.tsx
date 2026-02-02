@@ -5,13 +5,16 @@ import { useMemo } from "react";
 import type { PanelTabKey } from "../hooks/use-panel-tab";
 import { cn } from "../../../lib/utils";
 import type { VictimsFilter } from "../state/victims-filter";
+import type { SettingsTabKey } from "../state/settings-tab";
 
 export function PanelTopbar(props: {
   tab: PanelTabKey;
   filter: VictimsFilter;
   onFilterChange: (next: VictimsFilter) => void;
+  settingsTab?: SettingsTabKey;
+  onSettingsTabChange?: (next: SettingsTabKey) => void;
 }) {
-  const { tab, filter, onFilterChange } = props;
+  const { tab, filter, onFilterChange, settingsTab, onSettingsTabChange } = props;
 
   const isPanel = tab === "panel";
   const isSettings = tab === "settings";
@@ -95,17 +98,19 @@ export function PanelTopbar(props: {
           <div className="flex items-center gap-2" role="tablist" aria-label="Settings tabs">
             <button
               id="settingsTabPersonalization"
-              className={pillClass(true)}
+              className={pillClass((settingsTab ?? "personalization") === "personalization")}
               type="button"
               data-settings-tab="personalization"
+              onClick={() => onSettingsTabChange?.("personalization")}
             >
               <span>Personalization</span>
             </button>
             <button
               id="settingsTabSecurity"
-              className={pillClass(false)}
+              className={pillClass((settingsTab ?? "personalization") === "security")}
               type="button"
               data-settings-tab="security"
+              onClick={() => onSettingsTabChange?.("security")}
             >
               <span>Security</span>
             </button>
