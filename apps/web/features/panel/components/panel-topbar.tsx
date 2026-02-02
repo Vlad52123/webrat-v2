@@ -56,49 +56,56 @@ export function PanelTopbar(props: {
       >
         <div className="flex items-center">
           {isPanel && !detail.isOpen && (
-            <div
-              className="ml-[6px] inline-flex overflow-hidden rounded-[14px] border border-white/[0.18] bg-[rgba(18,18,18,0.55)] shadow-[0_10px_26px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-[10px]"
-              style={{ borderBottom: "3px solid var(--line)" }}
-            >
-              <button
-                id="filterOnline"
-                className={cn(filterBtnClass(filter === "online"), "border-r border-white/15")}
-                type="button"
-                onClick={() => onFilterChange("online")}
+            <div className="ml-[6px] inline-flex items-center">
+              <div
+                className="inline-flex overflow-hidden rounded-[14px] border border-white/[0.18] bg-[rgba(18,18,18,0.55)] shadow-[0_10px_26px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-[10px]"
+                style={{ borderBottom: "3px solid var(--line)" }}
               >
-                online
-              </button>
+                <button
+                  id="filterOnline"
+                  className={cn(filterBtnClass(filter === "online"), "border-r border-white/15")}
+                  type="button"
+                  onClick={() => onFilterChange("online")}
+                >
+                  online
+                </button>
+                <button
+                  id="filterAll"
+                  className={cn(
+                    filterBtnClass(filter === "all"),
+                    "min-w-[42px] border-r border-white/15 px-2",
+                  )}
+                  type="button"
+                  onClick={() => onFilterChange("all")}
+                >
+                  all
+                </button>
+                <button
+                  id="filterOffline"
+                  className={filterBtnClass(filter === "offline")}
+                  type="button"
+                  onClick={() => onFilterChange("offline")}
+                >
+                  offline
+                </button>
+              </div>
+
               <button
-                id="filterAll"
-                className={cn(
-                  filterBtnClass(filter === "all"),
-                  "min-w-[42px] border-r border-white/15 px-2",
-                )}
+                id="filterOptionsBtn"
                 type="button"
-                onClick={() => onFilterChange("all")}
+                aria-label="filter options"
+                className="ml-[10px] inline-grid h-[32px] w-[38px] place-items-center overflow-hidden rounded-[10px] border border-white/[0.14] bg-transparent p-0 text-white backdrop-blur-[8px] transition-[background,border-color,transform] duration-150 hover:bg-white/[0.08] hover:border-white/[0.2]"
               >
-                all
-              </button>
-              <button
-                id="filterOffline"
-                className={filterBtnClass(filter === "offline")}
-                type="button"
-                onClick={() => onFilterChange("offline")}
-              >
-                offline
+                <img
+                  src="/icons/filter.svg"
+                  alt="filter"
+                  draggable={false}
+                  className="h-[18px] w-[18px] object-contain opacity-100 [filter:brightness(0)_invert(1)]"
+                />
               </button>
             </div>
           )}
         </div>
-
-        <button
-          id="filterOptionsBtn"
-          type="button"
-          aria-label="filter options"
-          className="hidden"
-        >
-          <img src="/icons/filter.svg" alt="filter" draggable={false} />
-        </button>
 
         <button id="shopHeaderMini" type="button" style={shopMiniStyle} className={cn(pillClass(true), "ml-[10px] mt-[2px]")}>
           Your Subs
