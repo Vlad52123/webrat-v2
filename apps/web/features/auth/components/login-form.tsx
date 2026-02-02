@@ -123,10 +123,19 @@ export function LoginForm() {
 
   const mutation = useMutation({
     mutationFn: (values: LoginValues) => login(values, useTurnstile ? turnstileToken : ""),
-    onSuccess: () => {
+    onSuccess: (_, values) => {
       setNotice(null);
       setInputsError(false);
       clearSubmitCooldown();
+      try {
+        const loginKey = String(values?.login || "")
+          .trim()
+          .toLowerCase()
+          .replace(/[^A-Za-z0-9_-]/g, "")
+          .slice(0, 32);
+        if (loginKey) localStorage.setItem("webrat_login", loginKey);
+      } catch {
+      }
       router.push("/panel/#panel");
     },
     onError: (err) => {
