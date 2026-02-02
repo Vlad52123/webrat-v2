@@ -23,6 +23,19 @@ export function PanelShell() {
 
   useEffect(() => {
     try {
+      document.body.classList.add("isPanelShell");
+    } catch {
+    }
+    return () => {
+      try {
+        document.body.classList.remove("isPanelShell");
+      } catch {
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    try {
       document.body.classList.toggle("isShopTab", tab === "shop");
     } catch {
     }

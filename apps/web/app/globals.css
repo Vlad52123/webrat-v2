@@ -129,6 +129,10 @@
 }
 
 @layer utilities {
+  body.isPanelShell .wc-bottom-line {
+    left: 46px;
+  }
+
   .wc-community-logo-shake {
     animation: wcCommunityLogoShake 1.6s ease-in-out infinite;
   }

@@ -29,14 +29,14 @@ export function PanelTopbar(props: {
 
   const filterBtnClass = (active: boolean) =>
     cn(
-      "min-w-[52px] px-[14px] py-[6px] text-[14px] font-semibold text-white/[0.92] transition-[background,transform,color]",
+      "min-w-[48px] px-[12px] py-[5px] text-[13px] font-semibold text-white/[0.92] transition-[background,transform,color] cursor-pointer",
       "hover:bg-white/[0.06] hover:text-white/[0.98]",
       active && "bg-white/[0.08] text-white shadow-[inset_0_-2px_0_var(--line),inset_0_1px_0_rgba(255,255,255,0.08)]",
     );
 
   const pillClass = (active: boolean) =>
     cn(
-      "inline-flex items-center gap-2 rounded-full border border-white/[0.14] bg-[rgba(20,20,20,0.35)] px-[14px] py-[8px]",
+      "inline-flex items-center gap-2 rounded-full border border-white/[0.14] bg-[rgba(20,20,20,0.35)] px-[14px] py-[8px] cursor-pointer",
       "text-[15px] font-bold text-white/[0.92] transition-[background,border-color,transform]",
       "hover:bg-white/[0.06] hover:border-white/[0.22]",
       active && "bg-white/[0.10] border-white/[0.30]",
