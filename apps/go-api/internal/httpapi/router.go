@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 
 	"webrat-go-api/internal/auth"
 	"webrat-go-api/internal/storage"
@@ -23,6 +24,7 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 	s := &Server{db: db, auth: auth.New(db), wsHub: hub}
 
 	r := chi.NewRouter()
+	r.Use(middleware.StripSlashes)
 
 	r.Use(s.ensureCSRF)
 
