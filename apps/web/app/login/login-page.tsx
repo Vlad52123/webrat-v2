@@ -8,7 +8,7 @@ import { applySnow } from "@/features/panel/settings/snow";
 export function LoginPage() {
   useEffect(() => {
     try {
-      applySnow(true);
+      applySnow(false);
     } catch {
     }
   }, []);

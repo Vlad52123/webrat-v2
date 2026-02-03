@@ -1,15 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 
 import { usePanelTab } from "../hooks/use-panel-tab";
 import { PanelDetailViewProvider, usePanelDetailView } from "../panel/detail/panel-detail-view-provider";
 import { useVictimsTablePrefs, VictimsTablePrefsProvider } from "../panel/victims-table/victims-table-prefs-provider";
-import { BuilderScreen } from "../screens/builder-screen";
-import { CommunityScreen } from "../screens/community-screen";
 import { PanelScreen } from "../screens/panel-screen";
-import { ShopScreen } from "../screens/shop-screen";
-import { SettingsScreen } from "../screens/settings-screen";
 import { PanelSettingsProvider } from "../settings";
 import { installToastGlobal } from "../toast";
 import type { VictimsFilter } from "../state/victims-filter";
@@ -17,6 +14,26 @@ import type { SettingsTabKey } from "../state/settings-tab";
 import { PanelWsProvider } from "../ws/ws-provider";
 import { PanelSidebar } from "./panel-sidebar";
 import { PanelTopbar } from "./panel-topbar";
+
+const BuilderScreen = dynamic(
+  () => import("../screens/builder-screen").then((m) => m.BuilderScreen),
+  { ssr: false },
+);
+
+const ShopScreen = dynamic(
+  () => import("../screens/shop-screen").then((m) => m.ShopScreen),
+  { ssr: false },
+);
+
+const CommunityScreen = dynamic(
+  () => import("../screens/community-screen").then((m) => m.CommunityScreen),
+  { ssr: false },
+);
+
+const SettingsScreen = dynamic(
+  () => import("../screens/settings-screen").then((m) => m.SettingsScreen),
+  { ssr: false },
+);
 
 export function PanelShell() {
   return (
