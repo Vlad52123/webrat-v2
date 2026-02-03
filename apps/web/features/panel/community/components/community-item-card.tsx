@@ -38,11 +38,18 @@ export const CommunityItemCard = memo(function CommunityItemCard(props: {
 
         <div
           className={
-            "mt-3 overflow-hidden border-t border-white/10 transition-[max-height,opacity,transform] duration-[260ms] ease-out " +
-            (isOpen ? "max-h-[260px] opacity-100 translate-y-0" : "max-h-0 opacity-0 -translate-y-[8px] pointer-events-none")
+            "mt-3 overflow-hidden border-t border-white/10 " + (isOpen ? "" : "hidden")
           }
+          style={{ contain: "layout paint" }}
         >
-          {isOpen ? <CommunityItemDetails item={item} /> : null}
+          {isOpen ? (
+            <div
+              className="animate-in fade-in slide-in-from-top-2 duration-[160ms]"
+              style={{ willChange: "transform, opacity" }}
+            >
+              <CommunityItemDetails item={item} />
+            </div>
+          ) : null}
         </div>
 
         <div className="mt-[10px] text-right text-[12px] text-white/55">Messages: {messageCount}</div>

@@ -134,6 +134,16 @@ html.lowPerf [class^="shadow-"] {
   box-shadow: none !important;
 }
 
+html.lowPerf .wc-community-logo-shake {
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wc-community-logo-shake {
+    animation: none !important;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
