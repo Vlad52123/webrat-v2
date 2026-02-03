@@ -39,7 +39,8 @@ export function PanelWsProvider(props: { children: React.ReactNode }) {
     return;
   });
 
-  const isVip = String(subQ.data?.status || "").toLowerCase() === "vip";
+  const isVip =
+    String(((subQ.data as unknown as { status?: unknown } | null) ?? null)?.status || "").toLowerCase() === "vip";
 
   const state: WsConnState = useMemo(() => {
     return isVip ? wsState : "closed";

@@ -189,7 +189,7 @@ export function PersonalizationPane(props: {
                   <button
                     id="settingsLinePicker"
                     type="button"
-                    className="flex items-center justify-center bg-transparent px-[10px] py-[6px]"
+                    className="flex items-center justify-center bg-transparent px-[10px] py-[6px] cursor-pointer"
                     onClick={() => {
                       try {
                         document.getElementById("settingsLineColor")?.click();
@@ -200,7 +200,7 @@ export function PersonalizationPane(props: {
                   >
                     <span
                       id="settingsLinePreview"
-                      className="h-[16px] w-[200px] rounded-[10px] border border-white/[0.16]"
+                      className="h-[16px] w-[200px] rounded-[10px] border border-white/[0.16] cursor-pointer"
                       style={{ background: "var(--line)" }}
                     />
                   </button>

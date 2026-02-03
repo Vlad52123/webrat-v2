@@ -14,6 +14,7 @@ export function ShopScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [kind, setKind] = useState("month");
   const clearedOnFocusRef = useRef(false);
+  const didToastLoadRef = useRef(false);
 
   const loadSubscription = useCallback(async () => {
     const res = await fetch("/api/subscription", { method: "GET", credentials: "include" });
@@ -43,12 +44,17 @@ export function ShopScreen() {
     loadSubscription().catch(() => {
       setStatusTitle("NONE");
       setUntil("-");
+      if (didToastLoadRef.current) return;
+      didToastLoadRef.current = true;
+      showToast("error", "Failed to load subscription status");
     });
   }, [loadSubscription]);
 
   const activate = useCallback(async () => {
     const k = String(key || "").trim();
     if (!k) return;
+
+    setKey("");
 
     if (String(statusTitle || "").toUpperCase() === "VIP" && String(kind || "").toLowerCase() === "forever") {
       showToast("error", "You already have a lifetime subscription!");
@@ -80,6 +86,10 @@ export function ShopScreen() {
           showToast("error", "Request blocked");
           return;
         }
+        if (res.status === 404) {
+          showToast("error", "API error: /api/activate-key not found");
+          return;
+        }
         if (res.status === 429) {
           showToast("error", "Too many requests, try later");
           return;
@@ -100,7 +110,6 @@ export function ShopScreen() {
         return;
       }
 
-      setKey("");
       await loadSubscription();
 
       try {
