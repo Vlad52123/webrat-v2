@@ -9,6 +9,7 @@ import { ShopSubscriptionGrid } from "../shop/components/shop-subscription-grid"
 import { ShopSectionTitle } from "../shop/components/shop-section-title";
 import { ShopProductsGrid } from "../shop/components/shop-products-grid";
 import { ShopResellerSection } from "../shop/components/shop-reseller-section";
+import { shopClasses } from "../shop/styles";
 
 export function ShopScreen() {
   const qc = useQueryClient();
@@ -20,29 +21,42 @@ export function ShopScreen() {
   const clearedOnFocusRef = useRef(false);
   const didToastLoadRef = useRef(false);
 
+  const formatSubscriptionDate = useCallback((iso: unknown): string => {
+    if (!iso) return "-";
+    const d = new Date(String(iso));
+    if (!Number.isFinite(d.getTime())) return "-";
+    try {
+      return d.toLocaleString("ru-RU", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return "-";
+    }
+  }, []);
+
   const loadSubscription = useCallback(async () => {
     const res = await fetch("/api/subscription/", { method: "GET", credentials: "include" });
     if (!res.ok) throw new Error(`HTTP_${res.status}`);
     const data = (await res.json().catch(() => null)) as unknown;
     const obj = data && typeof data === "object" ? (data as Record<string, unknown>) : null;
-    const status = String(obj?.status || "none").toUpperCase();
-    setStatusTitle(status);
+    const status = String(obj?.status || "none").toLowerCase();
+    const isVip = status === "vip";
+    setStatusTitle(isVip ? "RATER" : "NONE");
 
     const k = String(obj?.kind || "month").toLowerCase();
     setKind(k || "month");
 
-    try {
-      const activatedAtRaw = obj?.activated_at;
-      const activatedAt = activatedAtRaw ? new Date(String(activatedAtRaw)) : null;
-      if (activatedAt && Number.isFinite(activatedAt.getTime())) {
-        setUntil(activatedAt.toISOString().slice(0, 10));
-      } else {
-        setUntil("-");
-      }
-    } catch {
-      setUntil("-");
-    }
-  }, []);
+    const untilText = (() => {
+      if (!isVip) return "-";
+      if (k === "forever") return "Forever";
+      return formatSubscriptionDate(obj?.activated_at);
+    })();
+    setUntil(untilText);
+  }, [formatSubscriptionDate]);
 
   useEffect(() => {
     loadSubscription().catch(() => {
@@ -60,7 +74,7 @@ export function ShopScreen() {
 
     setKey("");
 
-    if (String(statusTitle || "").toUpperCase() === "VIP" && String(kind || "").toLowerCase() === "forever") {
+    if (String(statusTitle || "").toUpperCase() === "RATER" && String(kind || "").toLowerCase() === "forever") {
       showToast("error", "You already have a lifetime subscription!");
       setKey("");
       return;
@@ -145,7 +159,7 @@ export function ShopScreen() {
 
   return (
     <div id="shopView" className="h-full overflow-x-hidden overflow-y-auto">
-      <div className="flex h-full w-full flex-col items-start justify-start pt-[16px] pl-[32px] pr-[18px]">
+      <div className={shopClasses.page}>
         <ShopSubscriptionGrid
           keyValue={key}
           onKeyChange={setKey}
@@ -160,6 +174,7 @@ export function ShopScreen() {
           }}
           onActivate={() => activate().catch(() => { })}
           isLoading={isLoading}
+          isVip={String(statusTitle || "").toUpperCase() === "RATER"}
           statusTitle={statusTitle}
           until={until}
         />

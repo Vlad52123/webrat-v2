@@ -1,12 +1,12 @@
 export const shopClasses = {
-  page: "flex h-full w-full flex-col items-start justify-start pt-[16px] pl-[32px] pr-[18px]",
+  page: "flex h-full w-full flex-col items-start justify-start pt-[16px] pl-[32px]",
   grid: "mt-[12px] grid gap-[26px] [grid-template-columns:auto_auto]",
 
   cardBase:
     "grid min-h-[200px] rounded-[16px] border border-white/[0.14] bg-[rgba(18,18,18,0.66)] p-[18px] text-center shadow-[0_18px_44px_rgba(0,0,0,0.6),0_0_0_4px_rgba(255,255,255,0.05)] backdrop-blur-[8px]",
   cardKey: "min-w-[360px] justify-items-stretch",
   cardStatus: "min-w-[240px] place-items-center",
-  cardTitle: "mb-[4px] text-[17px] font-bold text-white",
+  cardTitle: "mb-[4px] text-[17px] font-[700] text-white",
 
   inputRow: "w-full",
   input: "w-full rounded-[12px] border border-white/[0.14] bg-[rgba(0,0,0,0.28)] px-[12px] py-[10px] text-center text-[15px] text-white outline-none placeholder:text-[rgba(200,200,200,0.7)] focus:border-white/[0.28]",
@@ -15,11 +15,11 @@ export const shopClasses = {
     "mt-[6px] min-w-[150px] cursor-pointer rounded-[12px] border border-white/[0.18] border-b-[4px] bg-white/[0.06] px-[22px] py-[10px] text-[14px] font-semibold text-white transition-[background,border-color,transform] hover:bg-white/[0.10] hover:border-white/[0.26] active:translate-y-[1px]",
 
   statusTitle:
-    "mb-[10px] text-center text-[18px] font-extrabold text-white [text-shadow:0_1px_0_rgba(0,0,0,0.65),0_0_6px_rgba(0,0,0,0.55)]",
-  statusText: "mb-[8px] text-center text-[15px] font-semibold text-[rgba(200,200,200,0.9)]",
-  statusUntil: "mt-[6px] text-center text-[16px] font-bold text-[rgba(220,220,220,0.96)]",
+    "mb-[10px] text-center text-[18px] font-[800] [text-shadow:0_1px_0_rgba(0,0,0,0.65),0_0_6px_rgba(0,0,0,0.55)]",
+  statusText: "mb-[8px] text-center text-[15px] font-[600] text-[rgba(200,200,200,0.9)]",
+  statusUntil: "mt-[6px] text-center text-[16px] font-[700] text-[rgba(220,220,220,0.96)]",
 
-  sectionTitle: "relative mt-[30px] mb-[14px] w-full text-left text-[18px] font-extrabold tracking-[0.02em] text-white/[0.96]",
+  sectionTitle: "relative mt-[30px] mb-[14px] w-full text-left text-[18px] font-[800] tracking-[0.02em] text-white/[0.96]",
   sectionTitleLine:
     "pointer-events-none absolute left-[-32px] bottom-[-8px] h-[2px] w-[calc(100%+64px)] opacity-95 [filter:drop-shadow(0_0_10px_rgba(0,0,0,0.85))]",
 

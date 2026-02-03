@@ -6,10 +6,11 @@ export function ShopSubscriptionGrid(props: {
   onKeyFocus: () => void;
   onActivate: () => void;
   isLoading: boolean;
+  isVip: boolean;
   statusTitle: string;
   until: string;
 }) {
-  const { keyValue, onKeyChange, onKeyFocus, onActivate, isLoading, statusTitle, until } = props;
+  const { keyValue, onKeyChange, onKeyFocus, onActivate, isLoading, isVip, statusTitle, until } = props;
 
   return (
     <div className={shopClasses.grid}>
@@ -46,7 +47,10 @@ export function ShopSubscriptionGrid(props: {
 
       <div className={[shopClasses.cardBase, shopClasses.cardStatus].join(" ")}>
         <div className={shopClasses.cardTitle}>Subscription status.</div>
-        <div id="shopStatusTitle" className={shopClasses.statusTitle}>
+        <div
+          id="shopStatusTitle"
+          className={[shopClasses.statusTitle, isVip ? "text-[#ff3b3b]" : "text-white"].join(" ")}
+        >
           {statusTitle}
         </div>
         <div className={shopClasses.statusText}>Subscription until</div>
