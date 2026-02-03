@@ -4,6 +4,40 @@ let rgbHue = 0;
 let baseLineColor = "";
 let rgbLastApplyTs: number | null = null;
 
+let lastRgbOn: boolean | null = null;
+let visibilityHandlerInstalled = false;
+
+function stopLoop() {
+  if (rgbAnimationId != null) {
+    window.cancelAnimationFrame(rgbAnimationId);
+    rgbAnimationId = null;
+  }
+  rgbLastTs = null;
+  rgbLastApplyTs = null;
+}
+
+function onVisibilityChange() {
+  try {
+    if (document.visibilityState === "hidden") {
+      stopLoop();
+      return;
+    }
+
+    if (!document.body.classList.contains("isRgbLine")) {
+      stopLoop();
+      return;
+    }
+
+    if (rgbAnimationId == null) {
+      rgbLastTs = null;
+      rgbLastApplyTs = null;
+      rgbAnimationId = window.requestAnimationFrame(step);
+    }
+  } catch {
+    return;
+  }
+}
+
 function step(ts: number) {
   if (!document.body.classList.contains("isRgbLine")) {
     rgbAnimationId = null;
@@ -13,7 +47,9 @@ function step(ts: number) {
   }
 
   if (document.visibilityState === "hidden") {
-    rgbAnimationId = window.requestAnimationFrame(step);
+    rgbAnimationId = null;
+    rgbLastTs = null;
+    rgbLastApplyTs = null;
     return;
   }
 
@@ -62,7 +98,15 @@ export function applyLineColor(value: string) {
 }
 
 export function enableRgbLines(on: boolean) {
-  const enabled = !!on;
+  const requested = !!on;
+  let enabled = requested;
+  try {
+    if (document.documentElement.classList.contains("lowPerf")) enabled = false;
+  } catch {
+    enabled = requested;
+  }
+  if (lastRgbOn === enabled) return;
+  lastRgbOn = enabled;
   try {
     document.body.classList.toggle("isRgbLine", enabled);
   } catch {
@@ -70,20 +114,20 @@ export function enableRgbLines(on: boolean) {
   }
 
   if (enabled) {
-    if (rgbAnimationId == null) {
-      rgbLastTs = null;
-      rgbLastApplyTs = null;
-      rgbAnimationId = window.requestAnimationFrame(step);
+    if (!visibilityHandlerInstalled) {
+      visibilityHandlerInstalled = true;
+      document.addEventListener("visibilitychange", onVisibilityChange);
     }
+    onVisibilityChange();
     return;
   }
 
-  if (rgbAnimationId != null) {
-    window.cancelAnimationFrame(rgbAnimationId);
-    rgbAnimationId = null;
-    rgbLastTs = null;
-    rgbLastApplyTs = null;
+  if (visibilityHandlerInstalled) {
+    visibilityHandlerInstalled = false;
+    document.removeEventListener("visibilitychange", onVisibilityChange);
   }
+
+  stopLoop();
 
   if (baseLineColor) {
     try {

@@ -118,6 +118,22 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+html.lowPerf * {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.lowPerf .snowflakeInner {
+  filter: none !important;
+  box-shadow: none !important;
+}
+
+html.lowPerf .shadow,
+html.lowPerf [class*=" shadow-"],
+html.lowPerf [class^="shadow-"] {
+  box-shadow: none !important;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

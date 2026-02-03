@@ -2,6 +2,8 @@ function rand(min: number, max: number) {
   return Math.random() * (max - min) + min;
 }
 
+let lastSnowOn: boolean | null = null;
+
 function clearSnowflakes() {
   try {
     const flakes = document.querySelectorAll("body .snowflake");
@@ -72,13 +74,22 @@ function createSnowflakes() {
 }
 
 export function applySnow(enabled: boolean) {
-  const on = !!enabled;
+  const requested = !!enabled;
+  let effective = requested;
   try {
-    document.body.classList.toggle("isSnowEnabled", on);
+    if (document.documentElement.classList.contains("lowPerf")) effective = false;
+  } catch {
+    effective = requested;
+  }
+
+  if (lastSnowOn === effective) return;
+  lastSnowOn = effective;
+  try {
+    document.body.classList.toggle("isSnowEnabled", effective);
   } catch {
     return;
   }
 
-  if (on) createSnowflakes();
+  if (effective) createSnowflakes();
   else clearSnowflakes();
 }

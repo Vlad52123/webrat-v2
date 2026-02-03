@@ -95,6 +95,10 @@ export function VictimsTable(props: {
         if (st.pointerId != null) el.releasePointerCapture(st.pointerId);
       } catch {
       }
+      try {
+        el.removeEventListener("pointermove", onPointerMove);
+      } catch {
+      }
       st.pointerId = null;
       try {
         el.classList.remove("isDragScrolling");
@@ -117,6 +121,11 @@ export function VictimsTable(props: {
       st.startX = e.clientX;
       st.startScrollLeft = el.scrollLeft;
       st.pointerId = e.pointerId;
+
+      try {
+        el.addEventListener("pointermove", onPointerMove, { passive: false });
+      } catch {
+      }
     };
 
     const onPointerMove = (e: PointerEvent) => {
@@ -158,17 +167,19 @@ export function VictimsTable(props: {
     };
 
     el.addEventListener("pointerdown", onPointerDown);
-    el.addEventListener("pointermove", onPointerMove, { passive: false });
     el.addEventListener("pointerup", clearDrag);
     el.addEventListener("pointercancel", clearDrag);
     el.addEventListener("click", onClickCapture, true);
 
     return () => {
       el.removeEventListener("pointerdown", onPointerDown);
-      el.removeEventListener("pointermove", onPointerMove);
       el.removeEventListener("pointerup", clearDrag);
       el.removeEventListener("pointercancel", clearDrag);
       el.removeEventListener("click", onClickCapture, true);
+      try {
+        el.removeEventListener("pointermove", onPointerMove);
+      } catch {
+      }
     };
   }, []);
 
