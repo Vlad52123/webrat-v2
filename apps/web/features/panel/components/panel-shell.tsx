@@ -89,6 +89,57 @@ function PanelShellInner() {
     }
   }, [guardedSetTab, isRestrictedTab, isSubSettled, isVip]);
 
+  useEffect(() => {
+    if (isPendingRestrictedTab) return;
+    try {
+      document.body.classList.add("isPanelShell");
+    } catch {
+    }
+    return () => {
+      try {
+        document.body.classList.remove("isPanelShell");
+      } catch {
+      }
+    };
+  }, [isPendingRestrictedTab]);
+
+  useEffect(() => {
+    if (isPendingRestrictedTab) return;
+    try {
+      document.body.classList.toggle("isPanelTab", displayTab === "panel");
+      document.body.classList.toggle("isBuilderTab", displayTab === "builder");
+      document.body.classList.toggle("isShopTab", displayTab === "shop");
+      document.body.classList.toggle("isCommunityTab", displayTab === "community");
+      document.body.classList.toggle("isSettingsTab", displayTab === "settings");
+    } catch {
+    }
+  }, [displayTab, isPendingRestrictedTab]);
+
+  useEffect(() => {
+    installToastGlobal();
+  }, []);
+
+  useEffect(() => {
+    if (isPendingRestrictedTab) return;
+    if (tab !== "panel" && detail.isOpen) {
+      detail.closeDetailView();
+    }
+  }, [detail, isPendingRestrictedTab, tab]);
+
+  useEffect(() => {
+    if (isPendingRestrictedTab) return;
+    if (tab !== "panel" && victimsPrefs.isFilterModalOpen) {
+      victimsPrefs.closeFilterModal();
+    }
+  }, [isPendingRestrictedTab, tab, victimsPrefs]);
+
+  useEffect(() => {
+    if (isPendingRestrictedTab) return;
+    if (detail.isOpen && victimsPrefs.isFilterModalOpen) {
+      victimsPrefs.closeFilterModal();
+    }
+  }, [detail.isOpen, isPendingRestrictedTab, victimsPrefs]);
+
   if (isPendingRestrictedTab) {
     return (
       <div className="grid min-h-screen place-items-center bg-[#222222] text-white/80">
@@ -104,52 +155,6 @@ function PanelShellInner() {
       </div>
     );
   }
-
-  useEffect(() => {
-    try {
-      document.body.classList.add("isPanelShell");
-    } catch {
-    }
-    return () => {
-      try {
-        document.body.classList.remove("isPanelShell");
-      } catch {
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    try {
-      document.body.classList.toggle("isPanelTab", displayTab === "panel");
-      document.body.classList.toggle("isBuilderTab", displayTab === "builder");
-      document.body.classList.toggle("isShopTab", displayTab === "shop");
-      document.body.classList.toggle("isCommunityTab", displayTab === "community");
-      document.body.classList.toggle("isSettingsTab", displayTab === "settings");
-    } catch {
-    }
-  }, [displayTab]);
-
-  useEffect(() => {
-    installToastGlobal();
-  }, []);
-
-  useEffect(() => {
-    if (tab !== "panel" && detail.isOpen) {
-      detail.closeDetailView();
-    }
-  }, [detail, tab]);
-
-  useEffect(() => {
-    if (tab !== "panel" && victimsPrefs.isFilterModalOpen) {
-      victimsPrefs.closeFilterModal();
-    }
-  }, [tab, victimsPrefs]);
-
-  useEffect(() => {
-    if (detail.isOpen && victimsPrefs.isFilterModalOpen) {
-      victimsPrefs.closeFilterModal();
-    }
-  }, [detail.isOpen, victimsPrefs]);
 
   return (
     <PanelSettingsProvider contentRef={contentRef}>
