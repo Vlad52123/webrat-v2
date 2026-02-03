@@ -3,9 +3,9 @@ export const shopClasses = {
   grid: "mt-[12px] grid gap-[26px] [grid-template-columns:auto_auto]",
 
   cardBase:
-    "grid min-h-[200px] rounded-[16px] border border-white/[0.14] bg-[rgba(18,18,18,0.66)] p-[18px] text-center shadow-[0_18px_44px_rgba(0,0,0,0.6),0_0_0_4px_rgba(255,255,255,0.05)] backdrop-blur-[8px]",
-  cardKey: "min-w-[360px] justify-items-stretch",
-  cardStatus: "min-w-[240px] place-items-center",
+    "min-h-[200px] overflow-hidden rounded-[16px] border border-white/[0.14] bg-[rgba(18,18,18,0.66)] p-[18px] text-center shadow-[0_18px_44px_rgba(0,0,0,0.6),0_0_0_4px_rgba(255,255,255,0.05)] backdrop-blur-[8px]",
+  cardKey: "min-w-[360px] flex flex-col items-stretch",
+  cardStatus: "min-w-[240px] flex flex-col items-center",
   cardTitle: "mb-[4px] text-[17px] font-[700] text-white",
 
   inputRow: "w-full",
