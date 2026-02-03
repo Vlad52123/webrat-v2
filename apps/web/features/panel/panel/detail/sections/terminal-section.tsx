@@ -19,8 +19,13 @@ export function TerminalSection() {
     let terminalUser = "user";
     let terminalCwd = "";
 
+    const w = window as unknown as Window & {
+      WebRatAppendTerminalOutput?: (text: string) => void;
+      WebRatEnsureTerminalPrompt?: () => void;
+    };
+
     const getPromptPrefix = () => {
-      let userName = terminalUser || "user";
+      const userName = terminalUser || "user";
       terminalUser = userName;
       const defaultCwd = `C:\\Users\\${userName}`;
       if (!terminalCwd) terminalCwd = defaultCwd;
@@ -41,7 +46,7 @@ export function TerminalSection() {
       consoleEl.scrollTop = consoleEl.scrollHeight;
     };
 
-    (window as any).WebRatAppendTerminalOutput = (text: string) => {
+    w.WebRatAppendTerminalOutput = (text: string) => {
       const lines = String(text || "").split(/\r?\n/);
       lines.forEach((ln) => {
         if (!ln) return;
@@ -60,7 +65,7 @@ export function TerminalSection() {
       appendLine(getPromptPrefix(), "");
     };
 
-    (window as any).WebRatEnsureTerminalPrompt = () => {
+    w.WebRatEnsureTerminalPrompt = () => {
       if (!consoleEl.hasChildNodes()) {
         appendLine(getPromptPrefix(), "");
       }
@@ -118,7 +123,7 @@ export function TerminalSection() {
     inputEl.addEventListener("keydown", onKey);
 
     try {
-      (window as any).WebRatEnsureTerminalPrompt();
+      w.WebRatEnsureTerminalPrompt?.();
     } catch {
     }
 

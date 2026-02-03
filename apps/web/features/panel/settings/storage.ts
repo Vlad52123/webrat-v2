@@ -4,6 +4,7 @@ export const STORAGE_KEYS = {
   bgMode: "webrat_ui_bg_mode",
   bgColor: "webrat_ui_bg_color",
   lineColor: "webrat_ui_line_color",
+  ignoredVictims: "webrat_ignored_victims",
   snow: "webrat_ui_snow",
   rgb: "webrat_ui_rgb_line",
   sound: "webrat_ui_sound_volume",
@@ -112,6 +113,12 @@ export function writeWsHostGlobal(host: string): void {
   const v = normalizeWsHost(String(host || "").trim());
   writeLS(prefKey(STORAGE_KEYS.wsHost), v);
   removeLS(String(STORAGE_KEYS.wsHost));
+  try {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("webrat_ws_host_changed", { detail: { host: v } }));
+    }
+  } catch {
+  }
 }
 
 export function migrateLegacyWsHostGlobal(): void {

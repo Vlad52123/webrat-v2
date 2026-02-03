@@ -22,7 +22,7 @@ export function BuilderNiceSelect(props: {
     return options[0]?.value ?? "";
   }, [defaultValue, options, value]);
 
-  const [innerValue, setInnerValue] = useState<string>(initial);
+  const [innerValue, setInnerValue] = useState<string>(() => initial);
   const [open, setOpen] = useState(false);
   const [menuPos, setMenuPos] = useState<{ left: number; top: number; width: number } | null>(null);
 
@@ -34,7 +34,10 @@ export function BuilderNiceSelect(props: {
 
   useEffect(() => {
     if (typeof value === "string") return;
-    setInnerValue(initial);
+    const t = window.setTimeout(() => {
+      setInnerValue(initial);
+    }, 0);
+    return () => window.clearTimeout(t);
   }, [initial, value]);
 
   const selectedLabel = useMemo(() => {

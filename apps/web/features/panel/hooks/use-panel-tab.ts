@@ -23,15 +23,20 @@ function ensureTrailingSlashPreservingHash() {
 }
 
 export function usePanelTab() {
-  const [tab, setTabState] = useState<PanelTabKey>("panel");
+  const [tab, setTabState] = useState<PanelTabKey>(() => {
+    try {
+      if (typeof window === "undefined") return "panel";
+      const current = parseHash(window.location.hash);
+      return current ?? "panel";
+    } catch {
+      return "panel";
+    }
+  });
 
   useEffect(() => {
     ensureTrailingSlashPreservingHash();
     const current = parseHash(window.location.hash);
-    if (current) {
-      setTabState(current);
-      return;
-    }
+    if (current) return;
 
     if (typeof history !== "undefined" && typeof history.replaceState === "function") {
       const p = window.location.pathname.endsWith("/") ? window.location.pathname : `${window.location.pathname}/`;
@@ -39,7 +44,6 @@ export function usePanelTab() {
     } else {
       window.location.hash = "#panel";
     }
-    setTabState("panel");
   }, []);
 
   useEffect(() => {

@@ -24,14 +24,20 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
     if (!el) return;
 
     if (open) {
-      if (hidden) setHidden(false);
+      if (hidden) {
+        window.setTimeout(() => {
+          setHidden(false);
+        }, 0);
+      }
       requestAnimationFrame(() => {
         setIsOpenClass(true);
       });
       return;
     }
 
-    setIsOpenClass(false);
+    window.setTimeout(() => {
+      setIsOpenClass(false);
+    }, 0);
     const onEnd = (e: TransitionEvent) => {
       if (e.target !== el) return;
       setHidden(true);

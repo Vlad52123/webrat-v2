@@ -8,6 +8,7 @@ import { makeBgVideoDb } from "../settings/bg-video-db";
 import { DeleteAccountModal } from "../settings/modals/delete-account-modal";
 import { LogoutModal } from "../settings/modals/logout-modal";
 import { SetEmailModal } from "../settings/modals/set-email-modal";
+import { csrfHeaders } from "../builder/utils/csrf";
 import { PersonalizationPane } from "../settings/panes/personalization-pane";
 import { SecurityPane } from "../settings/panes/security-pane";
 import { STORAGE_KEYS, prefKey, removePref } from "../settings/storage";
@@ -30,6 +31,9 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
   } = usePanelSettings();
 
   const [securityLogin, setSecurityLogin] = useState("-");
+  const [securitySub, setSecuritySub] = useState("NONE");
+  const [securityEmail, setSecurityEmail] = useState("Not set");
+  const [securityRegDate, setSecurityRegDate] = useState("Unknown");
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deletePwd, setDeletePwd] = useState("");
@@ -60,6 +64,56 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
           return typeof l === "string" && l ? l : "-";
         })();
         setSecurityLogin(login || "-");
+      } catch {
+        return;
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/subscription`, { method: "GET", credentials: "include" });
+        if (!res.ok) return;
+        const data = (await res.json().catch(() => null)) as unknown;
+        if (cancelled) return;
+        const obj = data && typeof data === "object" ? (data as Record<string, unknown>) : null;
+        const status = String(obj?.status || "none").toUpperCase();
+        setSecuritySub(status);
+      } catch {
+        return;
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/account`, { method: "GET", credentials: "include" });
+        if (!res.ok) return;
+        const data = (await res.json().catch(() => null)) as unknown;
+        if (cancelled) return;
+
+        const obj = data && typeof data === "object" ? (data as Record<string, unknown>) : null;
+
+        const email = String(obj?.email || "").trim();
+        setSecurityEmail(email ? email : "Not set");
+
+        const createdAtRaw = obj?.created_at;
+        const created = createdAtRaw ? new Date(String(createdAtRaw)) : null;
+        if (created && Number.isFinite(created.getTime())) {
+          setSecurityRegDate(created.toISOString().slice(0, 10));
+        } else {
+          setSecurityRegDate("Unknown");
+        }
       } catch {
         return;
       }
@@ -203,6 +257,9 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
           <SecurityPane
             tab={tab}
             securityLogin={securityLogin}
+            securitySub={securitySub}
+            securityEmail={securityEmail}
+            securityRegDate={securityRegDate}
             onOpenPassword={() => {
               setPasswordOld("");
               setPasswordNew("");
@@ -263,7 +320,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
               const res = await fetch(`/api/delete-account`, {
                 method: "POST",
                 credentials: "include",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", ...csrfHeaders() },
                 body: JSON.stringify({ password: pwd }),
               });
               if (res.ok) {
@@ -319,7 +376,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
               const res = await fetch(`/api/change-password`, {
                 method: "POST",
                 credentials: "include",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", ...csrfHeaders() },
                 body: JSON.stringify({ old_password: oldPwd, new_password: newPwd }),
               });
               if (res.ok) {
@@ -377,7 +434,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
                 const res = await fetch(`/api/set-email`, {
                   method: "POST",
                   credentials: "include",
-                  headers: { "Content-Type": "application/json" },
+                  headers: { "Content-Type": "application/json", ...csrfHeaders() },
                   body: JSON.stringify({ email, password: value }),
                 });
 
@@ -410,7 +467,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
               const res = await fetch(`/api/confirm-email`, {
                 method: "POST",
                 credentials: "include",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", ...csrfHeaders() },
                 body: JSON.stringify({ code: value }),
               });
 

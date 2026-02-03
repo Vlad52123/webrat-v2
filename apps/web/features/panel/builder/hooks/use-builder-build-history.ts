@@ -16,24 +16,37 @@ function getBuildsKey(login: string): string {
 
 export function useBuilderBuildHistory(login: string) {
   const key = useMemo(() => getBuildsKey(login), [login]);
-  const [items, setItems] = useState<BuildHistoryItem[]>([]);
-
-  useEffect(() => {
+  const [items, setItems] = useState<BuildHistoryItem[]>(() => {
     try {
       const raw = localStorage.getItem(key);
-      if (!raw) {
-        setItems([]);
-        return;
-      }
+      if (!raw) return [];
       const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) {
-        setItems([]);
-        return;
-      }
-      setItems(parsed as BuildHistoryItem[]);
+      if (!Array.isArray(parsed)) return [];
+      return parsed as BuildHistoryItem[];
     } catch {
-      setItems([]);
+      return [];
     }
+  });
+
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) {
+          setItems([]);
+          return;
+        }
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) {
+          setItems([]);
+          return;
+        }
+        setItems(parsed as BuildHistoryItem[]);
+      } catch {
+        setItems([]);
+      }
+    }, 0);
+    return () => window.clearTimeout(t);
   }, [key]);
 
   const save = (next: BuildHistoryItem[]) => {

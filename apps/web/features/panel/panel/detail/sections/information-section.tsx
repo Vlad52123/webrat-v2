@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import type { Victim } from "../../../api/victims";
 
@@ -16,6 +18,37 @@ function Row(props: { label: string; value: string }) {
 
 export function InformationSection(props: { victim: Victim | null }) {
   const { victim } = props;
+
+  const qc = useQueryClient();
+  const loadingRef = useRef(false);
+
+  useEffect(() => {
+    const btn = document.getElementById("pcInfoReload") as HTMLButtonElement | null;
+    if (!btn) return;
+
+    const onClick = async () => {
+      if (loadingRef.current) return;
+      loadingRef.current = true;
+      const start = Date.now();
+      try {
+        await qc.invalidateQueries({ queryKey: ["victims"] });
+      } catch {
+      }
+
+      const elapsed = Date.now() - start;
+      const delay = elapsed >= 2000 ? 0 : 2000 - elapsed;
+      window.setTimeout(() => {
+        window.setTimeout(() => {
+          loadingRef.current = false;
+        }, 2000);
+      }, delay);
+    };
+
+    btn.addEventListener("click", onClick);
+    return () => {
+      btn.removeEventListener("click", onClick);
+    };
+  }, [qc]);
 
   return (
     <div className="detail-section">

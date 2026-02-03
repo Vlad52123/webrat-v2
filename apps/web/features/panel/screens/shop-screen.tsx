@@ -1,24 +1,34 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { csrfHeaders } from "../builder/utils/csrf";
+import { showToast } from "../toast";
 
 export function ShopScreen() {
+  const qc = useQueryClient();
   const [key, setKey] = useState("");
   const [statusTitle, setStatusTitle] = useState("NONE");
   const [until, setUntil] = useState("-");
   const [isLoading, setIsLoading] = useState(false);
+  const [kind, setKind] = useState("month");
+  const clearedOnFocusRef = useRef(false);
 
   const loadSubscription = useCallback(async () => {
     const res = await fetch("/api/subscription", { method: "GET", credentials: "include" });
     if (!res.ok) throw new Error(`HTTP_${res.status}`);
-    const data = (await res.json().catch(() => null)) as any;
-    const status = String(data?.status || "none").toUpperCase();
+    const data = (await res.json().catch(() => null)) as unknown;
+    const obj = data && typeof data === "object" ? (data as Record<string, unknown>) : null;
+    const status = String(obj?.status || "none").toUpperCase();
     setStatusTitle(status);
 
+    const k = String(obj?.kind || "month").toLowerCase();
+    setKind(k || "month");
+
     try {
-      const activatedAt = data?.activated_at ? new Date(String(data.activated_at)) : null;
+      const activatedAtRaw = obj?.activated_at;
+      const activatedAt = activatedAtRaw ? new Date(String(activatedAtRaw)) : null;
       if (activatedAt && Number.isFinite(activatedAt.getTime())) {
         setUntil(activatedAt.toISOString().slice(0, 10));
       } else {
@@ -39,6 +49,13 @@ export function ShopScreen() {
   const activate = useCallback(async () => {
     const k = String(key || "").trim();
     if (!k) return;
+
+    if (String(statusTitle || "").toUpperCase() === "VIP" && String(kind || "").toLowerCase() === "forever") {
+      showToast("error", "You already have a lifetime subscription!");
+      setKey("");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const res = await fetch("/api/activate-key", {
@@ -50,16 +67,54 @@ export function ShopScreen() {
         },
         body: JSON.stringify({ key: k }),
       });
+
       if (!res.ok) {
-        const t = await res.text().catch(() => "");
-        throw new Error(t || `HTTP_${res.status}`);
+        if (res.status === 401) {
+          try {
+            window.location.replace("/login");
+          } catch {
+          }
+          return;
+        }
+        if (res.status === 403) {
+          showToast("error", "Request blocked");
+          return;
+        }
+        if (res.status === 429) {
+          showToast("error", "Too many requests, try later");
+          return;
+        }
+        if (res.status === 409) {
+          showToast("error", "Key has already been activated");
+          return;
+        }
+        if (res.status === 423) {
+          showToast("error", "You cannot activate this key, you already have a lifetime subscription!");
+          return;
+        }
+        if (res.status === 400) {
+          showToast("error", "Wrong key");
+          return;
+        }
+        showToast("error", "Wrong key");
+        return;
       }
+
       setKey("");
       await loadSubscription();
+
+      try {
+        await qc.invalidateQueries({ queryKey: ["subscription"] });
+      } catch {
+      }
+      try {
+        await qc.invalidateQueries({ queryKey: ["victims"] });
+      } catch {
+      }
     } finally {
       setIsLoading(false);
     }
-  }, [key, loadSubscription]);
+  }, [key, kind, loadSubscription, qc, statusTitle]);
 
   return (
     <div id="shopView" className="h-full overflow-x-hidden overflow-y-auto">
@@ -77,6 +132,15 @@ export function ShopScreen() {
                 name="shop-key-input"
                 value={key}
                 onChange={(e) => setKey(e.target.value)}
+                onFocus={() => {
+                  if (clearedOnFocusRef.current) return;
+                  const v = String(key || "").trim();
+                  if (!v) return;
+                  if (!v.includes(" ") && v.length <= 128) {
+                    setKey("");
+                  }
+                  clearedOnFocusRef.current = true;
+                }}
               />
             </div>
             <div className="flex w-full justify-center">
@@ -136,7 +200,7 @@ export function ShopScreen() {
         <div className="shopResellerSection w-full ml-[-32px] overflow-x-hidden">
           <div className="shopResellerSeparator my-[26px] mb-[12px] h-[3px] w-full shadow-[0_0_10px_rgba(0,0,0,0.75)]" style={{ background: "var(--line)" }} />
           <div className="shopResellerWarning mb-[6px] text-center text-[15px] font-extrabold uppercase text-[#ff4a4a]">
-            DON'T BUY FROM USERS OUTSIDE OF THE OFFICIAL RESELLER LIST, YOU WILL BE SCAMMED.
+            DON&apos;T BUY FROM USERS OUTSIDE OF THE OFFICIAL RESELLER LIST, YOU WILL BE SCAMMED.
           </div>
           <div className="shopResellerHeader mb-[16px] text-center text-[17px] font-bold text-white">Official Reseller Contacts</div>
 

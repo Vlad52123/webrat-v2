@@ -5,12 +5,15 @@ import type { SettingsTabKey } from "../../state/settings-tab";
 export function SecurityPane(props: {
   tab: SettingsTabKey;
   securityLogin: string;
+  securitySub: string;
+  securityEmail: string;
+  securityRegDate: string;
   onOpenPassword: () => void;
   onOpenEmail: () => void;
   onOpenLogout: () => void;
   onOpenDelete: () => void;
 }) {
-  const { tab, securityLogin, onOpenPassword, onOpenEmail, onOpenLogout, onOpenDelete } = props;
+  const { tab, securityLogin, securitySub, securityEmail, securityRegDate, onOpenPassword, onOpenEmail, onOpenLogout, onOpenDelete } = props;
 
   return (
     <div className="min-h-[220px]" data-settings-pane="security" style={{ display: tab === "security" ? "block" : "none" }}>
@@ -51,7 +54,7 @@ export function SecurityPane(props: {
         <div className="my-[6px] flex items-center justify-between gap-3 rounded-[12px] border border-white/[0.16] bg-white/[0.03] px-[12px] py-[10px]">
           <div className="text-[15px] font-medium text-white opacity-90">Subscription:</div>
           <div id="securitySubValue" className="text-[14px] font-bold text-white/[0.92]">
-            NONE
+            {securitySub}
           </div>
         </div>
 
@@ -71,7 +74,7 @@ export function SecurityPane(props: {
           <div className="text-[15px] font-medium text-white opacity-90">Your mail:</div>
           <div className="inline-flex items-center gap-[6px]">
             <span id="securityMailValue" className="text-[14px] font-semibold text-white">
-              Not set
+              {securityEmail}
             </span>
             <img src="/icons/arrow.svg" alt=">" draggable={false} className="h-[16px] w-[16px] invert opacity-90" />
           </div>
@@ -82,7 +85,7 @@ export function SecurityPane(props: {
         <div className="my-[6px] flex items-center justify-between gap-3 rounded-[12px] border border-white/[0.16] bg-white/[0.03] px-[12px] py-[10px]">
           <div className="text-[15px] font-medium text-white opacity-90">Registration date:</div>
           <div id="securityRegDateValue" className="text-[14px] font-bold text-white/[0.92]">
-            Unknown
+            {securityRegDate}
           </div>
         </div>
 

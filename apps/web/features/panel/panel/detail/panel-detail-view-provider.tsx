@@ -2,16 +2,19 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
+import type { Victim } from "../../api/victims";
 import type { DetailSectionKey } from "../state/detail-section";
 
 type PanelDetailViewContextValue = {
   isOpen: boolean;
   section: DetailSectionKey;
   selectedVictimId: string | null;
+  victimSnapshots: Record<string, Victim>;
   setSection: (next: DetailSectionKey) => void;
   selectVictim: (victimId: string) => void;
   openDetailForVictim: (victimId: string) => void;
   closeDetailView: () => void;
+  rememberVictimSnapshot: (victim: Victim) => void;
 };
 
 const PanelDetailViewContext = createContext<PanelDetailViewContextValue | null>(null);
@@ -21,17 +24,17 @@ const STORAGE_KEY = "webrat_selected_victim";
 export function PanelDetailViewProvider(props: { children: React.ReactNode }) {
   const { children } = props;
 
-  const [selectedVictimId, setSelectedVictimId] = useState<string | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
-  const [section, setSection] = useState<DetailSectionKey>("information");
-
-  useEffect(() => {
+  const [selectedVictimId, setSelectedVictimId] = useState<string | null>(() => {
     try {
       const fromStorage = sessionStorage.getItem(STORAGE_KEY);
-      if (fromStorage) setSelectedVictimId(fromStorage);
+      return fromStorage ? String(fromStorage) : null;
     } catch {
+      return null;
     }
-  }, []);
+  });
+  const [isOpen, setIsOpen] = useState(false);
+  const [section, setSection] = useState<DetailSectionKey>("information");
+  const [victimSnapshots, setVictimSnapshots] = useState<Record<string, Victim>>({});
 
   useEffect(() => {
     try {
@@ -74,17 +77,32 @@ export function PanelDetailViewProvider(props: { children: React.ReactNode }) {
     }
   }, []);
 
+  const rememberVictimSnapshot = useCallback((victim: Victim) => {
+    const id = String((victim as { id?: unknown }).id ?? "").trim();
+    if (!id) return;
+    setVictimSnapshots((prev) => {
+      const next: Record<string, Victim> = { ...prev, [id]: victim };
+      const keys = Object.keys(next);
+      if (keys.length > 200) {
+        delete next[keys[0]];
+      }
+      return next;
+    });
+  }, []);
+
   const value = useMemo<PanelDetailViewContextValue>(
     () => ({
       isOpen,
       section,
       selectedVictimId,
+      victimSnapshots,
       setSection,
       selectVictim,
       openDetailForVictim,
       closeDetailView,
+      rememberVictimSnapshot,
     }),
-    [isOpen, section, selectedVictimId, selectVictim, openDetailForVictim, closeDetailView],
+    [isOpen, section, selectedVictimId, victimSnapshots, selectVictim, openDetailForVictim, closeDetailView, rememberVictimSnapshot],
   );
 
   return <PanelDetailViewContext.Provider value={value}>{children}</PanelDetailViewContext.Provider>;

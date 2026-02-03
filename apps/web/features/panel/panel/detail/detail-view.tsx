@@ -13,12 +13,15 @@ import { TerminalSection } from "./sections/terminal-section";
 
 export function DetailView(props: { victims: Victim[] }) {
   const { victims } = props;
-  const { isOpen, section, selectedVictimId } = usePanelDetailView();
+  const { isOpen, section, selectedVictimId, victimSnapshots } = usePanelDetailView();
 
   const victim = useMemo(() => {
     if (!selectedVictimId) return null;
-    return victims.find((v) => String(v.id ?? "") === String(selectedVictimId)) ?? null;
-  }, [selectedVictimId, victims]);
+    const id = String(selectedVictimId);
+    const live = victims.find((v) => String(v.id ?? "") === id) ?? null;
+    if (live) return live;
+    return victimSnapshots && typeof victimSnapshots === "object" ? (victimSnapshots[id] ?? null) : null;
+  }, [selectedVictimId, victimSnapshots, victims]);
 
   const isRemoteDesktop = section === "remote-desktop";
 

@@ -9,7 +9,14 @@ import type { DetailStatusState } from "../state/detail-status";
 const STORAGE_KEY = "webrat_selected_victim";
 
 export function usePanelDetailView(victims: Victim[]) {
-  const [selectedVictimId, setSelectedVictimId] = useState<string | null>(null);
+  const [selectedVictimId, setSelectedVictimId] = useState<string | null>(() => {
+    try {
+      const fromStorage = sessionStorage.getItem(STORAGE_KEY);
+      return fromStorage ? String(fromStorage) : null;
+    } catch {
+      return null;
+    }
+  });
   const [isOpen, setIsOpen] = useState(false);
   const [section, setSection] = useState<DetailSectionKey>("information");
 
@@ -26,14 +33,6 @@ export function usePanelDetailView(victims: Victim[]) {
     if (s === "offline") return "disconnected";
     return "waiting";
   }, [selectedVictim]);
-
-  useEffect(() => {
-    try {
-      const fromStorage = sessionStorage.getItem(STORAGE_KEY);
-      if (fromStorage) setSelectedVictimId(fromStorage);
-    } catch {
-    }
-  }, []);
 
   useEffect(() => {
     try {

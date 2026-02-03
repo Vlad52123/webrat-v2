@@ -1,22 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { BuildCard } from "./build-card";
 import { showToastSafe } from "../../utils/toast";
 import { useBuilderBuildHistory } from "../../hooks/use-builder-build-history";
 
 export function BuildsList() {
-  const [login, setLogin] = useState<string>("");
-
-  useEffect(() => {
+  const [login] = useState<string>(() => {
     try {
-      const l = String(localStorage.getItem("webrat_login") || "").trim();
-      setLogin(l);
+      return String(localStorage.getItem("webrat_login") || "").trim();
     } catch {
-      setLogin("");
+      return "";
     }
-  }, []);
+  });
 
   const { items, save } = useBuilderBuildHistory(login);
 

@@ -1,4 +1,3 @@
-import type { Victim } from "../api/victims";
 import { useVictimsList } from "../hooks/use-victims-list";
 import type { VictimsFilter } from "../state/victims-filter";
 import { VictimsTable } from "../panel/victims-table/victims-table";
@@ -35,6 +34,12 @@ export function PanelScreen(props: { filter: VictimsFilter }) {
             selectedVictimId={detail.selectedVictimId}
             onSelectVictim={detail.selectVictim}
             onOpenDetail={detail.openDetailForVictim}
+            onSnapshotVictim={(v) => {
+              try {
+                detail.rememberVictimSnapshot(v);
+              } catch {
+              }
+            }}
           />
         </div>
       )}

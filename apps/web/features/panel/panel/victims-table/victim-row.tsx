@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { MouseEventHandler } from "react";
 
 import { cn } from "../../../../lib/utils";
 
@@ -20,8 +21,9 @@ export function VictimRow(props: {
   isSelected: boolean;
   onClick: () => void;
   onDoubleClick: () => void;
+  onContextMenu: MouseEventHandler<HTMLTableRowElement>;
 }) {
-  const { victim: v, columnOrder, isSelected, onClick, onDoubleClick } = props;
+  const { victim: v, columnOrder, isSelected, onClick, onDoubleClick, onContextMenu } = props;
 
   const online = isVictimOnline(v);
   const id = String(v.id ?? "");
@@ -145,6 +147,7 @@ export function VictimRow(props: {
       )}
       onClick={onClick}
       onDoubleClick={onDoubleClick}
+      onContextMenu={onContextMenu}
     >
       {columnOrder.map(renderCell)}
     </tr>
