@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
         root: path.join(__dirname, "..", ".."),
     },
     async rewrites() {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL?.trim() || "http://localhost:3001";
 
         return {
             beforeFiles: [
