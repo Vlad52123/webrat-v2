@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"time"
 
 	"webrat-go-api/internal/storage"
 )
@@ -29,7 +30,7 @@ func (s *Server) handleGetSubscription(w http.ResponseWriter, r *http.Request) {
 
 	resp := struct {
 		Status      string `json:"status"`
-		ActivatedAt any    `json:"activated_at"`
+		ActivatedAt time.Time `json:"activated_at"`
 		Kind        string `json:"kind"`
 	}{
 		Status:      status,
@@ -86,7 +87,7 @@ func (s *Server) handleActivateKey(w http.ResponseWriter, r *http.Request) {
 
 	resp := struct {
 		Status      string `json:"status"`
-		ActivatedAt any    `json:"activated_at"`
+		ActivatedAt time.Time `json:"activated_at"`
 		Kind        string `json:"kind"`
 	}{
 		Status:      status,
