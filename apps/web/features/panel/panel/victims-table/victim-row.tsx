@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { MouseEventHandler } from "react";
+import { memo, useCallback, type MouseEvent, type MouseEventHandler } from "react";
 
 import { cn } from "../../../../lib/utils";
 
@@ -15,14 +15,25 @@ function formatLastActive(victim: Victim): string {
   return ms ? formatTime(ms) : "";
 }
 
-export function VictimRow(props: {
+type Props = {
+  victim: Victim;
+  columnOrder: VictimsColumnKey[];
+  isSelected: boolean;
+  onSelectVictim: (victimId: string) => void;
+  onOpenDetail: (victimId: string) => void;
+  onOpenContextMenu: (e: MouseEvent<HTMLTableRowElement>, victim: Victim, victimId: string) => void;
+};
+
+type InnerProps = {
   victim: Victim;
   columnOrder: VictimsColumnKey[];
   isSelected: boolean;
   onClick: () => void;
   onDoubleClick: () => void;
   onContextMenu: MouseEventHandler<HTMLTableRowElement>;
-}) {
+};
+
+function VictimRowInner(props: InnerProps) {
   const { victim: v, columnOrder, isSelected, onClick, onDoubleClick, onContextMenu } = props;
 
   const online = isVictimOnline(v);
@@ -153,3 +164,37 @@ export function VictimRow(props: {
     </tr>
   );
 }
+
+export const VictimRow = memo(
+  (props: Props) => {
+    const { victim: v, columnOrder, isSelected, onSelectVictim, onOpenDetail, onOpenContextMenu } = props;
+    const id = String(v.id ?? "");
+
+    const onClick = useCallback(() => {
+      onSelectVictim(id);
+    }, [id, onSelectVictim]);
+
+    const onDoubleClick = useCallback(() => {
+      onOpenDetail(id);
+    }, [id, onOpenDetail]);
+
+    const onContextMenu = useCallback(
+      (e: MouseEvent<HTMLTableRowElement>) => {
+        onOpenContextMenu(e, v, id);
+      },
+      [id, onOpenContextMenu, v],
+    );
+
+    return (
+      <VictimRowInner
+        victim={v}
+        columnOrder={columnOrder}
+        isSelected={isSelected}
+        onClick={onClick}
+        onDoubleClick={onDoubleClick}
+        onContextMenu={onContextMenu}
+      />
+    );
+  },
+  (a, b) => a.victim === b.victim && a.isSelected === b.isSelected && a.columnOrder === b.columnOrder && a.onSelectVictim === b.onSelectVictim && a.onOpenDetail === b.onOpenDetail && a.onOpenContextMenu === b.onOpenContextMenu,
+);

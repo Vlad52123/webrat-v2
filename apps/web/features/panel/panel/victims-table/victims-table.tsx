@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { createPortal } from "react-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -56,10 +56,45 @@ export function VictimsTable(props: {
     [],
   );
 
+  const onOpenContextMenu = useCallback(
+    (e: ReactMouseEvent<HTMLTableRowElement>, victim: Victim, victimId: string) => {
+      try {
+        e.preventDefault();
+        e.stopPropagation();
+      } catch {
+      }
+
+      const vid = String(victimId || "").trim();
+      if (!vid) return;
+
+      try {
+        if (onSnapshotVictim) onSnapshotVictim(victim);
+      } catch {
+      }
+
+      const menuWidth = 160;
+      const menuHeight = 40;
+      const pad = 4;
+      const vw = window.innerWidth || 0;
+      const vh = window.innerHeight || 0;
+
+      let x = e.clientX;
+      let y = e.clientY;
+      if (x + menuWidth > vw) x = Math.max(pad, vw - menuWidth - pad);
+      if (y + menuHeight > vh) y = Math.max(pad, vh - menuHeight - pad);
+
+      setCtxVictimId(vid);
+      setCtxDbOpen(false);
+      setCtxPos({ left: x, top: y });
+      setCtxOpen(true);
+    },
+    [onSnapshotVictim],
+  );
+
   useEffect(() => {
     if (!ctxOpen) return;
 
-    const onDoc = (e: MouseEvent) => {
+    const onDoc = (e: globalThis.MouseEvent) => {
       const t = e.target as Node | null;
       if (!t) {
         closeCtx();
@@ -70,7 +105,7 @@ export function VictimsTable(props: {
       closeCtx();
     };
 
-    const onKey = (e: KeyboardEvent) => {
+    const onKey = (e: globalThis.KeyboardEvent) => {
       if (e.key === "Escape") closeCtx();
     };
 
@@ -156,7 +191,7 @@ export function VictimsTable(props: {
       }
     };
 
-    const onClickCapture = (e: MouseEvent) => {
+    const onClickCapture = (e: globalThis.MouseEvent) => {
       const st = dragScrollRef.current;
       if (!st.moved) return;
       try {
@@ -188,7 +223,7 @@ export function VictimsTable(props: {
     if (!id) return;
 
     try {
-      const res = await fetch(`/api/victims?id=${encodeURIComponent(id)}`, {
+      const res = await fetch(`/api/victims/?id=${encodeURIComponent(id)}`, {
         method: "DELETE",
         credentials: "same-origin",
         headers: {
@@ -228,7 +263,7 @@ export function VictimsTable(props: {
       style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(120,120,120,0.9) transparent" }}
     >
       <div className="inline-block min-w-full align-top">
-        <table className="victims-table table-auto w-max border-collapse text-[20px] font-[550] leading-[1.05] text-white/[0.99]">
+        <table className="victims-table table-auto w-full min-w-max border-collapse text-[20px] font-[550] leading-[1.05] text-white/[0.99]">
           <VictimsTableHeader />
           <tbody>
             {isLoading ? (
@@ -250,42 +285,9 @@ export function VictimsTable(props: {
                     victim={v}
                     columnOrder={prefs.columnOrder}
                     isSelected={id === selectedVictimId}
-                    onClick={() => {
-                      onSelectVictim(id);
-                    }}
-                    onDoubleClick={() => {
-                      onOpenDetail(id);
-                    }}
-                    onContextMenu={(e) => {
-                      try {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      } catch {
-                      }
-                      const vid = String(id || "").trim();
-                      if (!vid) return;
-
-                      try {
-                        if (onSnapshotVictim) onSnapshotVictim(v);
-                      } catch {
-                      }
-
-                      const menuWidth = 160;
-                      const menuHeight = 40;
-                      const pad = 4;
-                      const vw = window.innerWidth || 0;
-                      const vh = window.innerHeight || 0;
-
-                      let x = e.clientX;
-                      let y = e.clientY;
-                      if (x + menuWidth > vw) x = Math.max(pad, vw - menuWidth - pad);
-                      if (y + menuHeight > vh) y = Math.max(pad, vh - menuHeight - pad);
-
-                      setCtxVictimId(vid);
-                      setCtxDbOpen(false);
-                      setCtxPos({ left: x, top: y });
-                      setCtxOpen(true);
-                    }}
+                    onSelectVictim={onSelectVictim}
+                    onOpenDetail={onOpenDetail}
+                    onOpenContextMenu={onOpenContextMenu}
                   />
                 );
               })

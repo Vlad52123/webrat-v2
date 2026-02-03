@@ -74,22 +74,15 @@ function createSnowflakes() {
 }
 
 export function applySnow(enabled: boolean) {
-  const requested = !!enabled;
-  let effective = requested;
+  const on = !!enabled;
+  if (lastSnowOn === on) return;
+  lastSnowOn = on;
   try {
-    if (document.documentElement.classList.contains("lowPerf")) effective = false;
-  } catch {
-    effective = requested;
-  }
-
-  if (lastSnowOn === effective) return;
-  lastSnowOn = effective;
-  try {
-    document.body.classList.toggle("isSnowEnabled", effective);
+    document.body.classList.toggle("isSnowEnabled", on);
   } catch {
     return;
   }
 
-  if (effective) createSnowflakes();
+  if (on) createSnowflakes();
   else clearSnowflakes();
 }

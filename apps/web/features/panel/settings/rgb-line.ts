@@ -98,13 +98,7 @@ export function applyLineColor(value: string) {
 }
 
 export function enableRgbLines(on: boolean) {
-  const requested = !!on;
-  let enabled = requested;
-  try {
-    if (document.documentElement.classList.contains("lowPerf")) enabled = false;
-  } catch {
-    enabled = requested;
-  }
+  const enabled = !!on;
   if (lastRgbOn === enabled) return;
   lastRgbOn = enabled;
   try {
