@@ -16,10 +16,12 @@ export function useSubscriptionQuery() {
   const q = useQuery<SubscriptionResponse>({
     queryKey: ["subscription"],
     queryFn: async () => {
-      const data = await getJson<SubscriptionResponse>("/api/subscription");
+      const data = await getJson<SubscriptionResponse>("/api/subscription/");
       return data;
     },
     refetchInterval: (query) => (query.state.status === "success" ? 60_000 : false),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     retry: false,
   });
 

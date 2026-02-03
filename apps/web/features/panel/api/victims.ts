@@ -28,6 +28,6 @@ export const VictimsResponseSchema = z.array(VictimSchema);
 export type VictimsResponse = z.infer<typeof VictimsResponseSchema>;
 
 export async function fetchVictims(): Promise<VictimsResponse> {
-  const data = await getJson<unknown>("/api/victims");
+  const data = await getJson<unknown>("/api/victims/");
   return VictimsResponseSchema.parse(data);
 }
