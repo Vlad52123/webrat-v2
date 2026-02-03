@@ -74,7 +74,6 @@ function PanelShellInner() {
       if (typeof next !== "string") return;
       const restrictedNext = next === "panel" || next === "builder";
       if (isSubSettled && !isVip && restrictedNext) {
-        setTab("shop");
         return;
       }
       setTab(next);
@@ -85,9 +84,9 @@ function PanelShellInner() {
   useEffect(() => {
     if (!isSubSettled) return;
     if (!isVip && isRestrictedTab) {
-      guardedSetTab("shop");
+      setTab("shop");
     }
-  }, [guardedSetTab, isRestrictedTab, isSubSettled, isVip]);
+  }, [isRestrictedTab, isSubSettled, isVip, setTab]);
 
   useEffect(() => {
     if (isPendingRestrictedTab) return;

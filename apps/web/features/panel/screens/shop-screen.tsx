@@ -112,6 +112,8 @@ export function ShopScreen() {
 
       await loadSubscription();
 
+      showToast("success", "Key activated");
+
       try {
         await qc.invalidateQueries({ queryKey: ["subscription"] });
       } catch {
@@ -120,6 +122,8 @@ export function ShopScreen() {
         await qc.invalidateQueries({ queryKey: ["victims"] });
       } catch {
       }
+    } catch {
+      showToast("error", "Request failed");
     } finally {
       setIsLoading(false);
     }
@@ -161,7 +165,7 @@ export function ShopScreen() {
                 disabled={isLoading}
                 onClick={() => activate().catch(() => { })}
               >
-                {isLoading ? "..." : "Activate"}
+                Activate
               </button>
             </div>
           </div>
@@ -196,12 +200,12 @@ export function ShopScreen() {
           ].map((p) => (
             <div
               key={p.period}
-              className="shopProductCard w-full min-h-[150px] rounded-[16px] border border-white/[0.14] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),rgba(15,15,15,0.84))] px-[14px] py-[10px] text-center shadow-[0_18px_44px_rgba(0,0,0,0.75),0_0_0_3px_rgba(255,255,255,0.08)] backdrop-blur-[10px] transition-[transform,box-shadow,border-color,background] duration-150 hover:translate-y-[-2px] hover:scale-[1.01] hover:border-white/[0.26] hover:bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),rgba(15,15,15,0.90))] hover:shadow-[0_22px_52px_rgba(0,0,0,0.82),0_0_0_4px_rgba(255,255,255,0.12)]"
+              className="shopProductCard flex w-full min-h-[150px] flex-col items-center justify-center rounded-[16px] border border-white/[0.14] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),rgba(15,15,15,0.84))] px-[14px] py-[10px] text-center shadow-[0_18px_44px_rgba(0,0,0,0.75),0_0_0_3px_rgba(255,255,255,0.08)] backdrop-blur-[10px] transition-[transform,box-shadow,border-color,background] duration-150 hover:translate-y-[-2px] hover:scale-[1.01] hover:border-white/[0.26] hover:bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),rgba(15,15,15,0.90))] hover:shadow-[0_22px_52px_rgba(0,0,0,0.82),0_0_0_4px_rgba(255,255,255,0.12)]"
             >
-              <div className="shopProductVip mt-[2px] mb-[4px] text-[14px] font-black text-[#ff3b3b]">RATER</div>
+              <div className="shopProductVip mb-[6px] text-[14px] font-black text-[#ff3b3b]">RATER</div>
               <div className="shopProductPeriod mb-[4px] text-[13px] font-extrabold text-white">{p.period}</div>
-              <div className="shopProductSubtitle mb-[10px] text-[12px] text-[rgba(230,230,230,0.9)]">{p.subtitle}</div>
-              <div className="shopProductPriceValue mt-[4px] text-[16px] font-extrabold text-[#4ee97a]">{p.price}</div>
+              <div className="shopProductSubtitle mb-[8px] text-[12px] text-[rgba(230,230,230,0.9)]">{p.subtitle}</div>
+              <div className="shopProductPriceValue text-[16px] font-extrabold text-[#4ee97a]">{p.price}</div>
             </div>
           ))}
         </div>

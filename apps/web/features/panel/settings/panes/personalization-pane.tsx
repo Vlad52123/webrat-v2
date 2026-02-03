@@ -69,14 +69,15 @@ export function PersonalizationPane(props: {
                   }
                   aria-pressed={state.bgMode === "image"}
                   onClick={() => {
-                    setBgMode("image");
                     if (!state.bgImage) {
                       try {
                         document.getElementById("settingsBgFile")?.click();
                       } catch {
                         return;
                       }
+                      return;
                     }
+                    setBgMode("image");
                   }}
                 >
                   <img
@@ -96,14 +97,15 @@ export function PersonalizationPane(props: {
                   aria-pressed={state.bgMode === "video"}
                   onClick={() => {
                     if (state.bgMode === "video" && state.bgVideoMarker) return;
-                    setBgMode("video");
                     if (!state.bgVideoMarker) {
                       try {
                         document.getElementById("settingsBgVideoFile")?.click();
                       } catch {
                         return;
                       }
+                      return;
                     }
+                    setBgMode("video");
                   }}
                 >
                   <img
@@ -140,7 +142,12 @@ export function PersonalizationPane(props: {
                   className="hidden"
                   onChange={(e) => {
                     const file = e.target.files && e.target.files[0] ? e.target.files[0] : null;
-                    if (!file) return;
+                    if (!file) {
+                      if (state.bgMode === "image" && !state.bgImage) {
+                        setBgMode("default");
+                      }
+                      return;
+                    }
                     void setBgImageFromFile(file);
                     try {
                       e.target.value = "";
@@ -159,7 +166,12 @@ export function PersonalizationPane(props: {
                   className="hidden"
                   onChange={(e) => {
                     const file = e.target.files && e.target.files[0] ? e.target.files[0] : null;
-                    if (!file) return;
+                    if (!file) {
+                      if (state.bgMode === "video" && !state.bgVideoMarker) {
+                        setBgMode("default");
+                      }
+                      return;
+                    }
                     void setBgVideoFromFile(file);
                     try {
                       e.target.value = "";

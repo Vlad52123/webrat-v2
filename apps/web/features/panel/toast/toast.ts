@@ -11,7 +11,7 @@ function ensureContainer(): HTMLElement {
   const el = document.createElement("div");
   el.id = "toastContainer";
   el.className =
-    "fixed right-[18px] bottom-[14px] z-[9999] flex flex-col-reverse gap-2 pointer-events-none";
+    "fixed right-[18px] bottom-[14px] z-[2147483647] flex flex-col-reverse gap-2 pointer-events-none";
   document.body.appendChild(el);
   return el;
 }

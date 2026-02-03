@@ -32,9 +32,11 @@ function createSnowflakes() {
     vw = 1200;
   }
 
-  const base = hc <= 4 ? 60 : hc <= 8 ? 90 : 110;
+  const base = hc <= 4 ? 34 : hc <= 8 ? 54 : 70;
   const scaled = Math.round((vw / 1200) * base);
-  const count = Math.max(40, Math.min(120, scaled));
+  const count = Math.max(24, Math.min(80, scaled));
+
+  const frag = document.createDocumentFragment();
 
   for (let i = 0; i < count; i += 1) {
     const el = document.createElement("div");
@@ -44,7 +46,7 @@ function createSnowflakes() {
     inner.className = "snowflakeInner";
     el.appendChild(inner);
 
-    const size = rand(2, 6.5).toFixed(2);
+    const size = rand(1.6, 5.2).toFixed(2);
     const alpha = rand(0.28, 0.9).toFixed(2);
     const x = rand(0, 100).toFixed(2) + "vw";
     const durationVal = rand(3.6, 7.8);
@@ -63,8 +65,10 @@ function createSnowflakes() {
     el.style.setProperty("--sx", sway);
     el.style.animationDelay = delay;
 
-    root.appendChild(el);
+    frag.appendChild(el);
   }
+
+  root.appendChild(frag);
 }
 
 export function applySnow(enabled: boolean) {
