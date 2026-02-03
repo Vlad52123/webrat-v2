@@ -12,6 +12,17 @@ function ensureContainer(): HTMLElement {
   el.id = "toastContainer";
   el.className =
     "fixed right-[18px] bottom-[14px] z-[2147483647] flex flex-col-reverse gap-2 pointer-events-none";
+  try {
+    el.style.position = "fixed";
+    el.style.right = "18px";
+    el.style.bottom = "14px";
+    el.style.zIndex = "2147483647";
+    el.style.display = "flex";
+    el.style.flexDirection = "column-reverse";
+    el.style.gap = "8px";
+    el.style.pointerEvents = "none";
+  } catch {
+  }
   document.body.appendChild(el);
   return el;
 }
@@ -34,11 +45,36 @@ export function showToast(typeOrTitle: string, message?: string, opts?: ToastOpt
     const toast = document.createElement("div");
     toast.className =
       "pointer-events-auto relative w-[280px] overflow-hidden rounded-[12px] border border-white/[0.16] bg-[rgba(18,18,18,0.86)] px-[14px] py-[10px] text-[13px] text-white/[0.96] shadow-[0_12px_28px_rgba(0,0,0,0.55)] backdrop-blur-[6px] opacity-0 translate-x-[120%]";
+    try {
+      toast.style.pointerEvents = "auto";
+      toast.style.position = "relative";
+      toast.style.width = "280px";
+      toast.style.overflow = "hidden";
+      toast.style.borderRadius = "12px";
+      toast.style.border = "1px solid rgba(255,255,255,0.16)";
+      toast.style.background = "rgba(18,18,18,0.86)";
+      toast.style.padding = "10px 14px";
+      toast.style.color = "rgba(255,255,255,0.96)";
+      toast.style.boxShadow = "0 12px 28px rgba(0,0,0,0.55)";
+      (toast.style as unknown as { backdropFilter?: string }).backdropFilter = "blur(6px)";
+      toast.style.opacity = "0";
+      toast.style.transform = "translateX(120%)";
+    } catch {
+    }
 
     const bar = document.createElement("div");
     bar.className = "absolute left-0 top-0 bottom-0 w-[4px] opacity-95";
     bar.style.background =
       type === "success" ? "#2ecc71" : type === "error" ? "#ff4b4b" : type === "warning" ? "#8b5cf6" : "#3498db";
+    try {
+      bar.style.position = "absolute";
+      bar.style.left = "0";
+      bar.style.top = "0";
+      bar.style.bottom = "0";
+      bar.style.width = "4px";
+      bar.style.opacity = "0.95";
+    } catch {
+    }
     toast.appendChild(bar);
 
     const top = document.createElement("div");
@@ -53,12 +89,39 @@ export function showToast(typeOrTitle: string, message?: string, opts?: ToastOpt
             ? "rgba(139, 92, 246, 0.45)"
             : "rgba(52, 152, 219, 0.45)";
     top.textContent = String(title || "");
+    try {
+      top.style.width = "100%";
+      top.style.borderBottomStyle = "solid";
+      top.style.borderBottomWidth = "1px";
+      top.style.padding = "0 8px 4px";
+      top.style.textAlign = "left";
+      top.style.fontSize = "14px";
+      top.style.fontWeight = "800";
+      top.style.textTransform = "uppercase";
+      top.style.letterSpacing = "0.06em";
+      top.style.whiteSpace = "nowrap";
+      top.style.overflow = "hidden";
+      (top.style as unknown as { textOverflow?: string }).textOverflow = "ellipsis";
+    } catch {
+    }
     toast.appendChild(top);
 
     const bottom = document.createElement("div");
     bottom.className =
       "w-full mt-1 px-2 text-left text-[14px] text-white/[0.92] leading-[1.25] max-h-[calc(1.25em*2)] overflow-hidden";
     bottom.textContent = msg;
+    try {
+      bottom.style.width = "100%";
+      bottom.style.marginTop = "4px";
+      bottom.style.padding = "0 8px";
+      bottom.style.textAlign = "left";
+      bottom.style.fontSize = "14px";
+      bottom.style.lineHeight = "1.25";
+      bottom.style.overflow = "hidden";
+      bottom.style.maxHeight = "2.5em";
+      bottom.style.color = "rgba(255,255,255,0.92)";
+    } catch {
+    }
     toast.appendChild(bottom);
 
     toast.addEventListener("click", () => {

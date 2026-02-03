@@ -216,16 +216,20 @@ export function VictimsTable(props: {
       }
       style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(120,120,120,0.9) transparent" }}
     >
-      {isLoading ? (
-        <div className="text-sm text-white/80">loading...</div>
-      ) : isError ? (
-        <div className="text-sm text-white/80">failed to load</div>
-      ) : (
-        <div className="inline-block min-w-full align-top">
-          <table className="victims-table table-auto w-max border-collapse text-[20px] font-[550] leading-[1.05] text-white/[0.99]">
-            <VictimsTableHeader />
-            <tbody>
-              {victims.map((v, idx) => {
+      <div className="inline-block min-w-full align-top">
+        <table className="victims-table table-auto w-max border-collapse text-[20px] font-[550] leading-[1.05] text-white/[0.99]">
+          <VictimsTableHeader />
+          <tbody>
+            {isLoading ? (
+              <tr>
+                <td className="py-3 text-sm text-white/80">loading...</td>
+              </tr>
+            ) : isError ? (
+              <tr>
+                <td className="py-3 text-sm text-white/80">failed to load</td>
+              </tr>
+            ) : (
+              victims.map((v, idx) => {
                 const id = String(v.id ?? "");
                 const key = id ? id : `row-${idx}`;
 
@@ -273,68 +277,68 @@ export function VictimsTable(props: {
                     }}
                   />
                 );
-              })}
-            </tbody>
-          </table>
+              })
+            )}
+          </tbody>
+        </table>
 
-          {ctxOpen && ctxPos
-            ? createPortal(
-              <div
-                ref={ctxMenuRef}
-                style={{ left: ctxPos.left, top: ctxPos.top }}
-                className="fixed z-[9999] w-[160px] select-none overflow-hidden rounded-[12px] border border-white/[0.14] bg-[rgba(12,12,12,0.96)] shadow-[0_22px_54px_rgba(0,0,0,0.65)]"
+        {ctxOpen && ctxPos
+          ? createPortal(
+            <div
+              ref={ctxMenuRef}
+              style={{ left: ctxPos.left, top: ctxPos.top }}
+              className="fixed z-[9999] w-[160px] select-none overflow-hidden rounded-[12px] border border-white/[0.14] bg-[rgba(12,12,12,0.96)] shadow-[0_22px_54px_rgba(0,0,0,0.65)]"
+            >
+              <button
+                type="button"
+                className="flex w-full items-center justify-between gap-2 px-[12px] py-[10px] text-left text-[13px] font-bold text-white hover:bg-white/[0.06]"
+                onClick={() => {
+                  const vid = ctxVictimId;
+                  if (!vid) return;
+                  closeCtx();
+                  onOpenDetail(vid);
+                }}
               >
-                <button
-                  type="button"
-                  className="flex w-full items-center justify-between gap-2 px-[12px] py-[10px] text-left text-[13px] font-bold text-white hover:bg-white/[0.06]"
-                  onClick={() => {
-                    const vid = ctxVictimId;
-                    if (!vid) return;
-                    closeCtx();
-                    onOpenDetail(vid);
-                  }}
-                >
-                  <span>Connect</span>
-                  <span className="text-white/50">›</span>
-                </button>
+                <span>Connect</span>
+                <span className="text-white/50">›</span>
+              </button>
 
-                <button
-                  type="button"
-                  className="flex w-full items-center justify-between gap-2 px-[12px] py-[10px] text-left text-[13px] font-bold text-white hover:bg-white/[0.06]"
-                  onClick={(e) => {
-                    try {
-                      e.preventDefault();
-                      e.stopPropagation();
-                    } catch {
-                    }
-                    setCtxDbOpen((v) => !v);
-                  }}
-                >
-                  <span>Database</span>
-                  <span className="text-white/50">›</span>
-                </button>
+              <button
+                type="button"
+                className="flex w-full items-center justify-between gap-2 px-[12px] py-[10px] text-left text-[13px] font-bold text-white hover:bg-white/[0.06]"
+                onClick={(e) => {
+                  try {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  } catch {
+                  }
+                  setCtxDbOpen((v) => !v);
+                }}
+              >
+                <span>Database</span>
+                <span className="text-white/50">›</span>
+              </button>
 
-                {ctxDbOpen ? (
-                  <div className="border-t border-white/[0.08]">
-                    <button
-                      type="button"
-                      className="flex w-full items-center justify-between gap-2 px-[12px] py-[10px] text-left text-[13px] font-bold text-[#ff7070] hover:bg-[rgba(255,75,75,0.10)]"
-                      onClick={() => {
-                        const vid = ctxVictimId;
-                        closeCtx();
-                        void onDeleteVictim(vid);
-                      }}
-                    >
-                      <span>Delete</span>
-                    </button>
-                  </div>
-                ) : null}
-              </div>,
-              document.body,
-            )
-            : null}
-        </div>
-      )}
+              {ctxDbOpen ? (
+                <div className="border-t border-white/[0.08]">
+                  <button
+                    type="button"
+                    className="flex w-full items-center justify-between gap-2 px-[12px] py-[10px] text-left text-[13px] font-bold text-[#ff7070] hover:bg-[rgba(255,75,75,0.10)]"
+                    onClick={() => {
+                      const vid = ctxVictimId;
+                      closeCtx();
+                      void onDeleteVictim(vid);
+                    }}
+                  >
+                    <span>Delete</span>
+                  </button>
+                </div>
+              ) : null}
+            </div>,
+            document.body,
+          )
+          : null}
+      </div>
     </div>
   );
 }

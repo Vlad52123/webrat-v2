@@ -115,6 +115,16 @@ export function ShopScreen() {
       showToast("success", "Key activated");
 
       try {
+        window.setTimeout(() => {
+          try {
+            window.location.replace("/panel/#panel");
+          } catch {
+          }
+        }, 450);
+      } catch {
+      }
+
+      try {
         await qc.invalidateQueries({ queryKey: ["subscription"] });
       } catch {
       }
