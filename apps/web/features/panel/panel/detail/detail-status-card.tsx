@@ -2,13 +2,13 @@
 
 import type { Victim } from "../../api/victims";
 
+import { isVictimOnline } from "../utils/victim-status";
+
 function getStatus(victim: Victim | null): "waiting" | "connected" | "disconnected" {
   if (!victim) return "waiting";
-  if (typeof victim.online === "boolean") return victim.online ? "connected" : "disconnected";
-  const s = typeof victim.status === "string" ? victim.status.toLowerCase() : "";
-  if (s === "online") return "connected";
-  if (s === "offline") return "disconnected";
-  return "waiting";
+
+  const online = isVictimOnline(victim);
+  return online ? "connected" : "disconnected";
 }
 
 export function DetailStatusCard(props: { victim: Victim | null }) {

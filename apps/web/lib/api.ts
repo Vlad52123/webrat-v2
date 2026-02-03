@@ -17,7 +17,10 @@ export async function getJson<T>(path: string): Promise<T> {
       typeof data === "object" && data && "error" in data
         ? String((data as { error: unknown }).error)
         : `HTTP_${res.status}`;
-    throw new Error(message);
+
+    const err = new Error(message) as Error & { status?: number };
+    err.status = res.status;
+    throw err;
   }
 
   return data as T;
@@ -41,7 +44,10 @@ export async function postJson<T>(path: string, body: JsonObject): Promise<T> {
       typeof data === "object" && data && "error" in data
         ? String((data as { error: unknown }).error)
         : `HTTP_${res.status}`;
-    throw new Error(message);
+
+    const err = new Error(message) as Error & { status?: number };
+    err.status = res.status;
+    throw err;
   }
 
   return data as T;

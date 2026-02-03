@@ -14,16 +14,19 @@ import { PanelSettingsProvider } from "../settings";
 import { installToastGlobal } from "../toast";
 import type { VictimsFilter } from "../state/victims-filter";
 import type { SettingsTabKey } from "../state/settings-tab";
+import { PanelWsProvider } from "../ws/ws-provider";
 import { PanelSidebar } from "./panel-sidebar";
 import { PanelTopbar } from "./panel-topbar";
 
 export function PanelShell() {
   return (
-    <PanelDetailViewProvider>
-      <VictimsTablePrefsProvider>
-        <PanelShellInner />
-      </VictimsTablePrefsProvider>
-    </PanelDetailViewProvider>
+    <PanelWsProvider>
+      <PanelDetailViewProvider>
+        <VictimsTablePrefsProvider>
+          <PanelShellInner />
+        </VictimsTablePrefsProvider>
+      </PanelDetailViewProvider>
+    </PanelWsProvider>
   );
 }
 
