@@ -13,6 +13,13 @@ type DB struct {
 	sql *sql.DB
 }
 
+func (d *DB) SQL() *sql.DB {
+	if d == nil {
+		return nil
+	}
+	return d.sql
+}
+
 func OpenFromEnv() (*DB, error) {
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {

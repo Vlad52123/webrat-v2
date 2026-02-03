@@ -13,8 +13,8 @@ const nextConfig: NextConfig = {
                 { source: "/api/login", destination: `${apiUrl}/login` },
                 { source: "/api/me", destination: `${apiUrl}/me` },
                 { source: "/api/logout", destination: `${apiUrl}/logout` },
-                { source: "/api/:path*", destination: `${apiUrl}/api/:path*` },
             ],
+            afterFiles: [{ source: "/api/:path*", destination: `${apiUrl}/api/:path*` }],
         };
     },
 };

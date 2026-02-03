@@ -11,7 +11,7 @@ import (
 func main() {
 	addr := os.Getenv("GO_API_ADDR")
 	if addr == "" {
-		addr = ":8081"
+		addr = ":3001"
 	}
 
 	a, err := app.New()

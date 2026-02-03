@@ -2,12 +2,18 @@ package app
 
 import (
 	"net/http"
+	"os"
 
+	"webrat-go-api/internal/bot"
+	"webrat-go-api/internal/compile"
+	"webrat-go-api/internal/httpapi"
 	"webrat-go-api/internal/storage"
+	"webrat-go-api/internal/ws"
 )
 
 type App struct {
 	db *storage.DB
+	hub *ws.Hub
 }
 
 func New() (*App, error) {
@@ -19,16 +25,23 @@ func New() (*App, error) {
 		_ = db.Close()
 		return nil, err
 	}
-	return &App{db: db}, nil
+	if err := compile.StartWorker(db); err != nil {
+		_ = db.Close()
+		return nil, err
+	}
+	hub, err := ws.NewHub(db)
+	if err != nil {
+		_ = db.Close()
+		return nil, err
+	}
+	if os.Getenv("BOT_ENABLED") == "1" {
+		go func() {
+			_ = bot.Run(db)
+		}()
+	}
+	return &App{db: db, hub: hub}, nil
 }
 
 func (a *App) Router() http.Handler {
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("ok"))
-	})
-
-	return mux
+	return httpapi.NewRouter(a.db, a.hub)
 }
