@@ -1,5 +1,6 @@
-export const API_BASE_URL =
-   process.env.NEXT_PUBLIC_API_URL ?? "";
+import { env } from "../env";
+
+export const API_BASE_URL = env.NEXT_PUBLIC_API_URL ?? "";
 
 type JsonObject = Record<string, unknown>;
 
