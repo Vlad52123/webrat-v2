@@ -1,10 +1,19 @@
 import type { NextConfig } from "next";
 import path from "node:path";
-import bundleAnalyzer from "@next/bundle-analyzer";
+import { createRequire } from "node:module";
 
-const withBundleAnalyzer = bundleAnalyzer({
-   enabled: process.env.ANALYZE === "true" || process.env.ANALYZE === "1",
-});
+const require = createRequire(import.meta.url);
+const analyzeEnabled = process.env.ANALYZE === "true" || process.env.ANALYZE === "1";
+
+const withBundleAnalyzer: (cfg: NextConfig) => NextConfig = (() => {
+   if (!analyzeEnabled) return (cfg) => cfg;
+   try {
+      const ba = require("@next/bundle-analyzer") as unknown as (opts: { enabled: boolean }) => (cfg: NextConfig) => NextConfig;
+      return ba({ enabled: true });
+   } catch {
+      return (cfg) => cfg;
+   }
+})();
 
 const nextConfig: NextConfig = {
    trailingSlash: true,
