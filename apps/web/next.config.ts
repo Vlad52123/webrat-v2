@@ -17,9 +17,6 @@ const withBundleAnalyzer: (cfg: NextConfig) => NextConfig = (() => {
 
 const nextConfig: NextConfig = {
    trailingSlash: true,
-   turbopack: {
-      root: path.join(__dirname, "..", ".."),
-   },
    async rewrites() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL?.trim() || "http://localhost:3001";
 
