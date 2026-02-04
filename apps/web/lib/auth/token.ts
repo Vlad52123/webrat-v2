@@ -1,14 +1,14 @@
 const TOKEN_KEY = "wc_token";
 
 export function getAuthToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(TOKEN_KEY);
+   if (typeof window === "undefined") return null;
+   return window.localStorage.getItem(TOKEN_KEY);
 }
 
 export function setAuthToken(token: string) {
-  window.localStorage.setItem(TOKEN_KEY, token);
+   window.localStorage.setItem(TOKEN_KEY, token);
 }
 
 export function clearAuthToken() {
-  window.localStorage.removeItem(TOKEN_KEY);
+   window.localStorage.removeItem(TOKEN_KEY);
 }
