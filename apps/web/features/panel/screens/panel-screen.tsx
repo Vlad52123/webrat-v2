@@ -30,6 +30,7 @@ export function PanelScreen(props: { filter: VictimsFilter }) {
                   victims={visibleVictims}
                   isLoading={victimsQuery.isLoading}
                   isError={victimsQuery.isError}
+                  error={victimsQuery.error}
                   selectedVictimId={detail.selectedVictimId}
                   onSelectVictim={detail.selectVictim}
                   onOpenDetail={detail.openDetailForVictim}

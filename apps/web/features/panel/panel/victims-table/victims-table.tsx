@@ -19,12 +19,13 @@ export function VictimsTable(props: {
    victims: Victim[];
    isLoading: boolean;
    isError: boolean;
+   error?: unknown;
    selectedVictimId: string | null;
    onSelectVictim: (victimId: string) => void;
    onOpenDetail: (victimId: string) => void;
    onSnapshotVictim?: (victim: Victim) => void;
 }) {
-   const { victims, isLoading, isError, selectedVictimId, onSelectVictim, onOpenDetail, onSnapshotVictim } = props;
+   const { victims, isLoading, isError, error, selectedVictimId, onSelectVictim, onOpenDetail, onSnapshotVictim } = props;
    const prefs = useVictimsTablePrefs();
 
    const qc = useQueryClient();
@@ -429,139 +430,150 @@ export function VictimsTable(props: {
       }
    };
 
+   const errorText = useMemo(() => {
+      if (!isError) return "";
+      const e = error as (Error & { status?: number }) | null;
+      const st = typeof e?.status === "number" ? e.status : null;
+      if (st === 401) return "unauthorized";
+      if (st === 403) return "premium required";
+      if (st === 404) return "not found";
+      if (st != null) return `HTTP_${st}`;
+      const msg = e?.message ? String(e.message) : "failed";
+      return msg.length > 80 ? `${msg.slice(0, 80)}...` : msg;
+   }, [error, isError]);
+
    return (
-      <div
-         ref={tableContainerRef}
-         className={
-            "relative box-border mx-auto my-[12px] h-[calc(100%-24px)] w-full max-w-[calc(100%-40px)] overflow-x-auto overflow-y-auto rounded-[18px] border border-white/[0.16] bg-[rgba(18,18,18,0.66)] px-[12px] pb-[12px] pt-[8px] shadow-[0_18px_44px_rgba(0,0,0,0.6),0_0_0_4px_rgba(255,255,255,0.04)] backdrop-blur-[10px] touch-auto"
-         }
-         style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(120,120,120,0.9) transparent" }}
-      >
-         <div className="inline-block min-w-full align-top">
-            <table className="victims-table table-auto w-full min-w-max border-collapse text-[20px] font-[550] leading-[1.05] text-white/[0.99]">
-               <thead>
-                  {table.getHeaderGroups().map((hg) => (
-                     <tr key={hg.id} ref={hg.id === table.getHeaderGroups()[0]?.id ? headerRowRef : undefined}>
-                        {hg.headers.map((h) => {
-                           const colId = String(h.column.id) as VictimsColumnKey;
+      <div className="h-full w-full min-w-0 overflow-hidden">
+         <div ref={tableContainerRef} className="h-full w-full overflow-x-auto overflow-y-auto">
+            <div className="inline-block min-w-full align-top">
+               <table className="victims-table table-auto w-full min-w-max border-collapse text-[20px] font-[550] leading-[1.05] text-white/[0.99]">
+                  <thead>
+                     {table.getHeaderGroups().map((hg) => (
+                        <tr key={hg.id} ref={hg.id === table.getHeaderGroups()[0]?.id ? headerRowRef : undefined}>
+                           {hg.headers.map((h) => {
+                              const colId = String(h.column.id) as VictimsColumnKey;
+                              return (
+                                 <th
+                                    key={h.id}
+                                    className={cn(
+                                       "sticky top-0 z-[2] bg-[#202020] px-[4px] pb-[3px] pt-0 text-left text-[20px] font-normal leading-[1.05] text-white/[0.98]",
+                                       "select-none whitespace-nowrap",
+                                       "isReorderable",
+                                       colId,
+                                       victimsColumnSizeClass(colId),
+                                    )}
+                                    style={{ borderBottom: "3px solid var(--line)" }}
+                                 >
+                                    {h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}
+                                 </th>
+                              );
+                           })}
+                        </tr>
+                     ))}
+                  </thead>
+                  <tbody>
+                     {isLoading ? (
+                        <tr>
+                           <td className="py-3 text-sm text-white/80">loading...</td>
+                        </tr>
+                     ) : isError ? (
+                        <tr>
+                           <td className="py-3 text-sm text-white/80">{errorText || "failed to load"}</td>
+                        </tr>
+                     ) : (
+                        table.getRowModel().rows.map((row) => {
+                           const v = row.original;
+                           const id = String(v.id ?? "");
+                           const isSelected = id === selectedVictimId;
+
                            return (
-                              <th
-                                 key={h.id}
+                              <tr
+                                 key={row.id}
+                                 data-victim-id={id}
                                  className={cn(
-                                    "sticky top-0 z-[2] bg-[#202020] px-[4px] pb-[3px] pt-0 text-left text-[20px] font-normal leading-[1.05] text-white/[0.98]",
-                                    "select-none whitespace-nowrap",
-                                    "isReorderable",
-                                    colId,
-                                    victimsColumnSizeClass(colId),
+                                    "border-b border-white/[0.04]",
+                                    "hover:bg-white/[0.03]",
+                                    isSelected && "bg-white/[0.04]",
                                  )}
-                                 style={{ borderBottom: "3px solid var(--line)" }}
+                                 onClick={() => onSelectVictim(id)}
+                                 onDoubleClick={() => onOpenDetail(id)}
+                                 onContextMenu={(e: ReactMouseEvent<HTMLTableRowElement>) => onOpenContextMenu(e, v, id)}
                               >
-                                 {h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}
-                              </th>
+                                 {row.getVisibleCells().map((cell) => {
+                                    const colId = String(cell.column.id) as VictimsColumnKey;
+                                    return (
+                                       <td
+                                          key={cell.id}
+                                          className={cn(colId, victimsColumnSizeClass(colId), "px-[8px] py-[4px] text-left whitespace-nowrap")}
+                                       >
+                                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                       </td>
+                                    );
+                                 })}
+                              </tr>
                            );
-                        })}
-                     </tr>
-                  ))}
-               </thead>
-               <tbody>
-                  {isLoading ? (
-                     <tr>
-                        <td className="py-3 text-sm text-white/80">loading...</td>
-                     </tr>
-                  ) : isError ? (
-                     <tr>
-                        <td className="py-3 text-sm text-white/80">failed to load</td>
-                     </tr>
-                  ) : (
-                     table.getRowModel().rows.map((row) => {
-                        const v = row.original;
-                        const id = String(v.id ?? "");
-                        const isSelected = id === selectedVictimId;
+                        })
+                     )}
+                  </tbody>
+               </table>
 
-                        return (
-                           <tr
-                              key={row.id}
-                              data-victim-id={id}
-                              className={cn(
-                                 "border-b border-white/[0.04]",
-                                 "hover:bg-white/[0.03]",
-                                 isSelected && "bg-white/[0.04]",
-                              )}
-                              onClick={() => onSelectVictim(id)}
-                              onDoubleClick={() => onOpenDetail(id)}
-                              onContextMenu={(e: ReactMouseEvent<HTMLTableRowElement>) => onOpenContextMenu(e, v, id)}
-                           >
-                              {row.getVisibleCells().map((cell) => {
-                                 const colId = String(cell.column.id) as VictimsColumnKey;
-                                 return (
-                                    <td key={cell.id} className={cn(colId, victimsColumnSizeClass(colId), "px-[8px] py-[4px] text-left whitespace-nowrap")}>
-                                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                    </td>
-                                 );
-                              })}
-                           </tr>
-                        );
-                     })
-                  )}
-               </tbody>
-            </table>
-
-            {ctxOpen && ctxPos
-               ? createPortal(
-                  <div
-                     ref={ctxMenuRef}
-                     style={{ left: ctxPos.left, top: ctxPos.top }}
-                     className="fixed z-[9999] w-[160px] select-none overflow-hidden rounded-[12px] border border-white/[0.14] bg-[rgba(12,12,12,0.96)] shadow-[0_22px_54px_rgba(0,0,0,0.65)]"
-                  >
-                     <button
-                        type="button"
-                        className="flex w-full items-center justify-between gap-2 px-[12px] py-[10px] text-left text-[13px] font-bold text-white hover:bg-white/[0.06]"
-                        onClick={() => {
-                           const vid = ctxVictimId;
-                           if (!vid) return;
-                           closeCtx();
-                           onOpenDetail(vid);
-                        }}
+               {ctxOpen && ctxPos
+                  ? createPortal(
+                     <div
+                        ref={ctxMenuRef}
+                        style={{ left: ctxPos.left, top: ctxPos.top }}
+                        className="fixed z-[9999] w-[160px] select-none overflow-hidden rounded-[12px] border border-white/[0.14] bg-[rgba(12,12,12,0.96)] shadow-[0_22px_54px_rgba(0,0,0,0.65)]"
                      >
-                        <span>Connect</span>
-                        <span className="text-white/50">›</span>
-                     </button>
+                        <button
+                           type="button"
+                           className="flex w-full items-center justify-between gap-2 px-[12px] py-[10px] text-left text-[13px] font-bold text-white hover:bg-white/[0.06]"
+                           onClick={() => {
+                              const vid = ctxVictimId;
+                              if (!vid) return;
+                              closeCtx();
+                              onOpenDetail(vid);
+                           }}
+                        >
+                           <span>Connect</span>
+                           <span className="text-white/50">›</span>
+                        </button>
 
-                     <button
-                        type="button"
-                        className="flex w-full items-center justify-between gap-2 px-[12px] py-[10px] text-left text-[13px] font-bold text-white hover:bg-white/[0.06]"
-                        onClick={(e) => {
-                           try {
-                              e.preventDefault();
-                              e.stopPropagation();
-                           } catch {
-                           }
-                           setCtxDbOpen((v) => !v);
-                        }}
-                     >
-                        <span>Database</span>
-                        <span className="text-white/50">›</span>
-                     </button>
+                        <button
+                           type="button"
+                           className="flex w-full items-center justify-between gap-2 px-[12px] py-[10px] text-left text-[13px] font-bold text-white hover:bg-white/[0.06]"
+                           onClick={(e) => {
+                              try {
+                                 e.preventDefault();
+                                 e.stopPropagation();
+                              } catch {
+                              }
+                              setCtxDbOpen((v) => !v);
+                           }}
+                        >
+                           <span>Database</span>
+                           <span className="text-white/50">›</span>
+                        </button>
 
-                     {ctxDbOpen ? (
-                        <div className="border-t border-white/[0.08]">
-                           <button
-                              type="button"
-                              className="flex w-full items-center justify-between gap-2 px-[12px] py-[10px] text-left text-[13px] font-bold text-[#ff7070] hover:bg-[rgba(255,75,75,0.10)]"
-                              onClick={() => {
-                                 const vid = ctxVictimId;
-                                 closeCtx();
-                                 void onDeleteVictim(vid);
-                              }}
-                           >
-                              <span>Delete</span>
-                           </button>
-                        </div>
-                     ) : null}
-                  </div>,
-                  document.body,
-               )
-               : null}
+                        {ctxDbOpen ? (
+                           <div className="border-t border-white/[0.08]">
+                              <button
+                                 type="button"
+                                 className="flex w-full items-center justify-between gap-2 px-[12px] py-[10px] text-left text-[13px] font-bold text-[#ff7070] hover:bg-[rgba(255,75,75,0.10)]"
+                                 onClick={() => {
+                                    const vid = ctxVictimId;
+                                    closeCtx();
+                                    void onDeleteVictim(vid);
+                                 }}
+                              >
+                                 <span>Delete</span>
+                              </button>
+                           </div>
+                        ) : null}
+                     </div>,
+                     document.body,
+                  )
+                  : null}
+            </div>
          </div>
       </div>
    );

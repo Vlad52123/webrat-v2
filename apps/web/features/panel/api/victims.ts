@@ -20,7 +20,7 @@ export const VictimSchema = z.object({
    device_type: z.string().optional(),
    online: z.boolean().optional(),
    status: z.string().optional(),
-});
+}).passthrough();
 
 export type Victim = z.infer<typeof VictimSchema>;
 
