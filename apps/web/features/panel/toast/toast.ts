@@ -53,10 +53,7 @@ function WcToastView(props: {
    return createElement(
       "div",
       {
-         className:
-            "wc-toast toast--show pointer-events-auto relative w-[280px] overflow-hidden rounded-[12px] border border-white/[0.16] bg-[rgba(18,18,18,0.86)] px-[14px] py-[10px] text-[13px] text-white/[0.96] shadow-[0_12px_28px_rgba(0,0,0,0.55)] backdrop-blur-[6px]" +
-            (hiding ? " toast--hide" : ""),
-         style: ({ "--wc-toast-ttl": `${ttlMs}ms` } as unknown as CSSProperties),
+         className: "wc-toast-shell pointer-events-auto",
          onClick: () => {
             try {
                setHiding(true);
@@ -64,31 +61,40 @@ function WcToastView(props: {
             }
          },
       },
-      createElement("div", {
-         className: "absolute left-0 top-0 bottom-0 w-[4px] opacity-95",
-         style: { background: barBg },
-      }),
       createElement(
          "div",
          {
             className:
-               "w-full border-b px-2 pb-1 text-left text-[14px] font-extrabold uppercase tracking-[0.06em] text-white whitespace-nowrap overflow-hidden text-ellipsis",
-            style: { borderBottomColor },
+               "wc-toast toast--show relative w-[280px] overflow-hidden rounded-[12px] border border-white/[0.16] bg-[rgba(18,18,18,0.86)] px-[14px] py-[10px] text-[13px] text-white/[0.96] shadow-[0_12px_28px_rgba(0,0,0,0.55)] backdrop-blur-[6px]" +
+               (hiding ? " toast--hide" : ""),
+            style: ({ "--wc-toast-ttl": `${ttlMs}ms` } as unknown as CSSProperties),
          },
-         String(title || ""),
+         createElement("div", {
+            className: "absolute left-0 top-0 bottom-0 w-[4px] opacity-95",
+            style: { background: barBg },
+         }),
+         createElement(
+            "div",
+            {
+               className:
+                  "w-full border-b px-2 pb-1 text-left text-[14px] font-extrabold uppercase tracking-[0.06em] text-white whitespace-nowrap overflow-hidden text-ellipsis",
+               style: { borderBottomColor },
+            },
+            String(title || ""),
+         ),
+         createElement(
+            "div",
+            {
+               className: "w-full mt-1 px-2 text-left text-[14px] text-white/[0.92] leading-[1.25] max-h-[calc(1.25em*2)] overflow-hidden",
+            },
+            message,
+         ),
+         createElement("div", {
+            className: "wc-toast-progress absolute left-0 right-0 bottom-0 h-[2px] opacity-90",
+            style: { background: barBg },
+            "aria-hidden": "true",
+         }),
       ),
-      createElement(
-         "div",
-         {
-            className: "w-full mt-1 px-2 text-left text-[14px] text-white/[0.92] leading-[1.25] max-h-[calc(1.25em*2)] overflow-hidden",
-         },
-         message,
-      ),
-      createElement("div", {
-         className: "wc-toast-progress absolute left-0 right-0 bottom-0 h-[2px] opacity-90",
-         style: { background: barBg },
-         "aria-hidden": "true",
-      }),
    );
 }
 
