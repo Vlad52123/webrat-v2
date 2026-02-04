@@ -18,6 +18,10 @@ export async function getJson<T>(path: string): Promise<T> {
    const res = await fetch(`${API_BASE_URL}${path}`, {
       method: "GET",
       credentials: "include",
+      cache: "no-store",
+      headers: {
+         Accept: "application/json",
+      },
    });
 
    const text = await res.text();
@@ -41,8 +45,10 @@ export async function postJson<T>(path: string, body: JsonObject): Promise<T> {
    const res = await fetch(`${API_BASE_URL}${path}`, {
       method: "POST",
       credentials: "include",
+      cache: "no-store",
       headers: {
          "Content-Type": "application/json",
+         Accept: "application/json",
       },
       body: JSON.stringify(body),
    });
