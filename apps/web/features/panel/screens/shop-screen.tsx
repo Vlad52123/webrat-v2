@@ -14,8 +14,9 @@ import { shopClasses } from "../shop/styles";
 export function ShopScreen() {
   const qc = useQueryClient();
   const [key, setKey] = useState("");
-  const [statusTitle, setStatusTitle] = useState("NONE");
-  const [until, setUntil] = useState("-");
+  const [statusTitle, setStatusTitle] = useState("...");
+  const [until, setUntil] = useState("...");
+  const [isSubLoading, setIsSubLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [kind, setKind] = useState("month");
   const clearedOnFocusRef = useRef(false);
@@ -39,33 +40,39 @@ export function ShopScreen() {
   }, []);
 
   const loadSubscription = useCallback(async () => {
-    const res = await fetch("/api/subscription/", { method: "GET", credentials: "include" });
-    if (!res.ok) throw new Error(`HTTP_${res.status}`);
-    const data = (await res.json().catch(() => null)) as unknown;
-    const obj = data && typeof data === "object" ? (data as Record<string, unknown>) : null;
-    const status = String(obj?.status || "none").toLowerCase();
-    const isVip = status === "vip";
-    setStatusTitle(isVip ? "RATER" : "NONE");
+    setIsSubLoading(true);
+    try {
+      const res = await fetch("/api/subscription/", { method: "GET", credentials: "include" });
+      if (!res.ok) throw new Error(`HTTP_${res.status}`);
+      const data = (await res.json().catch(() => null)) as unknown;
+      const obj = data && typeof data === "object" ? (data as Record<string, unknown>) : null;
+      const status = String(obj?.status || "none").toLowerCase();
+      const isVip = status === "vip";
+      setStatusTitle(isVip ? "RATER" : "NONE");
 
-    const k = String(obj?.kind || "month").toLowerCase();
-    setKind(k || "month");
+      const k = String(obj?.kind || "month").toLowerCase();
+      setKind(k || "month");
 
-    const untilText = (() => {
-      if (!isVip) return "-";
-      if (k === "forever") return "Forever";
-      return formatSubscriptionDate(obj?.activated_at);
-    })();
-    setUntil(untilText);
+      const untilText = (() => {
+        if (!isVip) return "-";
+        if (k === "forever") return "Forever";
+        return formatSubscriptionDate(obj?.activated_at);
+      })();
+      setUntil(untilText);
+    } finally {
+      setIsSubLoading(false);
+    }
   }, [formatSubscriptionDate]);
 
   useEffect(() => {
-    loadSubscription().catch(() => {
-      setStatusTitle("NONE");
-      setUntil("-");
-      if (didToastLoadRef.current) return;
-      didToastLoadRef.current = true;
-      showToast("error", "Failed to load subscription status");
-    });
+    loadSubscription()
+      .catch(() => {
+        setStatusTitle("NONE");
+        setUntil("-");
+        if (didToastLoadRef.current) return;
+        didToastLoadRef.current = true;
+        showToast("error", "Failed to load subscription status");
+      });
   }, [loadSubscription]);
 
   const activate = useCallback(async () => {
@@ -174,9 +181,9 @@ export function ShopScreen() {
           }}
           onActivate={() => activate().catch(() => { })}
           isLoading={isLoading}
-          isVip={String(statusTitle || "").toUpperCase() === "RATER"}
-          statusTitle={statusTitle}
-          until={until}
+          isVip={!isSubLoading && String(statusTitle || "").toUpperCase() === "RATER"}
+          statusTitle={isSubLoading ? "..." : statusTitle}
+          until={isSubLoading ? "..." : until}
         />
 
         <ShopSectionTitle>Shop</ShopSectionTitle>

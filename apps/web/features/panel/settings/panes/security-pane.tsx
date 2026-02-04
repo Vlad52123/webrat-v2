@@ -14,6 +14,7 @@ export function SecurityPane(props: {
   onOpenDelete: () => void;
 }) {
   const { tab, securityLogin, securitySub, securityEmail, securityRegDate, onOpenPassword, onOpenEmail, onOpenLogout, onOpenDelete } = props;
+  const isRater = String(securitySub || "").toUpperCase() === "RATER";
 
   return (
     <div className="min-h-[220px]" data-settings-pane="security" style={{ display: tab === "security" ? "block" : "none" }}>
@@ -53,7 +54,10 @@ export function SecurityPane(props: {
 
         <div className="my-[6px] flex items-center justify-between gap-3 rounded-[12px] border border-white/[0.16] bg-white/[0.03] px-[12px] py-[10px]">
           <div className="text-[15px] font-medium text-white opacity-90">Subscription:</div>
-          <div id="securitySubValue" className="text-[14px] font-bold text-white/[0.92]">
+          <div
+            id="securitySubValue"
+            className={"text-[14px] font-bold " + (isRater ? "text-[#ff3b3b]" : "text-white/[0.92]")}
+          >
             {securitySub}
           </div>
         </div>

@@ -31,7 +31,8 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
   } = usePanelSettings();
 
   const [securityLogin, setSecurityLogin] = useState("-");
-  const [securitySub, setSecuritySub] = useState("NONE");
+  const [securitySub, setSecuritySub] = useState("...");
+  const [securitySubLoading, setSecuritySubLoading] = useState(true);
   const [securityEmail, setSecurityEmail] = useState("Not set");
   const [securityRegDate, setSecurityRegDate] = useState("Unknown");
   const [logoutOpen, setLogoutOpen] = useState(false);
@@ -48,11 +49,28 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
   const [emailStep, setEmailStep] = useState<"input" | "code">("input");
   const [pendingEmail, setPendingEmail] = useState("");
 
+  const formatDateTime = (iso: unknown): string => {
+    if (!iso) return "Unknown";
+    const d = new Date(String(iso));
+    if (!Number.isFinite(d.getTime())) return "Unknown";
+    try {
+      return d.toLocaleString("ru-RU", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return "Unknown";
+    }
+  };
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`/api/me`, { method: "GET", credentials: "include" });
+        const res = await fetch(`/api/me/`, { method: "GET", credentials: "include" });
         if (!res.ok) return;
         const data = (await res.json()) as unknown;
         if (cancelled) return;
@@ -77,15 +95,18 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`/api/subscription`, { method: "GET", credentials: "include" });
+        setSecuritySubLoading(true);
+        const res = await fetch(`/api/subscription/`, { method: "GET", credentials: "include" });
         if (!res.ok) return;
         const data = (await res.json().catch(() => null)) as unknown;
         if (cancelled) return;
         const obj = data && typeof data === "object" ? (data as Record<string, unknown>) : null;
-        const status = String(obj?.status || "none").toUpperCase();
-        setSecuritySub(status);
+        const status = String(obj?.status || "none").toLowerCase();
+        setSecuritySub(status === "vip" ? "RATER" : "NONE");
       } catch {
         return;
+      } finally {
+        if (!cancelled) setSecuritySubLoading(false);
       }
     })();
     return () => {
@@ -97,7 +118,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`/api/account`, { method: "GET", credentials: "include" });
+        const res = await fetch(`/api/account/`, { method: "GET", credentials: "include" });
         if (!res.ok) return;
         const data = (await res.json().catch(() => null)) as unknown;
         if (cancelled) return;
@@ -107,13 +128,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
         const email = String(obj?.email || "").trim();
         setSecurityEmail(email ? email : "Not set");
 
-        const createdAtRaw = obj?.created_at;
-        const created = createdAtRaw ? new Date(String(createdAtRaw)) : null;
-        if (created && Number.isFinite(created.getTime())) {
-          setSecurityRegDate(created.toISOString().slice(0, 10));
-        } else {
-          setSecurityRegDate("Unknown");
-        }
+        setSecurityRegDate(formatDateTime(obj?.created_at));
       } catch {
         return;
       }
@@ -124,6 +139,10 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
   }, []);
 
   const wsSelectValue = useMemo(() => state.wsHost || "__default__", [state.wsHost]);
+
+  const securitySubDisplay = useMemo(() => {
+    return securitySubLoading ? "..." : securitySub;
+  }, [securitySub, securitySubLoading]);
 
   const wsWrapRef = useRef<HTMLDivElement | null>(null);
   const wsBtnRef = useRef<HTMLButtonElement | null>(null);
@@ -257,7 +276,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
           <SecurityPane
             tab={tab}
             securityLogin={securityLogin}
-            securitySub={securitySub}
+            securitySub={securitySubDisplay}
             securityEmail={securityEmail}
             securityRegDate={securityRegDate}
             onOpenPassword={() => {
@@ -293,7 +312,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
             } catch {
             }
             try {
-              await fetch(`/api/logout`, { method: "POST", credentials: "include" });
+              await fetch(`/api/logout/`, { method: "POST", credentials: "include" });
             } catch {
             }
             if (typeof window !== "undefined") {
@@ -317,7 +336,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
               return;
             }
             try {
-              const res = await fetch(`/api/delete-account`, {
+              const res = await fetch(`/api/delete-account/`, {
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json", ...csrfHeaders() },
@@ -373,7 +392,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
             }
 
             try {
-              const res = await fetch(`/api/change-password`, {
+              const res = await fetch(`/api/change-password/`, {
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json", ...csrfHeaders() },
@@ -431,7 +450,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
               }
 
               try {
-                const res = await fetch(`/api/set-email`, {
+                const res = await fetch(`/api/set-email/`, {
                   method: "POST",
                   credentials: "include",
                   headers: { "Content-Type": "application/json", ...csrfHeaders() },
@@ -464,7 +483,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
             }
 
             try {
-              const res = await fetch(`/api/confirm-email`, {
+              const res = await fetch(`/api/confirm-email/`, {
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json", ...csrfHeaders() },
