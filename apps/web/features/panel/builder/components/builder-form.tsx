@@ -8,6 +8,7 @@ import { BuilderTextInput } from "./builder-text-input";
 import { inputFixedClass } from "../styles";
 import { readIcoAsBase64 } from "../utils/icon";
 import { showToastSafe } from "../utils/toast";
+import { useBuilderBuildFlow } from "../hooks/use-builder-build-flow";
 
 export function BuilderForm(props: { open: boolean; mutex: string }) {
    const { open, mutex } = props;
@@ -18,6 +19,14 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
    const [hidden, setHidden] = useState<boolean>(true);
    const [isOpenClass, setIsOpenClass] = useState<boolean>(false);
    const formRef = useRef<HTMLDivElement | null>(null);
+
+   const { startBuild } = useBuilderBuildFlow({
+      iconBase64,
+      setIconBase64,
+      delay,
+      setDelay,
+      setInstallMode,
+   });
 
    useEffect(() => {
       const el = formRef.current;
@@ -122,23 +131,32 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
       };
    }, []);
 
-   const onCreate = () => {
-      const buildName = (document.getElementById("buildName") as HTMLInputElement | null)?.value ?? "";
-      const rawName = String(buildName || "").trim();
-      if (!rawName) {
-         showToastSafe("warning", "Enter exe name!");
-         return;
-      }
-      if (rawName.length > 25) {
-         showToastSafe("warning", "Name too long (max 25)");
-         return;
-      }
+   useEffect(() => {
+      const buildName = document.getElementById("buildName") as HTMLInputElement | null;
+      const extensionInput = document.getElementById("extension") as HTMLInputElement | null;
+      if (!buildName || !extensionInput) return;
 
+      const updateExtensionFromName = () => {
+         let raw = String(buildName.value || "").trim();
+         if (!raw) {
+            extensionInput.value = "webcrystal.exe";
+            return;
+         }
+         raw = raw.replace(/[^A-Za-z0-9_-]+/g, "_").slice(0, 25);
+         extensionInput.value = raw + ".exe";
+      };
+
+      updateExtensionFromName();
+      buildName.addEventListener("input", updateExtensionFromName);
+      return () => buildName.removeEventListener("input", updateExtensionFromName);
+   }, []);
+
+   const onCreate = () => {
       const delaySec = clampDelay(delay);
       if (delaySec !== delay) setDelay(delaySec);
 
       void iconBase64;
-      showToastSafe("info", "Build flow is being ported");
+      void startBuild();
    };
 
    return (
@@ -183,7 +201,7 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
                   <BuilderField label="Extension">
                      <BuilderTextInput
                         id="extension"
-                        value="webcrystal.exe"
+                        defaultValue="webcrystal.exe"
                         readOnly
                         tabIndex={-1}
                         style={{ color: "gray" }}

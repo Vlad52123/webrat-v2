@@ -27,7 +27,9 @@ export function usePanelTab() {
       try {
          if (typeof window === "undefined") return "panel";
          const current = parseHash(window.location.hash);
-         return current ?? "panel";
+         if (current) return current;
+         const saved = parseHash(String(sessionStorage.getItem("webrat_last_hash") || ""));
+         return saved ?? "panel";
       } catch {
          return "panel";
       }
@@ -37,6 +39,20 @@ export function usePanelTab() {
       ensureTrailingSlashPreservingHash();
       const current = parseHash(window.location.hash);
       if (current) return;
+
+      try {
+         const saved = parseHash(String(sessionStorage.getItem("webrat_last_hash") || ""));
+         if (saved) {
+            if (typeof history !== "undefined" && typeof history.replaceState === "function") {
+               const p = window.location.pathname.endsWith("/") ? window.location.pathname : `${window.location.pathname}/`;
+               history.replaceState(null, "", `${p}${window.location.search}#${saved}`);
+            } else {
+               window.location.hash = `#${saved}`;
+            }
+            return;
+         }
+      } catch {
+      }
 
       if (typeof history !== "undefined" && typeof history.replaceState === "function") {
          const p = window.location.pathname.endsWith("/") ? window.location.pathname : `${window.location.pathname}/`;
@@ -50,6 +66,10 @@ export function usePanelTab() {
       const onHashChange = () => {
          const next = parseHash(window.location.hash);
          setTabState(next ?? "panel");
+         try {
+            sessionStorage.setItem("webrat_last_hash", String(window.location.hash || ""));
+         } catch {
+         }
       };
 
       window.addEventListener("hashchange", onHashChange);

@@ -29,7 +29,7 @@ export function useBuilderBuildHistory(login: string) {
    });
 
    useEffect(() => {
-      const t = window.setTimeout(() => {
+      const read = () => {
          try {
             const raw = localStorage.getItem(key);
             if (!raw) {
@@ -45,8 +45,36 @@ export function useBuilderBuildHistory(login: string) {
          } catch {
             setItems([]);
          }
+      };
+
+      const t = window.setTimeout(() => {
+         read();
       }, 0);
-      return () => window.clearTimeout(t);
+
+      const onStorage = (e: StorageEvent) => {
+         if (!e) return;
+         if (e.key !== key) return;
+         read();
+      };
+
+      const onCustom = (e: Event) => {
+         const ce = e as CustomEvent<{ key?: unknown }>;
+         const changedKey = ce?.detail?.key;
+         if (typeof changedKey === "string" && changedKey === key) {
+            read();
+         }
+      };
+
+      window.addEventListener("storage", onStorage);
+      window.addEventListener("webrat_builds_updated", onCustom);
+      return () => {
+         window.clearTimeout(t);
+         try {
+            window.removeEventListener("storage", onStorage);
+            window.removeEventListener("webrat_builds_updated", onCustom);
+         } catch {
+         }
+      };
    }, [key]);
 
    const save = (next: BuildHistoryItem[]) => {

