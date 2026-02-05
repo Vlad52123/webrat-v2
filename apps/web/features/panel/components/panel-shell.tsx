@@ -57,7 +57,15 @@ function PanelShellInner() {
    const [settingsTab, setSettingsTab] = useState<SettingsTabKey>("personalization");
    const contentRef = useRef<HTMLElement | null>(null);
    const blockedToastRef = useRef<string>("");
-   const [loaderUntilTs, setLoaderUntilTs] = useState(0);
+   const [loaderUntilTs, setLoaderUntilTs] = useState(() => {
+      try {
+         if (typeof window === "undefined") return 0;
+         const h = String(window.location.hash || "").toLowerCase();
+         if (h === "#panel" || h === "#builder") return Date.now() + 1000;
+      } catch {
+      }
+      return 0;
+   });
 
    const isVip = useMemo(() => {
       const st = String(subQ.data?.status || "").toLowerCase();
