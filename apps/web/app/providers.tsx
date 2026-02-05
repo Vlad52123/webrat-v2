@@ -111,9 +111,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
             ),
          ) as HTMLElement[];
 
-         if (!nodes.length) return false;
+         const wcNodes = Array.from(document.querySelectorAll(".wc-toast,.wc-toast-shell")) as HTMLElement[];
 
-         const patch = (el: HTMLElement) => {
+         if (!nodes.length && !wcNodes.length) return false;
+
+         const patchContainer = (el: HTMLElement) => {
             try {
                el.style.setProperty("--offset", "0px");
                el.style.setProperty("--mobile-offset", "0px");
@@ -121,35 +123,54 @@ export function Providers({ children }: { children: React.ReactNode }) {
             } catch {
             }
             try {
-               const cs = window.getComputedStyle(el);
-               if (cs.position === "fixed") {
-                  el.style.position = "fixed";
-                  el.style.right = "0";
-                  el.style.bottom = "0";
-                  el.style.top = "auto";
-                  el.style.left = "auto";
-                  el.style.inset = "auto 0 0 auto";
-                  el.style.margin = "0";
-                  el.style.padding = "0";
-                  el.style.transform = "none";
-               }
+               el.style.position = "fixed";
+               el.style.right = "0";
+               el.style.bottom = "0";
+               el.style.top = "auto";
+               el.style.left = "auto";
+               el.style.inset = "auto 0 0 auto";
+               el.style.margin = "0";
+               el.style.padding = "0";
+               el.style.transform = "none";
             } catch {
             }
          };
 
-         for (const n of nodes) {
-            let cur: HTMLElement | null = n;
+         const findAndPatchFromToast = (toastEl: HTMLElement) => {
+            let cur: HTMLElement | null = toastEl;
             let steps = 0;
-            while (cur && cur !== document.body && steps < 6) {
-               patch(cur);
+            while (cur && cur !== document.body && steps < 18) {
+               try {
+                  const cs = window.getComputedStyle(cur);
+                  const posOk = cs.position === "fixed" || cs.position === "absolute";
+                  if (posOk) {
+                     patchContainer(cur);
+                     return true;
+                  }
+               } catch {
+               }
                cur = cur.parentElement;
                steps += 1;
+            }
+            return false;
+         };
+
+         let patched = false;
+         for (const n of wcNodes) {
+            if (findAndPatchFromToast(n)) patched = true;
+         }
+
+         if (!patched) {
+            for (const n of nodes) {
+               if (findAndPatchFromToast(n)) {
+                  patched = true;
+                  break;
+               }
             }
          }
 
          try {
-            const toaster = document.querySelector("[data-sonner-toaster]") as HTMLElement | null;
-            const list = (toaster?.querySelector("ol, ul") as HTMLElement | null) ?? null;
+            const list = (wcNodes[0]?.closest("ol, ul") as HTMLElement | null) ?? null;
             if (list) {
                list.style.margin = "0";
                list.style.padding = "0";
@@ -181,7 +202,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
    return (
       <QueryClientProvider client={queryClient}>
-         <Toaster position="bottom-right" expand visibleToasts={6} offset={0} />
+         <Toaster position="bottom-right" expand visibleToasts={6} offset={{ bottom: 0, right: 0 }} mobileOffset={{ bottom: 0, right: 0 }} />
          {children}
       </QueryClientProvider>
    );
