@@ -131,6 +131,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
                   el.style.inset = "auto 0 0 auto";
                   el.style.margin = "0";
                   el.style.padding = "0";
+                  el.style.transform = "none";
                }
             } catch {
             }
@@ -162,12 +163,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       if (apply()) return;
 
       const obs = new MutationObserver(() => {
-         if (apply()) {
-            try {
-               obs.disconnect();
-            } catch {
-            }
-         }
+         apply();
       });
 
       try {
