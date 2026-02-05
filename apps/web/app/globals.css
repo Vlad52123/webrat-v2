@@ -301,6 +301,16 @@ html.lowPerf .wc-community-logo-shake {
       margin-bottom: 0 !important;
    }
 
+   [data-sonner-toaster] {
+      right: 0 !important;
+      bottom: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      --offset: 0px !important;
+      --mobile-offset: 0px !important;
+      --viewport-padding: 0px !important;
+   }
+
    @keyframes wcCommunityLogoShake {
       0% {
          transform: translate(0, 0) rotate(0deg);
