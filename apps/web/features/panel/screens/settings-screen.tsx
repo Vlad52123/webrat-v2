@@ -40,6 +40,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
    const [deletePwd, setDeletePwd] = useState("");
    const [deleteErr, setDeleteErr] = useState("");
    const [passwordOpen, setPasswordOpen] = useState(false);
+   const [passwordSaving, setPasswordSaving] = useState(false);
    const [passwordOld, setPasswordOld] = useState("");
    const [passwordNew, setPasswordNew] = useState("");
    const [passwordNewAgain, setPasswordNewAgain] = useState("");
@@ -365,6 +366,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
          <ChangePasswordModal
             open={passwordOpen}
             onClose={() => setPasswordOpen(false)}
+            isLoading={passwordSaving}
             oldPassword={passwordOld}
             setOldPassword={setPasswordOld}
             newPassword={passwordNew}
@@ -373,6 +375,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
             setNewPasswordAgain={setPasswordNewAgain}
             onConfirm={() => {
                void (async () => {
+                  if (passwordSaving) return;
                   const oldPwd = String(passwordOld || "");
                   const newPwd = String(passwordNew || "");
                   const newAgain = String(passwordNewAgain || "");
@@ -392,6 +395,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
                   }
 
                   try {
+                     setPasswordSaving(true);
                      const res = await fetch(`/api/change-password/`, {
                         method: "POST",
                         credentials: "include",
@@ -411,7 +415,30 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
                         return;
                      }
                      if (res.status === 401) {
-                        window.WebRatCommon?.showToast?.("error", "Old password is incorrect");
+                        window.WebRatCommon?.showToast?.("error", "Old password is incorrect (or session expired)");
+                        try {
+                           if (typeof window !== "undefined") window.setTimeout(() => window.location.replace("/login"), 650);
+                        } catch {
+                        }
+                        return;
+                     }
+                     if (res.status === 400) {
+                        window.WebRatCommon?.showToast?.(
+                           "error",
+                           "Invalid password. New password must be 6-24 chars and only A-Z a-z 0-9 _ -",
+                        );
+                        return;
+                     }
+                     if (res.status === 403) {
+                        window.WebRatCommon?.showToast?.("error", "Request blocked");
+                        return;
+                     }
+                     if (res.status === 404) {
+                        window.WebRatCommon?.showToast?.("error", "API error: /api/change-password not found");
+                        return;
+                     }
+                     if (res.status === 429) {
+                        window.WebRatCommon?.showToast?.("error", "Too many requests, try later");
                         return;
                      }
                      window.WebRatCommon?.showToast?.("error", "Password change failed");
@@ -420,6 +447,8 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
                         window.WebRatCommon?.showToast?.("error", "Password change failed");
                      } catch {
                      }
+                  } finally {
+                     setPasswordSaving(false);
                   }
                })();
             }}

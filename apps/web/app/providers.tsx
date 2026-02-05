@@ -105,6 +105,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
    useEffect(() => {
       const apply = () => {
+         const edgePx = 12;
          const nodes = Array.from(
             document.querySelectorAll(
                "[data-sonner-toaster],[data-sonner-toast],[data-sonner-close-button],[data-sonner-description],[data-sonner-title]",
@@ -117,18 +118,18 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
          const patchContainer = (el: HTMLElement) => {
             try {
-               el.style.setProperty("--offset", "0px");
-               el.style.setProperty("--mobile-offset", "0px");
+               el.style.setProperty("--offset", `${edgePx}px`);
+               el.style.setProperty("--mobile-offset", `${edgePx}px`);
                el.style.setProperty("--viewport-padding", "0px");
             } catch {
             }
             try {
                el.style.position = "fixed";
-               el.style.right = "0";
-               el.style.bottom = "0";
+               el.style.right = `${edgePx}px`;
+               el.style.bottom = `${edgePx}px`;
                el.style.top = "auto";
                el.style.left = "auto";
-               el.style.inset = "auto 0 0 auto";
+               el.style.inset = `auto ${edgePx}px ${edgePx}px auto`;
                el.style.margin = "0";
                el.style.padding = "0";
                el.style.transform = "none";
@@ -138,19 +139,25 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
          const findAndPatchFromToast = (toastEl: HTMLElement) => {
             let cur: HTMLElement | null = toastEl;
+            let absCandidate: HTMLElement | null = null;
             let steps = 0;
             while (cur && cur !== document.body && steps < 18) {
                try {
                   const cs = window.getComputedStyle(cur);
-                  const posOk = cs.position === "fixed" || cs.position === "absolute";
-                  if (posOk) {
+                  if (cs.position === "fixed") {
                      patchContainer(cur);
                      return true;
                   }
+                  if (cs.position === "absolute" && !absCandidate) absCandidate = cur;
                } catch {
                }
                cur = cur.parentElement;
                steps += 1;
+            }
+
+            if (absCandidate) {
+               patchContainer(absCandidate);
+               return true;
             }
             return false;
          };
@@ -202,7 +209,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
    return (
       <QueryClientProvider client={queryClient}>
-         <Toaster position="bottom-right" expand visibleToasts={6} offset={{ bottom: 0, right: 0 }} mobileOffset={{ bottom: 0, right: 0 }} />
+         <Toaster position="bottom-right" expand visibleToasts={6} offset={{ bottom: 12, right: 12 }} mobileOffset={{ bottom: 12, right: 12 }} />
          {children}
       </QueryClientProvider>
    );

@@ -3,6 +3,7 @@
 export function ChangePasswordModal(props: {
    open: boolean;
    onClose: () => void;
+   isLoading?: boolean;
    oldPassword: string;
    setOldPassword: (v: string) => void;
    newPassword: string;
@@ -14,6 +15,7 @@ export function ChangePasswordModal(props: {
    const {
       open,
       onClose,
+      isLoading,
       oldPassword,
       setOldPassword,
       newPassword,
@@ -96,9 +98,13 @@ export function ChangePasswordModal(props: {
                <div className="mt-[8px] flex justify-center">
                   <button
                      id="passwordModalConfirm"
-                     className="min-w-[150px] cursor-pointer rounded-[12px] border border-white/[0.18] border-b-[4px] bg-white/[0.10] px-[22px] py-[10px] text-[14px] font-semibold text-white transition-[background,border-color,transform] hover:bg-white/[0.14] hover:border-white/[0.28] active:translate-y-[1px]"
+                     className={
+                        "min-w-[150px] cursor-pointer rounded-[12px] border border-white/[0.18] border-b-[4px] bg-white/[0.10] px-[22px] py-[10px] text-[14px] font-semibold text-white transition-[background,border-color,transform] hover:bg-white/[0.14] hover:border-white/[0.28] active:translate-y-[1px]" +
+                        (isLoading ? " pointer-events-none opacity-60" : "")
+                     }
                      style={{ borderBottomColor: "var(--line)" }}
                      type="button"
+                     disabled={Boolean(isLoading)}
                      onClick={onConfirm}
                   >
                      Confirm
