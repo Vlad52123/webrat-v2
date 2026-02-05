@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { csrfHeaders } from "../builder/utils/csrf";
+import { useSubscriptionQuery } from "../hooks/use-subscription-query";
 import { showToast } from "../toast";
 import { ShopSubscriptionGrid } from "../shop/components/shop-subscription-grid";
 import { ShopSectionTitle } from "../shop/components/shop-section-title";
@@ -13,14 +14,10 @@ import { shopClasses } from "../shop/styles";
 
 export function ShopScreen() {
    const qc = useQueryClient();
+   const subQ = useSubscriptionQuery();
    const [key, setKey] = useState("");
-   const [statusTitle, setStatusTitle] = useState("...");
-   const [until, setUntil] = useState("...");
-   const [isSubLoading, setIsSubLoading] = useState(true);
    const [isLoading, setIsLoading] = useState(false);
-   const [kind, setKind] = useState("month");
    const clearedOnFocusRef = useRef(false);
-   const didToastLoadRef = useRef(false);
 
    const formatSubscriptionDate = useCallback((iso: unknown): string => {
       if (!iso) return "-";
@@ -39,41 +36,25 @@ export function ShopScreen() {
       }
    }, []);
 
-   const loadSubscription = useCallback(async () => {
-      setIsSubLoading(true);
-      try {
-         const res = await fetch("/api/subscription/", { method: "GET", credentials: "include" });
-         if (!res.ok) throw new Error(`HTTP_${res.status}`);
-         const data = (await res.json().catch(() => null)) as unknown;
-         const obj = data && typeof data === "object" ? (data as Record<string, unknown>) : null;
-         const status = String(obj?.status || "none").toLowerCase();
-         const isVip = status === "vip";
-         setStatusTitle(isVip ? "RATER" : "NONE");
+   const statusTitle = useMemo(() => {
+      if (subQ.isLoading) return "...";
+      const status = String(subQ.data?.status || "none").toLowerCase();
+      return status === "vip" ? "RATER" : "NONE";
+   }, [subQ.data?.status, subQ.isLoading]);
 
-         const k = String(obj?.kind || "month").toLowerCase();
-         setKind(k || "month");
+   const kind = useMemo(() => {
+      const k = String(subQ.data?.kind || "month").toLowerCase();
+      return k || "month";
+   }, [subQ.data?.kind]);
 
-         const untilText = (() => {
-            if (!isVip) return "-";
-            if (k === "forever") return "Forever";
-            return formatSubscriptionDate(obj?.activated_at);
-         })();
-         setUntil(untilText);
-      } finally {
-         setIsSubLoading(false);
-      }
-   }, [formatSubscriptionDate]);
-
-   useEffect(() => {
-      loadSubscription()
-         .catch(() => {
-            setStatusTitle("NONE");
-            setUntil("-");
-            if (didToastLoadRef.current) return;
-            didToastLoadRef.current = true;
-            showToast("error", "Failed to load subscription status");
-         });
-   }, [loadSubscription]);
+   const until = useMemo(() => {
+      if (subQ.isLoading) return "...";
+      const status = String(subQ.data?.status || "none").toLowerCase();
+      const isVip = status === "vip";
+      if (!isVip) return "-";
+      if (kind === "forever") return "Forever";
+      return formatSubscriptionDate(subQ.data?.activated_at);
+   }, [formatSubscriptionDate, kind, subQ.data?.activated_at, subQ.data?.status, subQ.isLoading]);
 
    const activate = useCallback(async () => {
       const k = String(key || "").trim();
@@ -135,7 +116,10 @@ export function ShopScreen() {
             return;
          }
 
-         await loadSubscription();
+         try {
+            await qc.invalidateQueries({ queryKey: ["subscription"] });
+         } catch {
+         }
 
          showToast("success", "Key activated");
 
@@ -162,7 +146,7 @@ export function ShopScreen() {
       } finally {
          setIsLoading(false);
       }
-   }, [key, kind, loadSubscription, qc, statusTitle]);
+   }, [key, kind, qc, statusTitle]);
 
    return (
       <div id="shopView" className="h-full overflow-x-hidden overflow-y-auto">
@@ -181,9 +165,9 @@ export function ShopScreen() {
                }}
                onActivate={() => activate().catch(() => { })}
                isLoading={isLoading}
-               isVip={!isSubLoading && String(statusTitle || "").toUpperCase() === "RATER"}
-               statusTitle={isSubLoading ? "..." : statusTitle}
-               until={isSubLoading ? "..." : until}
+               isVip={String(statusTitle || "").toUpperCase() === "RATER"}
+               statusTitle={statusTitle}
+               until={until}
             />
 
             <ShopSectionTitle>Shop</ShopSectionTitle>
