@@ -132,7 +132,11 @@ export function LoginForm() {
             if (loginKey) localStorage.setItem("webrat_login", loginKey);
          } catch {
          }
-         router.push("/panel/#panel");
+         try {
+            localStorage.setItem("webrat_post_auth", "1");
+         } catch {
+         }
+         router.push("/panel/#shop");
       },
       onError: (err) => {
          const code = err instanceof Error ? err.message : "login_failed";

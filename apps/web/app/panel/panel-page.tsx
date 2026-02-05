@@ -9,6 +9,13 @@ export function PanelPage() {
    const router = useRouter();
    const [isReady, setIsReady] = useState(false);
    const [isChecking, setIsChecking] = useState(true);
+   const [readyMinUntilTs] = useState(() => {
+      try {
+         return Date.now() + 1000;
+      } catch {
+         return 0;
+      }
+   });
 
    useEffect(() => {
       let cancelled = false;
@@ -31,8 +38,17 @@ export function PanelPage() {
                }
                return;
             }
-            setIsReady(true);
-            setIsChecking(false);
+            const finish = () => {
+               setIsReady(true);
+               setIsChecking(false);
+            };
+
+            const remaining = readyMinUntilTs ? readyMinUntilTs - Date.now() : 0;
+            if (remaining > 0) {
+               window.setTimeout(finish, remaining);
+            } else {
+               finish();
+            }
          } catch {
             if (cancelled) return;
             try {
@@ -49,7 +65,7 @@ export function PanelPage() {
       return () => {
          cancelled = true;
       };
-   }, [router]);
+   }, [readyMinUntilTs, router]);
 
    if (!isReady) {
       return (

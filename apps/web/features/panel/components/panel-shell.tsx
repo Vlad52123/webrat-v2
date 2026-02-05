@@ -57,15 +57,9 @@ function PanelShellInner() {
    const [settingsTab, setSettingsTab] = useState<SettingsTabKey>("personalization");
    const contentRef = useRef<HTMLElement | null>(null);
    const blockedToastRef = useRef<string>("");
-   const [loaderUntilTs, setLoaderUntilTs] = useState(() => {
-      try {
-         if (typeof window === "undefined") return 0;
-         const h = String(window.location.hash || "").toLowerCase();
-         if (h === "#panel" || h === "#builder") return Date.now() + 1000;
-      } catch {
-      }
-      return 0;
-   });
+   const postAuthRef = useRef(false);
+   const suppressBlockedToastOnceRef = useRef(false);
+   const [loaderUntilTs, setLoaderUntilTs] = useState(0);
 
    const isVip = useMemo(() => {
       const st = String(subQ.data?.status || "").toLowerCase();
@@ -76,6 +70,19 @@ function PanelShellInner() {
    const isRestrictedTab = tab === "panel" || tab === "builder";
    const isBlockedRestrictedTab = isSubSettled && isRestrictedTab && !isVip;
    const isPendingRestrictedTab = !isSubSettled && isRestrictedTab;
+
+   useEffect(() => {
+      try {
+         if (typeof window === "undefined") return;
+         const v = localStorage.getItem("webrat_post_auth") || "";
+         if (v === "1" || v === "true" || v === "on") {
+            postAuthRef.current = true;
+            suppressBlockedToastOnceRef.current = true;
+         }
+         localStorage.removeItem("webrat_post_auth");
+      } catch {
+      }
+   }, []);
 
    useEffect(() => {
       if (!isPendingRestrictedTab) return;
@@ -104,9 +111,13 @@ function PanelShellInner() {
          if (typeof next !== "string") return;
          const restrictedNext = next === "panel" || next === "builder";
          if (isSubSettled && !isVip && restrictedNext) {
-            try {
-               showToast("Error", "You do not have Premium subscription");
-            } catch {
+            if (suppressBlockedToastOnceRef.current) {
+               suppressBlockedToastOnceRef.current = false;
+            } else {
+               try {
+                  showToast("Error", "You do not have Premium subscription");
+               } catch {
+               }
             }
             try {
                setTab("shop");
@@ -121,13 +132,28 @@ function PanelShellInner() {
 
    useEffect(() => {
       if (!isSubSettled) return;
+
+      if (postAuthRef.current) {
+         postAuthRef.current = false;
+         if (isVip) {
+            setTab("panel");
+         } else {
+            setTab("shop");
+         }
+         return;
+      }
+
       if (!isVip && isRestrictedTab) {
          const key = String(tab || "");
          if (blockedToastRef.current !== key) {
             blockedToastRef.current = key;
-            try {
-               showToast("Error", "You do not have Premium subscription");
-            } catch {
+            if (suppressBlockedToastOnceRef.current) {
+               suppressBlockedToastOnceRef.current = false;
+            } else {
+               try {
+                  showToast("Error", "You do not have Premium subscription");
+               } catch {
+               }
             }
          }
          setTab("shop");
@@ -191,7 +217,7 @@ function PanelShellInner() {
       }
    }, [detail.isOpen, isPendingRestrictedTab, victimsPrefs]);
 
-   const shouldShowLoader = isPendingRestrictedTab || (loaderUntilTs ? Date.now() < loaderUntilTs : false);
+   const shouldShowLoader = (loaderUntilTs ? Date.now() < loaderUntilTs : false) || isPendingRestrictedTab;
 
    if (shouldShowLoader) {
       return (
