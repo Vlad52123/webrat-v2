@@ -238,32 +238,71 @@ func CompileZip(ctx context.Context, baseDir string, req Request) ([]byte, strin
 		return nil, "", errors.New("module download error:\n" + msg)
 	}
 
-	garblePath, err := exec.LookPath("garble")
-	if err != nil {
+	findOrInstallTool := func(module string, name string) (string, error) {
+		if p, err := exec.LookPath(name); err == nil && strings.TrimSpace(p) != "" {
+			return p, nil
+		}
+
 		candidates := []string{}
 		if gp := strings.TrimSpace(os.Getenv("GOPATH")); gp != "" {
-			candidates = append(candidates, filepath.Join(gp, "bin", "garble"))
+			candidates = append(candidates, filepath.Join(gp, "bin", name))
 		}
 		candidates = append(candidates,
-			"/root/go/bin/garble",
-			"/usr/local/bin/garble",
-			"/usr/bin/garble",
+			filepath.Join(tmpDir, "bin", name),
+			"/root/go/bin/"+name,
+			"/usr/local/bin/"+name,
+			"/usr/bin/"+name,
 		)
-
 		for _, p := range candidates {
-			if p == "" {
+			if strings.TrimSpace(p) == "" {
 				continue
 			}
 			if _, stErr := os.Stat(p); stErr == nil {
-				garblePath = p
-				break
+				return p, nil
 			}
 		}
-		if strings.TrimSpace(garblePath) == "" {
-			pathEnv := strings.TrimSpace(os.Getenv("PATH"))
-			gpEnv := strings.TrimSpace(os.Getenv("GOPATH"))
-			return nil, "", errors.New("garble not found on build server\nPATH=" + pathEnv + "\nGOPATH=" + gpEnv)
+
+		toolCtx, toolCancel := context.WithTimeout(ctx, 2*time.Minute)
+		defer toolCancel()
+
+		gobin := filepath.Join(tmpDir, "bin")
+		_ = os.MkdirAll(gobin, 0o755)
+
+		toolEnv := make([]string, 0, len(os.Environ())+2)
+		for _, kv := range os.Environ() {
+			if strings.HasPrefix(kv, "GOOS=") || strings.HasPrefix(kv, "GOARCH=") || strings.HasPrefix(kv, "CGO_ENABLED=") || strings.HasPrefix(kv, "GOFLAGS=") || strings.HasPrefix(kv, "GOTMPDIR=") || strings.HasPrefix(kv, "GOGARBLE=") {
+				continue
+			}
+			toolEnv = append(toolEnv, kv)
 		}
+		toolEnv = append(toolEnv, "GOBIN="+gobin)
+
+		instCmd := exec.CommandContext(toolCtx, "go", "install", module)
+		instCmd.Dir = tmpDir
+		instCmd.Env = toolEnv
+
+		out, err := instCmd.CombinedOutput()
+		if err != nil {
+			msg := strings.TrimSpace(string(out))
+			if msg == "" {
+				msg = err.Error()
+			}
+			return "", errors.New("tool install error (" + name + "):\n" + msg)
+		}
+
+		p := filepath.Join(gobin, name)
+		if _, stErr := os.Stat(p); stErr == nil {
+			return p, nil
+		}
+
+		pathEnv := strings.TrimSpace(os.Getenv("PATH"))
+		gpEnv := strings.TrimSpace(os.Getenv("GOPATH"))
+		return "", errors.New("tool not found after install (" + name + ")\nPATH=" + pathEnv + "\nGOPATH=" + gpEnv)
+	}
+
+	garblePath, err := findOrInstallTool("mvdan.cc/garble@latest", "garble")
+	if err != nil {
+		return nil, "", err
 	}
 
 	garbleFlags := []string{}
