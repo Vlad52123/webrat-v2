@@ -41,12 +41,12 @@ function writeCachedSubscription(data: SubscriptionResponse) {
    }
 }
 
-export function useSubscriptionQuery(): UseQueryResult<SubscriptionResponse> {
+export function useSubscriptionQuery(): UseQueryResult<SubscriptionResponse, Error> {
    const didToast404Ref = useRef(false);
 
    const cached = readCachedSubscription();
 
-   const opts: UseQueryOptions<SubscriptionResponse, unknown, SubscriptionResponse, readonly ["subscription"]> = {
+   const opts: UseQueryOptions<SubscriptionResponse, Error, SubscriptionResponse, readonly ["subscription"]> = {
       queryKey: ["subscription"] as const,
       queryFn: async () => {
          const data = await getJson<SubscriptionResponse>("/api/subscription/");
@@ -64,7 +64,7 @@ export function useSubscriptionQuery(): UseQueryResult<SubscriptionResponse> {
       opts.initialData = cached;
    }
 
-   const q = useQuery<SubscriptionResponse, unknown, SubscriptionResponse, readonly ["subscription"]>(opts);
+   const q = useQuery<SubscriptionResponse, Error, SubscriptionResponse, readonly ["subscription"]>(opts);
 
    useEffect(() => {
       if (!q.isSuccess) return;
