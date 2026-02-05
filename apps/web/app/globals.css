@@ -289,6 +289,18 @@ html.lowPerf .wc-community-logo-shake {
       animation: toast-progress var(--wc-toast-ttl, 4200ms) linear forwards;
    }
 
+   [data-sonner-toaster][data-position="bottom-right"] {
+      right: 0 !important;
+      bottom: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+   }
+
+   [data-sonner-toaster][data-position="bottom-right"] [data-sonner-toast] {
+      margin-right: 0 !important;
+      margin-bottom: 0 !important;
+   }
+
    @keyframes wcCommunityLogoShake {
       0% {
          transform: translate(0, 0) rotate(0deg);
