@@ -105,7 +105,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
    useEffect(() => {
       const apply = () => {
-         const edgePx = 12;
+         const edgePx = 6;
          const nodes = Array.from(
             document.querySelectorAll(
                "[data-sonner-toaster],[data-sonner-toast],[data-sonner-close-button],[data-sonner-description],[data-sonner-title]",
@@ -209,7 +209,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
    return (
       <QueryClientProvider client={queryClient}>
-         <Toaster position="bottom-right" expand visibleToasts={6} offset={{ bottom: 12, right: 12 }} mobileOffset={{ bottom: 12, right: 12 }} />
+         <Toaster position="bottom-right" expand visibleToasts={6} offset={{ bottom: 6, right: 6 }} mobileOffset={{ bottom: 6, right: 6 }} />
          {children}
       </QueryClientProvider>
    );

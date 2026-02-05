@@ -31,6 +31,8 @@ export function PanelWsProvider(props: { children: React.ReactNode }) {
    const qc = useQueryClient();
    const subQ = useSubscriptionQuery();
 
+   const DEFAULT_WS_HOST = "webcrystal.sbs";
+
    const [wsState, setWsState] = useState<WsConnState>("idle");
 
    const wsRef = useRef<WebSocket | null>(null);
@@ -95,7 +97,7 @@ export function PanelWsProvider(props: { children: React.ReactNode }) {
       } catch {
       }
 
-      const host = readWsHostGlobal() || (typeof window !== "undefined" ? window.location.host : "");
+      const host = readWsHostGlobal() || DEFAULT_WS_HOST;
       const url = getWsUrl(host);
 
       let ws: WebSocket;

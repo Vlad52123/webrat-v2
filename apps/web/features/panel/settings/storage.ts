@@ -100,7 +100,7 @@ export function normalizeWsHost(v: string): string {
       .replace(/\/ws$/i, "")
       .trim();
 
-   const ok = /^[A-Za-z0-9.-]+$/.test(host);
+   const ok = /^[A-Za-z0-9.:-]+$/.test(host);
    return ok ? host : "";
 }
 

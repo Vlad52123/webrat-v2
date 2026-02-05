@@ -9,7 +9,7 @@ import { PanelDetailViewProvider, usePanelDetailView } from "../panel/detail/pan
 import { useVictimsTablePrefs, VictimsTablePrefsProvider } from "../panel/victims-table/victims-table-prefs-provider";
 import { PanelScreen } from "../screens/panel-screen";
 import { PanelSettingsProvider } from "../settings";
-import { installToastGlobal } from "../toast";
+import { installToastGlobal, showToast } from "../toast";
 import type { VictimsFilter } from "../state/victims-filter";
 import type { SettingsTabKey } from "../state/settings-tab";
 import { PanelWsProvider } from "../ws/ws-provider";
@@ -56,6 +56,8 @@ function PanelShellInner() {
    const [victimsFilter, setVictimsFilter] = useState<VictimsFilter>("all");
    const [settingsTab, setSettingsTab] = useState<SettingsTabKey>("personalization");
    const contentRef = useRef<HTMLElement | null>(null);
+   const blockedToastRef = useRef<string>("");
+   const [loaderUntilTs, setLoaderUntilTs] = useState(0);
 
    const isVip = useMemo(() => {
       const st = String(subQ.data?.status || "").toLowerCase();
@@ -67,6 +69,26 @@ function PanelShellInner() {
    const isBlockedRestrictedTab = isSubSettled && isRestrictedTab && !isVip;
    const isPendingRestrictedTab = !isSubSettled && isRestrictedTab;
 
+   useEffect(() => {
+      if (!isPendingRestrictedTab) return;
+      if (loaderUntilTs) return;
+      setLoaderUntilTs(Date.now() + 1000);
+   }, [isPendingRestrictedTab, loaderUntilTs]);
+
+   useEffect(() => {
+      if (isPendingRestrictedTab) return;
+      if (!loaderUntilTs) return;
+
+      const remaining = loaderUntilTs - Date.now();
+      if (remaining <= 0) {
+         setLoaderUntilTs(0);
+         return;
+      }
+
+      const t = window.setTimeout(() => setLoaderUntilTs(0), remaining);
+      return () => window.clearTimeout(t);
+   }, [isPendingRestrictedTab, loaderUntilTs]);
+
    const displayTab = isBlockedRestrictedTab ? "shop" : tab;
 
    const guardedSetTab = useCallback(
@@ -74,6 +96,14 @@ function PanelShellInner() {
          if (typeof next !== "string") return;
          const restrictedNext = next === "panel" || next === "builder";
          if (isSubSettled && !isVip && restrictedNext) {
+            try {
+               showToast("Error", "You do not have Premium subscription");
+            } catch {
+            }
+            try {
+               setTab("shop");
+            } catch {
+            }
             return;
          }
          setTab(next);
@@ -84,9 +114,23 @@ function PanelShellInner() {
    useEffect(() => {
       if (!isSubSettled) return;
       if (!isVip && isRestrictedTab) {
+         const key = String(tab || "");
+         if (blockedToastRef.current !== key) {
+            blockedToastRef.current = key;
+            try {
+               showToast("Error", "You do not have Premium subscription");
+            } catch {
+            }
+         }
          setTab("shop");
       }
-   }, [isRestrictedTab, isSubSettled, isVip, setTab]);
+   }, [isRestrictedTab, isSubSettled, isVip, setTab, tab]);
+
+   useEffect(() => {
+      if (tab !== "settings") {
+         setSettingsTab("personalization");
+      }
+   }, [tab]);
 
    useEffect(() => {
       if (isPendingRestrictedTab) return;
@@ -139,7 +183,9 @@ function PanelShellInner() {
       }
    }, [detail.isOpen, isPendingRestrictedTab, victimsPrefs]);
 
-   if (isPendingRestrictedTab) {
+   const shouldShowLoader = isPendingRestrictedTab || (loaderUntilTs ? Date.now() < loaderUntilTs : false);
+
+   if (shouldShowLoader) {
       return (
          <div className="grid min-h-screen place-items-center bg-[#222222] text-white/80">
             <div className="grid place-items-center">

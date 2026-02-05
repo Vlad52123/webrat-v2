@@ -7,6 +7,21 @@ type ToastOptions = {
    ttlMs?: number;
 };
 
+const MAX_TOASTS = 6;
+const TOAST_IN_MS = 280;
+
+let toastQueue: Array<{ typeOrTitle: string; message?: string; opts?: ToastOptions }> = [];
+let toastShowing = false;
+
+function countVisibleToasts(): number {
+   try {
+      if (typeof document === "undefined") return 0;
+      return document.querySelectorAll(".wc-toast-shell").length;
+   } catch {
+      return 0;
+   }
+}
+
 function WcToastView(props: {
    id: string | number;
    type: ToastType;
@@ -44,6 +59,7 @@ function WcToastView(props: {
       const t = window.setTimeout(() => {
          try {
             toast.dismiss(id);
+            flushToastQueue();
          } catch {
          }
       }, 320);
@@ -105,12 +121,14 @@ function normalizeType(type: string): ToastType {
    return "info";
 }
 
-export function showToast(typeOrTitle: string, message?: string, opts?: ToastOptions) {
+function showToastImmediate(typeOrTitle: string, message?: string, opts?: ToastOptions) {
    try {
       if (typeof window === "undefined") return;
 
-      const type = normalizeType(typeOrTitle);
-      const title = type === "info" && typeOrTitle && typeOrTitle.toLowerCase() !== "info" ? typeOrTitle : type;
+      const raw = String(typeOrTitle || "").trim();
+      const type = normalizeType(raw);
+      const rawLower = raw.toLowerCase();
+      const title = raw && rawLower === type ? raw : type === "info" && raw && rawLower !== "info" ? raw : type;
       const msg = message != null ? String(message) : "";
 
       const ttl = typeof opts?.ttlMs === "number" ? opts.ttlMs : 4200;
@@ -120,6 +138,43 @@ export function showToast(typeOrTitle: string, message?: string, opts?: ToastOpt
          (id: string | number) => createElement(WcToastView, { id, type, title: String(title || ""), message: msg, ttlMs: ttl }),
          { duration: Math.max(0, ttl) + exitMs },
       );
+   } catch {
+   }
+}
+
+function flushToastQueue() {
+   try {
+      if (typeof window === "undefined") return;
+      if (toastShowing) return;
+      if (!toastQueue.length) return;
+      if (countVisibleToasts() >= MAX_TOASTS) return;
+
+      toastShowing = true;
+      const item = toastQueue.shift();
+      if (!item) {
+         toastShowing = false;
+         return;
+      }
+
+      showToastImmediate(item.typeOrTitle, item.message, item.opts);
+
+      window.setTimeout(() => {
+         toastShowing = false;
+         flushToastQueue();
+      }, TOAST_IN_MS);
+   } catch {
+      toastShowing = false;
+   }
+}
+
+export function showToast(typeOrTitle: string, message?: string, opts?: ToastOptions) {
+   try {
+      const visible = countVisibleToasts();
+      const queued = toastQueue.length;
+      if (visible + queued >= MAX_TOASTS) return;
+
+      toastQueue.push({ typeOrTitle, message, opts });
+      flushToastQueue();
    } catch {
    }
 }
