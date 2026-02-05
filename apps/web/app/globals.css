@@ -309,6 +309,20 @@ html.lowPerf .wc-community-logo-shake {
       --offset: 0px !important;
       --mobile-offset: 0px !important;
       --viewport-padding: 0px !important;
+      inset: auto 0 0 auto !important;
+      top: auto !important;
+      left: auto !important;
+      transform: none !important;
+   }
+
+   [data-sonner-toaster] :is(ol, ul) {
+      margin: 0 !important;
+      padding: 0 !important;
+   }
+
+   [data-sonner-toaster] li {
+      margin: 0 !important;
+      padding: 0 !important;
    }
 
    @keyframes wcCommunityLogoShake {

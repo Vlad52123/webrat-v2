@@ -103,6 +103,86 @@ export function Providers({ children }: { children: React.ReactNode }) {
       }
    }, []);
 
+   useEffect(() => {
+      const apply = () => {
+         const nodes = Array.from(
+            document.querySelectorAll(
+               "[data-sonner-toaster],[data-sonner-toast],[data-sonner-close-button],[data-sonner-description],[data-sonner-title]",
+            ),
+         ) as HTMLElement[];
+
+         if (!nodes.length) return false;
+
+         const patch = (el: HTMLElement) => {
+            try {
+               el.style.setProperty("--offset", "0px");
+               el.style.setProperty("--mobile-offset", "0px");
+               el.style.setProperty("--viewport-padding", "0px");
+            } catch {
+            }
+            try {
+               const cs = window.getComputedStyle(el);
+               if (cs.position === "fixed") {
+                  el.style.position = "fixed";
+                  el.style.right = "0";
+                  el.style.bottom = "0";
+                  el.style.top = "auto";
+                  el.style.left = "auto";
+                  el.style.inset = "auto 0 0 auto";
+                  el.style.margin = "0";
+                  el.style.padding = "0";
+               }
+            } catch {
+            }
+         };
+
+         for (const n of nodes) {
+            let cur: HTMLElement | null = n;
+            let steps = 0;
+            while (cur && cur !== document.body && steps < 6) {
+               patch(cur);
+               cur = cur.parentElement;
+               steps += 1;
+            }
+         }
+
+         try {
+            const toaster = document.querySelector("[data-sonner-toaster]") as HTMLElement | null;
+            const list = (toaster?.querySelector("ol, ul") as HTMLElement | null) ?? null;
+            if (list) {
+               list.style.margin = "0";
+               list.style.padding = "0";
+            }
+         } catch {
+         }
+
+         return true;
+      };
+
+      if (apply()) return;
+
+      const obs = new MutationObserver(() => {
+         if (apply()) {
+            try {
+               obs.disconnect();
+            } catch {
+            }
+         }
+      });
+
+      try {
+         obs.observe(document.body, { childList: true, subtree: true });
+      } catch {
+      }
+
+      return () => {
+         try {
+            obs.disconnect();
+         } catch {
+         }
+      };
+   }, []);
+
    return (
       <QueryClientProvider client={queryClient}>
          <Toaster position="bottom-right" expand visibleToasts={6} offset={0} />
