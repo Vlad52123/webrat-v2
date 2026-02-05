@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
-import type { Query } from "@tanstack/react-query";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import type { UseQueryOptions, UseQueryResult } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { getJson } from "../../../lib/api";
 import { showToast } from "../toast";
@@ -41,24 +41,30 @@ function writeCachedSubscription(data: SubscriptionResponse) {
    }
 }
 
-export function useSubscriptionQuery() {
+export function useSubscriptionQuery(): UseQueryResult<SubscriptionResponse> {
    const didToast404Ref = useRef(false);
 
-   const q = useQuery<SubscriptionResponse>({
-      queryKey: ["subscription"],
+   const cached = readCachedSubscription();
+
+   const opts: UseQueryOptions<SubscriptionResponse, unknown, SubscriptionResponse, readonly ["subscription"]> = {
+      queryKey: ["subscription"] as const,
       queryFn: async () => {
          const data = await getJson<SubscriptionResponse>("/api/subscription/");
          return data;
       },
-      initialData: readCachedSubscription,
-      placeholderData: keepPreviousData,
       staleTime: 30_000,
       gcTime: 10 * 60_000,
-      refetchInterval: (query: Query) => (query.state.status === "success" ? 60_000 : false),
+      refetchInterval: (query: any) => (query?.state?.status === "success" ? 60_000 : false),
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
       retry: false,
-   });
+   };
+
+   if (cached) {
+      opts.initialData = cached;
+   }
+
+   const q = useQuery<SubscriptionResponse, unknown, SubscriptionResponse, readonly ["subscription"]>(opts);
 
    useEffect(() => {
       if (!q.isSuccess) return;
