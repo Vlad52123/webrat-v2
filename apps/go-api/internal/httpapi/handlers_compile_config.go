@@ -110,7 +110,7 @@ func (s *Server) handleCompileGoConfig(w http.ResponseWriter, r *http.Request) {
 		WSScheme:            scheme,
 	}
 
-	code, err := buildergen.GenerateStub(cfg)
+	code, err := buildergen.Generate(cfg)
 	if err != nil {
 		http.Error(w, "codegen error", http.StatusInternalServerError)
 		return
