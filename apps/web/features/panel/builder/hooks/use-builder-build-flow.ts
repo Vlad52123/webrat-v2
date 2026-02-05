@@ -30,6 +30,36 @@ type ActiveBuildState = {
    created: string;
 };
 
+function processedJobKey(login: string, jobId: string): string {
+   const safeLogin = String(login || "").trim() || "_";
+   const safeJob = String(jobId || "").trim() || "_";
+   return `webrat_processed_job_${safeLogin}_${safeJob}`;
+}
+
+function markJobProcessed(login: string, jobId: string): boolean {
+   const key = processedJobKey(login, jobId);
+   try {
+      if (sessionStorage.getItem(key) === "1") return false;
+      sessionStorage.setItem(key, "1");
+      return true;
+   } catch {
+      return true;
+   }
+}
+
+function dedupeHistoryByBuildId(items: BuildHistoryItem[]): BuildHistoryItem[] {
+   const seen = new Set<string>();
+   const out: BuildHistoryItem[] = [];
+   for (const it of items) {
+      const bid = String(it?.id || "").trim();
+      if (!bid) continue;
+      if (seen.has(bid)) continue;
+      seen.add(bid);
+      out.push(it);
+   }
+   return out;
+}
+
 function getActiveBuildKey(login: string): string {
    const safe = String(login || "").trim();
    if (!safe) return "webrat_active_build";
@@ -198,6 +228,10 @@ export function useBuilderBuildFlow(opts: {
          const active = loadActiveBuild(login);
          if (!active) return;
 
+         if (!markJobProcessed(login, active.jobId)) {
+            return;
+         }
+
          buildingRef.current = true;
          setBuildingUi(true, "Building");
 
@@ -224,7 +258,7 @@ export function useBuilderBuildFlow(opts: {
                created: active.created || formatCreated(new Date()),
                victims: 0,
             };
-            const nextHistory = [buildEntry, ...loadBuildsHistory(login)];
+            const nextHistory = dedupeHistoryByBuildId([buildEntry, ...loadBuildsHistory(login)]);
             saveBuildsHistory(login, nextHistory);
             setLastBuildTimestamp(login, Date.now());
 
@@ -375,6 +409,10 @@ export function useBuilderBuildFlow(opts: {
             created,
          });
 
+         if (!markJobProcessed(login, jobId)) {
+            return;
+         }
+
          await waitCompileDone(jobId);
 
          const { blob, filename } = await downloadCompileResult(jobId, buildName);
@@ -384,7 +422,7 @@ export function useBuilderBuildFlow(opts: {
          downloadBlob(blob, filename);
          const buildEntry: BuildHistoryItem = { name: buildName, id: buildId, version: "0.22.2", created, victims: 0 };
 
-         const nextHistory = [buildEntry, ...loadBuildsHistory(login)];
+         const nextHistory = dedupeHistoryByBuildId([buildEntry, ...loadBuildsHistory(login)]);
          saveBuildsHistory(login, nextHistory);
 
          setLastBuildTimestamp(login, nowTs);
