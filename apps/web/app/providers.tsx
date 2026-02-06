@@ -105,7 +105,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
    return (
       <QueryClientProvider client={queryClient}>
-         <Toaster position="bottom-right" expand visibleToasts={6} closeButton={false} />
+         <Toaster
+            position="bottom-right"
+            expand
+            visibleToasts={6}
+            closeButton={false}
+            offset={{ bottom: 6, right: 6 }}
+            mobileOffset={{ bottom: 6, right: 6 }}
+         />
          {children}
       </QueryClientProvider>
    );
