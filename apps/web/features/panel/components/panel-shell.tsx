@@ -221,7 +221,7 @@ function PanelShellInner() {
 
    if (shouldShowLoader) {
       return (
-         <div className="grid min-h-screen place-items-center bg-[#222222] text-white/80">
+         <div className="grid h-[100dvh] overflow-hidden place-items-center bg-[#222222] text-white/80">
             <div className="grid place-items-center">
                <img
                   src="/icons/loading.svg"
@@ -237,8 +237,8 @@ function PanelShellInner() {
 
    return (
       <PanelSettingsProvider contentRef={contentRef}>
-         <div className="min-h-screen bg-[#222222] text-white/90">
-            <div className={detail.isOpen ? "grid h-screen grid-cols-[64px_1fr]" : "grid h-screen grid-cols-[46px_1fr]"}>
+         <div className="h-[100dvh] overflow-hidden bg-[#222222] text-white/90">
+            <div className={detail.isOpen ? "grid h-[100dvh] grid-cols-[64px_1fr]" : "grid h-[100dvh] grid-cols-[46px_1fr]"}>
                <PanelSidebar tab={displayTab} setTab={guardedSetTab} />
 
                <main

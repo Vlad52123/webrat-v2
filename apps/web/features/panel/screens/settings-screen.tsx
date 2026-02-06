@@ -376,9 +376,9 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
             onConfirm={() => {
                void (async () => {
                   if (passwordSaving) return;
-                  const oldPwd = String(passwordOld || "");
-                  const newPwd = String(passwordNew || "");
-                  const newAgain = String(passwordNewAgain || "");
+                  const oldPwd = String(passwordOld || "").trim();
+                  const newPwd = String(passwordNew || "").trim();
+                  const newAgain = String(passwordNewAgain || "").trim();
                   if (!oldPwd || !newPwd || !newAgain) {
                      try {
                         window.WebRatCommon?.showToast?.("error", "Fill all fields");
@@ -394,6 +394,18 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
                      return;
                   }
 
+                  const pwRe = /^[A-Za-z0-9_-]{6,24}$/;
+                  if (!pwRe.test(newPwd)) {
+                     try {
+                        window.WebRatCommon?.showToast?.(
+                           "error",
+                           "Invalid password. New password must be 6-24 chars and only A-Z a-z 0-9 _ -",
+                        );
+                     } catch {
+                     }
+                     return;
+                  }
+
                   try {
                      setPasswordSaving(true);
                      const res = await fetch(`/api/change-password/`, {
@@ -402,7 +414,31 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
                         headers: { "Content-Type": "application/json", ...csrfHeaders() },
                         body: JSON.stringify({ old_password: oldPwd, new_password: newPwd }),
                      });
-                     if (res.ok) {
+
+                     let responseText = "";
+                     try {
+                        responseText = await res.text();
+                     } catch {
+                        responseText = "";
+                     }
+
+                     const responseJson = (() => {
+                        const t = String(responseText || "").trim();
+                        if (!t) return null;
+                        try {
+                           return JSON.parse(t) as unknown;
+                        } catch {
+                           return null;
+                        }
+                     })();
+
+                     const responseError = (() => {
+                        if (!responseJson || typeof responseJson !== "object") return "";
+                        const e = (responseJson as { error?: unknown }).error;
+                        return typeof e === "string" ? e : "";
+                     })();
+
+                     if (res.ok && !responseError) {
                         try {
                            window.WebRatCommon?.showToast?.("success", "Password changed");
                         } catch {
@@ -416,10 +452,6 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
                      }
                      if (res.status === 401) {
                         window.WebRatCommon?.showToast?.("error", "Old password is incorrect (or session expired)");
-                        try {
-                           if (typeof window !== "undefined") window.setTimeout(() => window.location.replace("/login"), 650);
-                        } catch {
-                        }
                         return;
                      }
                      if (res.status === 400) {
@@ -441,6 +473,12 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
                         window.WebRatCommon?.showToast?.("error", "Too many requests, try later");
                         return;
                      }
+
+                     if (responseError) {
+                        window.WebRatCommon?.showToast?.("error", responseError);
+                        return;
+                     }
+
                      window.WebRatCommon?.showToast?.("error", "Password change failed");
                   } catch {
                      try {

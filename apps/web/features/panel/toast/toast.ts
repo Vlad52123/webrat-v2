@@ -81,7 +81,7 @@ function WcToastView(props: {
          "div",
          {
             className:
-               "wc-toast toast--show relative w-[280px] overflow-hidden rounded-[12px] border border-white/[0.16] bg-[rgba(18,18,18,0.86)] px-[14px] py-[10px] text-[13px] text-white/[0.96] shadow-[0_12px_28px_rgba(0,0,0,0.55)] backdrop-blur-[6px]" +
+               "wc-toast toast--show relative w-[280px] overflow-hidden rounded-[14px] border border-white/[0.16] bg-[rgba(18,18,18,0.88)] px-[12px] py-[10px] text-[13px] text-white/[0.96] shadow-[0_16px_36px_rgba(0,0,0,0.62)] backdrop-blur-[8px]" +
                (hiding ? " toast--hide" : ""),
             style: ({ "--wc-toast-ttl": `${ttlMs}ms` } as unknown as CSSProperties),
          },
@@ -93,7 +93,7 @@ function WcToastView(props: {
             "div",
             {
                className:
-                  "w-full border-b px-2 pb-1 text-left text-[14px] font-extrabold uppercase tracking-[0.06em] text-white whitespace-nowrap overflow-hidden text-ellipsis",
+                  "w-full border-b pb-[6px] text-left text-[13px] font-extrabold uppercase tracking-[0.08em] text-white whitespace-nowrap overflow-hidden text-ellipsis",
                style: { borderBottomColor },
             },
             String(title || ""),
@@ -101,7 +101,7 @@ function WcToastView(props: {
          createElement(
             "div",
             {
-               className: "w-full mt-1 px-2 text-left text-[14px] text-white/[0.92] leading-[1.25] max-h-[calc(1.25em*2)] overflow-hidden",
+               className: "w-full mt-[6px] text-left text-[14px] text-white/[0.92] leading-[1.25] max-h-[calc(1.25em*2)] overflow-hidden",
             },
             message,
          ),

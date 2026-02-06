@@ -75,17 +75,41 @@ export function PanelSettingsProvider(props: { contentRef: React.RefObject<HTMLE
    const { contentRef, children } = props;
 
    const [state, setState] = useState<SettingsState>(() => {
-      return {
-         bgImage: "",
-         bgVideoMarker: "",
-         bgMode: "default",
-         bgColor: "",
-         lineColor: "",
-         snow: false,
-         rgb: false,
-         soundVolume: 0.5,
-         wsHost: "",
-      };
+      try {
+         const bg = readPref(STORAGE_KEYS.bgImage);
+         const bgVideoMarker = readPref(STORAGE_KEYS.bgVideo);
+         const bgModeRaw = readPref(STORAGE_KEYS.bgMode);
+         const bgColor = readPref(STORAGE_KEYS.bgColor);
+         const lineColor = readPref(STORAGE_KEYS.lineColor);
+         const snowRaw = readPref(STORAGE_KEYS.snow);
+         const rgbRaw = readPref(STORAGE_KEYS.rgb);
+         const soundRaw = readPref(STORAGE_KEYS.sound);
+         const wsHost = readWsHostGlobal();
+
+         return {
+            bgImage: bg,
+            bgVideoMarker,
+            bgColor,
+            lineColor,
+            snow: String(snowRaw || "").toLowerCase() === "on",
+            rgb: String(rgbRaw || "").toLowerCase() === "on",
+            soundVolume: parseSound(soundRaw),
+            wsHost,
+            bgMode: detectMode(bg, bgVideoMarker, bgModeRaw),
+         };
+      } catch {
+         return {
+            bgImage: "",
+            bgVideoMarker: "",
+            bgMode: "default",
+            bgColor: "",
+            lineColor: "",
+            snow: false,
+            rgb: false,
+            soundVolume: 0.5,
+            wsHost: "",
+         };
+      }
    });
 
    const applyingRef = useRef<Promise<void> | null>(null);

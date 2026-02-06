@@ -159,6 +159,12 @@ html.lowPerf .wc-community-logo-shake {
       left: 46px;
    }
 
+   body.isPanelShell {
+      height: 100dvh;
+      overflow: hidden;
+      overscroll-behavior: none;
+   }
+
    body.hasCustomBg .content::after {
       content: "";
       position: absolute;
