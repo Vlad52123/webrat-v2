@@ -113,6 +113,8 @@ export function PanelSettingsProvider(props: { contentRef: React.RefObject<HTMLE
    });
 
    const applyingRef = useRef<Promise<void> | null>(null);
+   const bgVideoUrlRef = useRef<string>("");
+   const bgVideoMarkerRef = useRef<string>("");
 
    const applyToDom = useCallback(async (next: SettingsState) => {
       const target = contentRef.current;
@@ -143,10 +145,18 @@ export function PanelSettingsProvider(props: { contentRef: React.RefObject<HTMLE
          applyBackgroundImage(target, "", preview);
          clearBackgroundColor(target, preview);
 
+         const marker = String(next.bgVideoMarker || "").trim();
+         if (marker && bgVideoUrlRef.current && bgVideoMarkerRef.current === marker) {
+            applyBackgroundVideo(target, bgVideoUrlRef.current, preview);
+            return;
+         }
+
          const db = makeBgVideoDb(prefKey("bgVideo"));
          const blob = await db.get();
          if (!blob) {
             revokeBgVideoUrl();
+            bgVideoUrlRef.current = "";
+            bgVideoMarkerRef.current = "";
             applyBackgroundVideo(target, "", preview);
             try {
                writePref(STORAGE_KEYS.bgVideo, "");
@@ -171,6 +181,8 @@ export function PanelSettingsProvider(props: { contentRef: React.RefObject<HTMLE
 
          try {
             const url = URL.createObjectURL(blob);
+            bgVideoUrlRef.current = url;
+            bgVideoMarkerRef.current = marker || "1";
             applyBackgroundVideo(target, url, preview);
          } catch {
             return;
@@ -180,6 +192,8 @@ export function PanelSettingsProvider(props: { contentRef: React.RefObject<HTMLE
       }
 
       applyBackgroundVideo(target, "", preview);
+      bgVideoUrlRef.current = "";
+      bgVideoMarkerRef.current = "";
 
       if (next.bgMode === "image" && next.bgImage) {
          applyBackgroundImage(target, next.bgImage, preview);

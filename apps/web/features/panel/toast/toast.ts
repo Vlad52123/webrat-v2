@@ -81,7 +81,7 @@ function WcToastView(props: {
          "div",
          {
             className:
-               "wc-toast toast--show relative w-[280px] overflow-hidden rounded-[14px] border border-white/[0.16] bg-[rgba(18,18,18,0.88)] px-[12px] py-[10px] text-[13px] text-white/[0.96] shadow-[0_16px_36px_rgba(0,0,0,0.62)] backdrop-blur-[8px]" +
+               "wc-toast toast--show relative w-[280px] overflow-hidden rounded-[14px] border border-white/[0.16] bg-[rgba(18,18,18,0.88)] px-[10px] py-[10px] text-[13px] text-white/[0.96] shadow-[0_16px_36px_rgba(0,0,0,0.62)] backdrop-blur-[8px]" +
                (hiding ? " toast--hide" : ""),
             style: ({ "--wc-toast-ttl": `${ttlMs}ms` } as unknown as CSSProperties),
          },

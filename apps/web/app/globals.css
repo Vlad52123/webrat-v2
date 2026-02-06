@@ -324,9 +324,20 @@ html.lowPerf .wc-community-logo-shake {
    [data-sonner-toaster] :is(ol, ul) {
       margin: 0 !important;
       padding: 0 !important;
+      list-style: none !important;
    }
 
    [data-sonner-toaster] li {
+      margin: 0 !important;
+      padding: 0 !important;
+      list-style: none !important;
+   }
+
+   [data-sonner-toaster] {
+      --gap: 6px !important;
+   }
+
+   .wc-toast-shell {
       margin: 0 !important;
       padding: 0 !important;
    }
