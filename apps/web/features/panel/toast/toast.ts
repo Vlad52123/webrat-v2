@@ -81,12 +81,12 @@ function WcToastView(props: {
          "div",
          {
             className:
-               "wc-toast toast--show relative w-[280px] overflow-hidden rounded-[14px] border border-white/[0.16] bg-[rgba(18,18,18,0.88)] px-[10px] py-[10px] text-[13px] text-white/[0.96] shadow-[0_16px_36px_rgba(0,0,0,0.62)] backdrop-blur-[8px]" +
+               "wc-toast toast--show relative w-[264px] overflow-hidden rounded-[14px] border border-white/[0.14] bg-[radial-gradient(120%_140%_at_0%_0%,rgba(255,255,255,0.08),rgba(255,255,255,0)_55%),rgba(16,16,16,0.88)] px-[8px] py-[9px] text-[13px] text-white/[0.96] shadow-[0_18px_46px_rgba(0,0,0,0.66)] backdrop-blur-[10px]" +
                (hiding ? " toast--hide" : ""),
             style: ({ "--wc-toast-ttl": `${ttlMs}ms` } as unknown as CSSProperties),
          },
          createElement("div", {
-            className: "absolute left-0 top-0 bottom-0 w-[4px] opacity-95",
+            className: "absolute left-0 top-0 bottom-0 w-[3px] opacity-95",
             style: { background: barBg },
          }),
          createElement(

@@ -296,10 +296,14 @@ html.lowPerf .wc-community-logo-shake {
    }
 
    [data-sonner-toaster][data-position="bottom-right"] {
-      right: 0 !important;
-      bottom: 0 !important;
+      right: 6px !important;
+      bottom: 6px !important;
+      inset: auto 6px 6px auto !important;
       margin: 0 !important;
       padding: 0 !important;
+      --offset: 6px !important;
+      --mobile-offset: 6px !important;
+      --viewport-padding: 0px !important;
    }
 
    [data-sonner-toaster][data-position="bottom-right"] [data-sonner-toast] {
@@ -308,14 +312,14 @@ html.lowPerf .wc-community-logo-shake {
    }
 
    [data-sonner-toaster] {
-      right: 0 !important;
-      bottom: 0 !important;
+      right: 6px !important;
+      bottom: 6px !important;
       margin: 0 !important;
       padding: 0 !important;
-      --offset: 0px !important;
-      --mobile-offset: 0px !important;
+      --offset: 6px !important;
+      --mobile-offset: 6px !important;
       --viewport-padding: 0px !important;
-      inset: auto 0 0 auto !important;
+      inset: auto 6px 6px auto !important;
       top: auto !important;
       left: auto !important;
       transform: none !important;
