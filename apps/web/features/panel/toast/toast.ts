@@ -47,6 +47,94 @@ function WcToastView(props: {
       return { barBg: bar, borderBottomColor: border };
    }, [type]);
 
+   const icon = useMemo(() => {
+      const common = {
+         width: 16,
+         height: 16,
+         viewBox: "0 0 24 24",
+         fill: "none",
+         xmlns: "http://www.w3.org/2000/svg",
+      };
+
+      if (type === "success") {
+         return createElement(
+            "svg",
+            { ...common },
+            createElement("path", {
+               d: "M20 6L9 17l-5-5",
+               stroke: "currentColor",
+               strokeWidth: 2.2,
+               strokeLinecap: "round",
+               strokeLinejoin: "round",
+            }),
+         );
+      }
+      if (type === "error") {
+         return createElement(
+            "svg",
+            { ...common },
+            createElement("path", {
+               d: "M18 6L6 18",
+               stroke: "currentColor",
+               strokeWidth: 2.2,
+               strokeLinecap: "round",
+            }),
+            createElement("path", {
+               d: "M6 6l12 12",
+               stroke: "currentColor",
+               strokeWidth: 2.2,
+               strokeLinecap: "round",
+            }),
+         );
+      }
+      if (type === "warning") {
+         return createElement(
+            "svg",
+            { ...common },
+            createElement("path", {
+               d: "M12 9v4",
+               stroke: "currentColor",
+               strokeWidth: 2.2,
+               strokeLinecap: "round",
+            }),
+            createElement("path", {
+               d: "M12 17h.01",
+               stroke: "currentColor",
+               strokeWidth: 3,
+               strokeLinecap: "round",
+            }),
+            createElement("path", {
+               d: "M10.3 4.6l-8 14A2 2 0 004 22h16a2 2 0 001.7-3.4l-8-14a2 2 0 00-3.4 0z",
+               stroke: "currentColor",
+               strokeWidth: 2.2,
+               strokeLinejoin: "round",
+            }),
+         );
+      }
+      return createElement(
+         "svg",
+         { ...common },
+         createElement("path", {
+            d: "M12 16v-4",
+            stroke: "currentColor",
+            strokeWidth: 2.2,
+            strokeLinecap: "round",
+         }),
+         createElement("path", {
+            d: "M12 8h.01",
+            stroke: "currentColor",
+            strokeWidth: 3,
+            strokeLinecap: "round",
+         }),
+         createElement("path", {
+            d: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z",
+            stroke: "currentColor",
+            strokeWidth: 2.2,
+            strokeLinejoin: "round",
+         }),
+      );
+   }, [type]);
+
    useEffect(() => {
       const exitMs = 320;
       const visibleMs = Number.isFinite(ttlMs) ? ttlMs : 4200;
@@ -81,7 +169,7 @@ function WcToastView(props: {
          "div",
          {
             className:
-               "wc-toast toast--show relative w-[264px] overflow-hidden rounded-[14px] border border-white/[0.14] bg-[radial-gradient(120%_140%_at_0%_0%,rgba(255,255,255,0.08),rgba(255,255,255,0)_55%),rgba(16,16,16,0.88)] px-[8px] py-[9px] text-[13px] text-white/[0.96] shadow-[0_18px_46px_rgba(0,0,0,0.66)] backdrop-blur-[10px]" +
+               "wc-toast toast--show relative w-[292px] overflow-hidden rounded-[16px] border border-white/[0.16] bg-[radial-gradient(130%_160%_at_0%_0%,rgba(255,255,255,0.10),rgba(255,255,255,0)_58%),linear-gradient(180deg,rgba(18,18,18,0.92),rgba(14,14,14,0.86))] px-[12px] py-[10px] text-[13px] text-white/[0.96] shadow-[0_18px_56px_rgba(0,0,0,0.70)] backdrop-blur-[12px]" +
                (hiding ? " toast--hide" : ""),
             style: ({ "--wc-toast-ttl": `${ttlMs}ms` } as unknown as CSSProperties),
          },
@@ -91,19 +179,66 @@ function WcToastView(props: {
          }),
          createElement(
             "div",
-            {
-               className:
-                  "w-full border-b pb-[6px] text-left text-[13px] font-extrabold uppercase tracking-[0.08em] text-white whitespace-nowrap overflow-hidden text-ellipsis",
-               style: { borderBottomColor },
-            },
-            String(title || ""),
-         ),
-         createElement(
-            "div",
-            {
-               className: "w-full mt-[6px] text-left text-[14px] text-white/[0.92] leading-[1.25] max-h-[calc(1.25em*2)] overflow-hidden",
-            },
-            message,
+            { className: "relative" },
+            createElement(
+               "div",
+               {
+                  className: "flex items-start gap-[10px]",
+               },
+               createElement(
+                  "div",
+                  {
+                     className:
+                        "mt-[1px] grid h-[28px] w-[28px] flex-none place-items-center rounded-[10px] border border-white/[0.14] bg-white/[0.06]",
+                     style: { color: barBg },
+                     "aria-hidden": "true",
+                  },
+                  icon,
+               ),
+               createElement(
+                  "div",
+                  { className: "min-w-0 flex-1" },
+                  createElement(
+                     "div",
+                     {
+                        className:
+                           "w-full border-b pb-[6px] pr-[24px] text-left text-[12px] font-extrabold uppercase tracking-[0.10em] text-white/90 whitespace-nowrap overflow-hidden text-ellipsis",
+                        style: { borderBottomColor },
+                     },
+                     String(title || ""),
+                  ),
+                  createElement(
+                     "div",
+                     {
+                        className:
+                           "w-full mt-[6px] text-left text-[13px] text-white/[0.92] leading-[1.25] max-h-[calc(1.25em*3)] overflow-hidden",
+                     },
+                     message,
+                  ),
+               ),
+               createElement(
+                  "button",
+                  {
+                     type: "button",
+                     className:
+                        "absolute right-[6px] top-[2px] grid h-[22px] w-[22px] place-items-center rounded-[8px] border border-white/[0.10] bg-white/[0.03] text-[16px] leading-none text-white/80 transition-[background,border-color,transform] hover:bg-white/[0.07] hover:border-white/[0.16] active:translate-y-[1px]",
+                     "aria-label": "Dismiss",
+                     onClick: (e: unknown) => {
+                        try {
+                           if (e && typeof e === "object" && "stopPropagation" in e && typeof (e as { stopPropagation?: unknown }).stopPropagation === "function") {
+                              (e as { stopPropagation: () => void }).stopPropagation();
+                           }
+                        } catch {
+                        }
+                        try {
+                           setHiding(true);
+                        } catch {
+                        }
+                     },
+                  },
+                  "×",
+               ),
+            ),
          ),
          createElement("div", {
             className: "wc-toast-progress absolute left-0 right-0 bottom-0 h-[2px] opacity-90",
