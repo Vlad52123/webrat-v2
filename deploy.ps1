@@ -1,7 +1,7 @@
 param(
   [string]$HostName = $env:VPS_HOST,
   [string]$User = $(if ($env:VPS_USER) { $env:VPS_USER } else { "deploy" }),
-  [string]$CommitMessage = $(if ($env:DEPLOY_COMMIT_MESSAGE) { $env:DEPLOY_COMMIT_MESSAGE } else { "upd" })
+  [string]$CommitMessage = $(if ($env:DEPLOY_COMMIT_MESSAGE) { $env:DEPLOY_COMMIT_MESSAGE } else { "" })
 )
 
 $ErrorActionPreference = "Stop"
@@ -10,8 +10,9 @@ if ([string]::IsNullOrWhiteSpace($HostName)) {
   throw "Set VPS_HOST env var or pass -HostName"
 }
 
-git add .
+git add -A
 
+$hasChanges = $false
 try {
   git diff --cached --quiet
   $hasChanges = $false
@@ -20,10 +21,14 @@ try {
 }
 
 if ($hasChanges) {
+  if ([string]::IsNullOrWhiteSpace($CommitMessage)) {
+    $CommitMessage = "deploy: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+  }
   git commit -m $CommitMessage
+  git push
+} else {
+  git push
 }
-
-git push
 
 $remote = "$User@$HostName"
 

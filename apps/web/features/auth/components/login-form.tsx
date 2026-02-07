@@ -163,7 +163,7 @@ export function LoginForm() {
    return (
       <form
          className="grid gap-[10px] justify-items-center"
-         autoComplete="off"
+         autoComplete="on"
          onSubmit={form.handleSubmit((values) => {
             setNotice(null);
 

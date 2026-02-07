@@ -19,7 +19,7 @@ type CaptchaState =
    | { kind: "ready"; imageUrl: string }
    | { kind: "unavailable" };
 
-const CAPTCHA_CIRCLE_SIZE = 140;
+const CAPTCHA_CIRCLE_SIZE = 170;
 
 export const SliderCaptcha = forwardRef<
    SliderCaptchaHandle,
@@ -269,13 +269,15 @@ export const SliderCaptcha = forwardRef<
 
             <div
                ref={targetRef}
-               className="pointer-events-none absolute size-[140px] rounded-full bg-black/35 shadow-[0_6px_14px_rgba(0,0,0,0.28),0_0_0_1px_rgba(255,255,255,0.06)_inset]"
+               className="pointer-events-none absolute rounded-full bg-black/35 shadow-[0_6px_14px_rgba(0,0,0,0.28),0_0_0_1px_rgba(255,255,255,0.06)_inset]"
+               style={{ width: CAPTCHA_CIRCLE_SIZE, height: CAPTCHA_CIRCLE_SIZE }}
                aria-hidden="true"
             />
 
             <div
                ref={moverRef}
-               className="pointer-events-none absolute size-[140px] rounded-full bg-transparent bg-no-repeat shadow-[0_6px_14px_rgba(0,0,0,0.22)] outline outline-1 outline-white/12 outline-offset-[-1px]"
+               className="pointer-events-none absolute rounded-full bg-transparent bg-no-repeat shadow-[0_6px_14px_rgba(0,0,0,0.22)] outline outline-1 outline-white/12 outline-offset-[-1px]"
+               style={{ width: CAPTCHA_CIRCLE_SIZE, height: CAPTCHA_CIRCLE_SIZE }}
                aria-hidden="true"
             />
 
