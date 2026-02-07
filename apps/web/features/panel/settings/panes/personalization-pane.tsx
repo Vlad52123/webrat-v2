@@ -302,7 +302,6 @@ export function PersonalizationPane(props: {
                      </div>
 
                      <div className="my-[10px] flex items-center justify-between gap-3 rounded-[12px] border border-white/[0.12] bg-white/[0.03] p-[10px]">
-                        <div className="text-[14px] font-semibold text-white">Default WS server</div>
                         <WsServerSelect
                            setWsHost={setWsHost}
                            wsSelectValue={wsSelectValue}
