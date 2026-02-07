@@ -263,6 +263,7 @@ html.lowPerf .wc-community-logo-shake {
       border-radius: 999px;
       pointer-events: none;
       animation: wcSnowFall var(--d) linear infinite;
+      will-change: transform;
    }
 
    body.isSnowEnabled .snowflakeInner {
@@ -270,12 +271,10 @@ html.lowPerf .wc-community-logo-shake {
       width: 100%;
       height: 100%;
       border-radius: 999px;
-      background:
-         radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.12) 55%, rgba(255, 255, 255, 0) 70%),
-         rgba(255, 255, 255, var(--a));
-      filter: blur(var(--b));
-      box-shadow: 0 0 4px rgba(255, 255, 255, 0.25);
-      animation: wcSnowSway var(--sx) ease-in-out infinite;
+      background: rgba(255, 255, 255, var(--a));
+      filter: none;
+      box-shadow: none;
+      animation: none;
       will-change: transform;
    }
 
@@ -385,6 +384,7 @@ html.lowPerf .wc-community-logo-shake {
       background: rgba(255, 255, 255, var(--a));
       filter: none;
       box-shadow: none;
+      animation: none;
    }
 
    input:-webkit-autofill,
@@ -396,8 +396,8 @@ html.lowPerf .wc-community-logo-shake {
    select:-webkit-autofill,
    select:-webkit-autofill:hover,
    select:-webkit-autofill:focus {
-      -webkit-text-fill-color: #ffffff;
-      caret-color: #ffffff;
+      -webkit-text-fill-color: #000000;
+      caret-color: #000000;
       border-color: rgba(255, 255, 255, 0.92) !important;
       box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.92) inset !important;
       -webkit-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.92) inset !important;

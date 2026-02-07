@@ -46,23 +46,14 @@ export function LoginNotice({
       >
          <div
             className={[
-               "relative grid grid-cols-[1fr_30px] items-center gap-2.5 rounded-2xl border px-3 py-3",
+               "relative grid place-items-center rounded-2xl border px-3 py-3",
                "bg-[rgba(255,70,70,0.92)] text-black shadow-[0_16px_44px_rgba(0,0,0,0.40)]",
             ].join(" ")}
          >
-            <div className="min-w-0">
-               <div className="text-left text-base font-black tracking-[0.2px] text-black/95">{title}</div>
-               <div className="text-left text-sm leading-5 text-black/90 break-words">{message}</div>
+            <div className="min-w-0 text-center">
+               <div className="text-center text-[18px] font-black tracking-[0.2px] text-black/95">{title}</div>
+               <div className="text-center text-[18px] font-black leading-6 text-black/95 break-words">{message}</div>
             </div>
-
-            <button
-               type="button"
-               aria-label="Close"
-               onClick={() => setOpen(false)}
-               className="grid size-[30px] place-items-center rounded-full border border-black/15 bg-black/5 text-lg leading-none text-black/90 hover:bg-black/10"
-            >
-               ×
-            </button>
          </div>
       </div>
    );

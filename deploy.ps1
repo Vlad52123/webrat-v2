@@ -13,18 +13,14 @@ if ([string]::IsNullOrWhiteSpace($HostName)) {
 git add -A
 
 $hasChanges = $false
-try {
-  git diff --cached --quiet
-  $hasChanges = $false
-} catch {
-  $hasChanges = $true
-}
+git diff --cached --quiet
+$hasChanges = ($LASTEXITCODE -ne 0)
 
 if ($hasChanges) {
   if ([string]::IsNullOrWhiteSpace($CommitMessage)) {
     $CommitMessage = "deploy: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
   }
-  git commit -m $CommitMessage
+  git commit -m "$CommitMessage"
   git push
 } else {
   git push

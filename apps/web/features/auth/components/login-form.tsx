@@ -228,7 +228,7 @@ export function LoginForm() {
          </div>
 
          {useTurnstile ? (
-            <div className="grid w-full max-w-[380px] gap-2 rounded-2xl border border-[rgba(117,61,255,0.32)] bg-[radial-gradient(520px_200px_at_20%_0%,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0)_60%),linear-gradient(180deg,rgba(18,10,34,0.42)_0%,rgba(8,5,14,0.26)_100%)] p-2.5 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_18px_50px_rgba(0,0,0,0.34)] backdrop-blur-[14px]">
+            <div className="grid w-full max-w-[380px] gap-2 rounded-2xl border border-[rgba(117,61,255,0.32)] bg-[rgba(24,14,42,0.52)] p-2.5 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_18px_50px_rgba(0,0,0,0.34)] backdrop-blur-[14px]">
                <div className="flex items-center justify-center rounded-xl border border-[rgba(117,61,255,0.32)] bg-white/6 p-3">
                   <div ref={turnstileContainerRef} />
                </div>
@@ -246,7 +246,7 @@ export function LoginForm() {
             </div>
          ) : (
             <div className="w-full max-w-[380px]">
-               <div className="grid gap-2 rounded-2xl border border-[rgba(117,61,255,0.32)] bg-[radial-gradient(520px_200px_at_20%_0%,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0)_60%),linear-gradient(180deg,rgba(18,10,34,0.42)_0%,rgba(8,5,14,0.26)_100%)] p-2.5 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_18px_50px_rgba(0,0,0,0.34)] backdrop-blur-[14px]">
+               <div className="grid gap-2 rounded-2xl border border-[rgba(117,61,255,0.32)] bg-[rgba(24,14,42,0.52)] p-2.5 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_18px_50px_rgba(0,0,0,0.34)] backdrop-blur-[14px]">
                   <SliderCaptcha
                      ref={captchaRef}
                      onReadyChange={handleCaptchaReadyChange}
