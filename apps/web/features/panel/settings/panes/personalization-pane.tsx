@@ -1,11 +1,13 @@
 "use client";
 
-import type { Dispatch, RefObject, SetStateAction } from "react";
-import { createPortal } from "react-dom";
+import { type Dispatch, type RefObject, type SetStateAction } from "react";
 
 import type { BgMode } from "../background";
 import type { SettingsState } from "../provider";
 import type { SettingsTabKey } from "../../state/settings-tab";
+import { useSoundPreview } from "./personalization/use-sound-preview";
+import { WsServerSelect } from "./personalization/ws-server-select";
+import { BackgroundPreview } from "./personalization/background-preview";
 
 export function PersonalizationPane(props: {
    tab: SettingsTabKey;
@@ -47,6 +49,8 @@ export function PersonalizationPane(props: {
       setWsOpen,
       wsMenuPos,
    } = props;
+
+   const playSoundPreview = useSoundPreview();
 
    return (
       <div className="min-h-[220px]" data-settings-pane="personalization" style={{ display: tab === "personalization" ? "block" : "none" }}>
@@ -246,7 +250,9 @@ export function PersonalizationPane(props: {
                            onChange={(e) => {
                               const n = Number(e.target.value || "0");
                               const clamped = Math.max(0, Math.min(100, Number.isFinite(n) ? n : 0));
-                              setSoundVolume(clamped / 100);
+                              const v = clamped / 100;
+                              setSoundVolume(v);
+                              playSoundPreview(v);
                            }}
                         />
                      </div>
@@ -297,128 +303,20 @@ export function PersonalizationPane(props: {
 
                      <div className="my-[10px] flex items-center justify-between gap-3 rounded-[12px] border border-white/[0.12] bg-white/[0.03] p-[10px]">
                         <div className="text-[14px] font-semibold text-white">Default WS server</div>
-                        <div ref={wsWrapRef} className="relative min-w-[220px]">
-                           <select
-                              id="settingsWsServer"
-                              className="absolute inset-0 opacity-0 pointer-events-none"
-                              value={wsSelectValue}
-                              onChange={(e) => setWsHost(e.target.value)}
-                              aria-hidden
-                              tabIndex={-1}
-                           >
-                              <option value="__default__">Default</option>
-                              <option value="ru.webcrystal.sbs">Russia</option>
-                              <option value="kz.webcrystal.sbs">Kazakhstan</option>
-                              <option value="ua.webcrystal.sbs">Ukraine</option>
-                           </select>
-
-                           <button
-                              ref={wsBtnRef}
-                              type="button"
-                              className={
-                                 "w-full h-[34px] px-[12px] pr-[32px] rounded-[12px] border border-white/[0.14] bg-[rgba(0,0,0,0.28)] text-[13px] text-white/[0.92] cursor-pointer text-left whitespace-nowrap overflow-hidden text-ellipsis transition-[border-color,background,box-shadow,transform] " +
-                                 (wsOpen ? "border-white/[0.30] shadow-[0_0_0_3px_rgba(80,230,255,0.12)]" : "hover:bg-white/[0.06] hover:border-white/[0.22]")
-                              }
-                              onClick={() => setWsOpen((v) => !v)}
-                           >
-                              {wsSelectValue === "__default__"
-                                 ? "Default"
-                                 : wsSelectValue === "ru.webcrystal.sbs"
-                                    ? "Russia"
-                                    : wsSelectValue === "kz.webcrystal.sbs"
-                                       ? "Kazakhstan"
-                                       : wsSelectValue === "ua.webcrystal.sbs"
-                                          ? "Ukraine"
-                                          : wsSelectValue}
-                              <span className="pointer-events-none absolute right-[12px] top-1/2 -translate-y-1/2">
-                                 <img
-                                    src="/icons/arrow.svg"
-                                    alt="v"
-                                    draggable={false}
-                                    className={"h-[10px] w-[10px] invert opacity-85 transition-transform " + (wsOpen ? "rotate-180" : "")}
-                                 />
-                              </span>
-                           </button>
-
-                           {wsOpen && wsMenuPos
-                              ? createPortal(
-                                 <div
-                                    ref={wsMenuRef}
-                                    className="fixed z-[9999] rounded-[14px] border border-white/[0.14] bg-[rgba(12,12,12,0.96)] p-[8px] text-white shadow-[0_22px_54px_rgba(0,0,0,0.65)]"
-                                    style={{ left: wsMenuPos.left, top: wsMenuPos.top, width: wsMenuPos.width }}
-                                    role="listbox"
-                                 >
-                                    {[
-                                       { value: "__default__", label: "Default" },
-                                       { value: "ru.webcrystal.sbs", label: "Russia" },
-                                       { value: "kz.webcrystal.sbs", label: "Kazakhstan" },
-                                       { value: "ua.webcrystal.sbs", label: "Ukraine" },
-                                    ].map((opt) => {
-                                       const selected = wsSelectValue === opt.value;
-                                       return (
-                                          <button
-                                             key={opt.value}
-                                             type="button"
-                                             className={
-                                                "w-full text-left px-[10px] py-[10px] rounded-[12px] text-[13px] leading-[1.15] font-semibold text-white transition-[background,transform] cursor-pointer " +
-                                                (selected
-                                                   ? "bg-[rgba(80,230,255,0.12)] border border-[rgba(80,230,255,0.20)]"
-                                                   : "bg-transparent hover:bg-white/[0.08]")
-                                             }
-                                             onClick={() => {
-                                                setWsHost(opt.value);
-                                                setWsOpen(false);
-                                             }}
-                                             role="option"
-                                             aria-selected={selected}
-                                          >
-                                             {opt.label}
-                                          </button>
-                                       );
-                                    })}
-                                 </div>,
-                                 document.body,
-                              )
-                              : null}
-                        </div>
+                        <WsServerSelect
+                           setWsHost={setWsHost}
+                           wsSelectValue={wsSelectValue}
+                           wsWrapRef={wsWrapRef}
+                           wsBtnRef={wsBtnRef}
+                           wsMenuRef={wsMenuRef}
+                           wsOpen={wsOpen}
+                           setWsOpen={setWsOpen}
+                           wsMenuPos={wsMenuPos}
+                        />
                      </div>
                   </div>
 
-                  <div
-                     className="h-[220px] overflow-hidden rounded-[16px] border border-white/[0.14] bg-[rgba(12,12,12,0.5)] shadow-[0_18px_54px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.06)] md:h-[330px]"
-                     aria-label="Background preview"
-                  >
-                     <div
-                        id="settingsBgPreview"
-                        className="h-full w-full cursor-pointer border border-white/[0.10] bg-[rgba(22,22,22,0.65)] bg-center bg-no-repeat [background-size:contain]"
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => {
-                           if (state.bgMode === "image") {
-                              try {
-                                 document.getElementById("settingsBgFile")?.click();
-                              } catch {
-                                 return;
-                              }
-                           }
-                           if (state.bgMode === "video") {
-                              try {
-                                 document.getElementById("settingsBgVideoFile")?.click();
-                              } catch {
-                                 return;
-                              }
-                           }
-
-                           if (state.bgMode === "default") {
-                              try {
-                                 document.getElementById("settingsBgColor")?.click();
-                              } catch {
-                                 return;
-                              }
-                           }
-                        }}
-                     />
-                  </div>
+                  <BackgroundPreview state={state} />
                </div>
             </div>
          </div>

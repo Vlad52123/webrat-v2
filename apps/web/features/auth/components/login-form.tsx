@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -13,15 +13,13 @@ import { login } from "../api";
 import { loginSchema, type LoginValues } from "../schemas";
 import { LoginNotice, type LoginNoticeType } from "./login-notice";
 import { SliderCaptcha, type SliderCaptchaHandle } from "./slider-captcha";
+import { useInputsErrorReset } from "./login-form/use-inputs-error-reset";
+import { useSubmitCooldown } from "./login-form/use-submit-cooldown";
+import { useTurnstile as useTurnstileHook } from "./login-form/use-turnstile";
 
 export function LoginForm() {
    const router = useRouter();
    const captchaRef = useRef<SliderCaptchaHandle | null>(null);
-   const turnstileContainerRef = useRef<HTMLDivElement | null>(null);
-   const turnstileWidgetIdRef = useRef<unknown>(null);
-   const submitCooldownUntilRef = useRef<number>(0);
-   const submitCooldownTimerRef = useRef<number | null>(null);
-   const lastCooldownLeftSecRef = useRef<number>(-1);
    const [notice, setNotice] = useState<
       | {
          type: LoginNoticeType;
@@ -33,55 +31,19 @@ export function LoginForm() {
    const [useTurnstile, setUseTurnstile] = useState(false);
    const [captchaReady, setCaptchaReady] = useState(false);
    const [inputsError, setInputsError] = useState(false);
-   const inputsErrorRef = useRef(false);
 
-   const [cooldownTick, setCooldownTick] = useState(0);
-
-   const clearSubmitCooldown = useCallback(() => {
-      submitCooldownUntilRef.current = 0;
-      lastCooldownLeftSecRef.current = -1;
-      if (submitCooldownTimerRef.current) {
-         window.clearInterval(submitCooldownTimerRef.current);
-         submitCooldownTimerRef.current = null;
-      }
-   }, []);
-
-   const ensureSubmitCooldownTimer = useCallback(() => {
-      if (submitCooldownTimerRef.current) return;
-      submitCooldownTimerRef.current = window.setInterval(() => {
-         const until = submitCooldownUntilRef.current;
-         if (!until) {
-            clearSubmitCooldown();
-            return;
-         }
-
-         const leftMs = until - Date.now();
-         if (leftMs <= 0) {
-            clearSubmitCooldown();
-            setCooldownTick((x) => x + 1);
-            return;
-         }
-
-         const left = Math.max(1, Math.ceil(leftMs / 1000));
-         if (left !== lastCooldownLeftSecRef.current) {
-            lastCooldownLeftSecRef.current = left;
-            const mm = Math.floor(left / 60);
-            const ss = left % 60;
-            const pretty = mm > 0 ? `${mm}m ${String(ss).padStart(2, "0")}s` : `${left} seconds`;
-            setNotice({ type: "warning", message: `Blocked. Wait ${pretty}`, sticky: true });
-            setCooldownTick((x) => x + 1);
-         }
-      }, 250);
-   }, [clearSubmitCooldown]);
-
-   useEffect(() => {
-      return () => {
-         if (submitCooldownTimerRef.current) {
-            window.clearInterval(submitCooldownTimerRef.current);
-            submitCooldownTimerRef.current = null;
-         }
-      };
-   }, []);
+   const {
+      cooldownTick,
+      submitCooldownUntilRef,
+      clearSubmitCooldown,
+      ensureSubmitCooldownTimer,
+      startCooldownForSeconds,
+      isCooldownActive,
+      showCooldownNoticeNow,
+   } = useSubmitCooldown({
+      setNotice,
+      setInputsError,
+   });
 
    const handleCaptchaReadyChange = useCallback((ready: boolean) => {
       setCaptchaReady(ready);
@@ -101,7 +63,10 @@ export function LoginForm() {
       defaultValues: { login: "", password: "" },
    });
 
-   const [turnstileToken, setTurnstileToken] = useState("");
+   const { turnstileContainerRef, turnstileToken, setTurnstileToken } = useTurnstileHook({
+      useTurnstile,
+      setCaptchaReady,
+   });
 
    const loginValue = form.watch("login");
    const passwordValue = form.watch("password");
@@ -109,13 +74,12 @@ export function LoginForm() {
       /^[A-Za-z0-9_-]{5,12}$/.test(String(loginValue || "")) &&
       /^[A-Za-z0-9_-]{6,24}$/.test(String(passwordValue || ""));
 
-   useEffect(() => {
-      inputsErrorRef.current = inputsError;
-   }, [inputsError]);
-
-   useEffect(() => {
-      if (inputsErrorRef.current) setInputsError(false);
-   }, [loginValue, passwordValue]);
+   useInputsErrorReset({
+      inputsError,
+      setInputsError,
+      loginValue,
+      passwordValue,
+   });
 
    const mutation = useMutation({
       mutationFn: (values: LoginValues) => login(values, useTurnstile ? turnstileToken : ""),
@@ -156,11 +120,7 @@ export function LoginForm() {
          if (err && typeof err === "object" && "status" in err && (err as { status?: unknown }).status === 429) {
             const ra = (err as { retryAfterSeconds?: unknown }).retryAfterSeconds;
             const secs = typeof ra === "number" && Number.isFinite(ra) && ra > 0 ? Math.min(60 * 60, ra) : 15 * 60;
-            submitCooldownUntilRef.current = Date.now() + secs * 1000;
-            lastCooldownLeftSecRef.current = -1;
-            ensureSubmitCooldownTimer();
-            setInputsError(true);
-            setCooldownTick((x) => x + 1);
+            startCooldownForSeconds(secs);
             return;
          }
 
@@ -182,10 +142,7 @@ export function LoginForm() {
          }
 
          if (code === "HTTP_429") {
-            submitCooldownUntilRef.current = Date.now() + 15 * 60 * 1000;
-            lastCooldownLeftSecRef.current = -1;
-            ensureSubmitCooldownTimer();
-            setInputsError(true);
+            startCooldownForSeconds(15 * 60);
             captchaRef.current?.refresh();
             setCaptchaReady(false);
             return;
@@ -199,98 +156,9 @@ export function LoginForm() {
    });
 
    const submitEnabled = useMemo(() => {
-      if (submitCooldownUntilRef.current && Date.now() < submitCooldownUntilRef.current) return false;
+      if (isCooldownActive()) return false;
       return credsOk && captchaReady && !mutation.isPending;
    }, [captchaReady, credsOk, mutation.isPending, cooldownTick]);
-
-   useEffect(() => {
-      if (!useTurnstile) {
-         setTurnstileToken("");
-         setCaptchaReady(false);
-
-         try {
-            const w = window as unknown as {
-               turnstile?: {
-                  remove?: (widgetId: unknown) => void;
-               };
-            };
-            if (turnstileWidgetIdRef.current && w.turnstile?.remove) {
-               w.turnstile.remove(turnstileWidgetIdRef.current);
-            }
-         } catch {
-            // ignore
-         }
-
-         turnstileWidgetIdRef.current = null;
-         if (turnstileContainerRef.current) {
-            turnstileContainerRef.current.innerHTML = "";
-         }
-         return;
-      }
-
-      const w = window as unknown as {
-         turnstile?: {
-            render?: (container: HTMLElement, options: Record<string, unknown>) => unknown;
-            remove?: (widgetId: unknown) => void;
-         };
-      };
-
-      const existing = document.querySelector('script[data-cf-turnstile="true"]');
-      if (!existing) {
-         const s = document.createElement("script");
-         s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
-         s.async = true;
-         s.defer = true;
-         s.dataset.cfTurnstile = "true";
-         document.head.appendChild(s);
-      }
-
-      let cancelled = false;
-      const t = window.setInterval(() => {
-         if (cancelled) return;
-         if (!w.turnstile?.render) return;
-
-         const el = turnstileContainerRef.current;
-         if (!el) return;
-
-         try {
-            if (turnstileWidgetIdRef.current && w.turnstile.remove) {
-               w.turnstile.remove(turnstileWidgetIdRef.current);
-            }
-         } catch {
-            // ignore
-         }
-
-         turnstileWidgetIdRef.current = null;
-         el.innerHTML = "";
-         setTurnstileToken("");
-         setCaptchaReady(false);
-
-         turnstileWidgetIdRef.current = w.turnstile.render(el, {
-            sitekey: "0x4AAAAAACMVXs8AFwjPiMKT",
-            theme: "dark",
-            callback: (token: string) => {
-               setTurnstileToken(String(token || ""));
-               setCaptchaReady(true);
-            },
-            "error-callback": () => {
-               setTurnstileToken("");
-               setCaptchaReady(false);
-            },
-            "expired-callback": () => {
-               setTurnstileToken("");
-               setCaptchaReady(false);
-            },
-         });
-
-         window.clearInterval(t);
-      }, 50);
-
-      return () => {
-         cancelled = true;
-         window.clearInterval(t);
-      };
-   }, [useTurnstile]);
 
    return (
       <form
@@ -299,14 +167,8 @@ export function LoginForm() {
          onSubmit={form.handleSubmit((values) => {
             setNotice(null);
 
-            if (submitCooldownUntilRef.current && Date.now() < submitCooldownUntilRef.current) {
-               const leftMs = submitCooldownUntilRef.current - Date.now();
-               const left = Math.max(1, Math.ceil(leftMs / 1000));
-               const mm = Math.floor(left / 60);
-               const ss = left % 60;
-               const pretty = mm > 0 ? `${mm}m ${String(ss).padStart(2, "0")}s` : `${left} seconds`;
-               setInputsError(true);
-               setNotice({ type: "warning", message: `Blocked. Wait ${pretty}` });
+            if (isCooldownActive()) {
+               showCooldownNoticeNow();
                return;
             }
 

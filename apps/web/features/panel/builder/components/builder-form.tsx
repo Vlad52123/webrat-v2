@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import { BuilderField } from "./builder-field";
 import { BuilderIconField } from "./builder-icon-field";
@@ -6,9 +6,11 @@ import { BuilderNiceSelect } from "./builder-nice-select";
 import { BuilderStartupDelay } from "./builder-startup-delay";
 import { BuilderTextInput } from "./builder-text-input";
 import { inputFixedClass } from "../styles";
-import { readIcoAsBase64 } from "../utils/icon";
-import { showToastSafe } from "../utils/toast";
 import { useBuilderBuildFlow } from "../hooks/use-builder-build-flow";
+import { clampDelay } from "./builder-form/clamp-delay";
+import { useBuilderFormVisibility } from "./builder-form/use-builder-form-visibility";
+import { useBuilderIconInput } from "./builder-form/use-builder-icon-input";
+import { useExtensionSync } from "./builder-form/use-extension-sync";
 
 export function BuilderForm(props: { open: boolean; mutex: string }) {
    const { open, mutex } = props;
@@ -28,128 +30,15 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
       setInstallMode,
    });
 
-   useEffect(() => {
-      const el = formRef.current;
-      if (!el) return;
-
-      if (open) {
-         if (hidden) {
-            window.setTimeout(() => {
-               setHidden(false);
-            }, 0);
-         }
-         requestAnimationFrame(() => {
-            setIsOpenClass(true);
-         });
-         return;
-      }
-
-      window.setTimeout(() => {
-         setIsOpenClass(false);
-      }, 0);
-      const onEnd = (e: TransitionEvent) => {
-         if (e.target !== el) return;
-         setHidden(true);
-      };
-      el.addEventListener("transitionend", onEnd, { once: true });
-      return () => {
-         try {
-            el.removeEventListener("transitionend", onEnd);
-         } catch {
-         }
-      };
-   }, [open, hidden]);
-
-   const clampDelay = (v: number) => {
-      if (!Number.isFinite(v)) return 1;
-      return Math.max(1, Math.min(10, v));
-   };
-
-   useEffect(() => {
-      const chooseBtn = document.getElementById("buildIconChooseBtn") as HTMLButtonElement | null;
-      const clearBtn = document.getElementById("buildIconClearBtn") as HTMLButtonElement | null;
-      const input = document.getElementById("buildIcon") as HTMLInputElement | null;
-      const nameEl = document.getElementById("buildIconName") as HTMLDivElement | null;
-
-      const updateName = () => {
-         if (!nameEl) return;
-         const fileName = input?.files?.[0]?.name;
-         nameEl.textContent = fileName ? String(fileName) : "No icon selected";
-      };
-
-      const onChoose = () => {
-         try {
-            input?.click();
-         } catch {
-         }
-      };
-
-      const onClear = () => {
-         setIconBase64("");
-         try {
-            if (input) input.value = "";
-         } catch {
-         }
-         updateName();
-      };
-
-      const onInput = () => {
-         void (async () => {
-            const f = input?.files?.[0];
-            if (!f) {
-               setIconBase64("");
-               updateName();
-               return;
-            }
-
-            const res = await readIcoAsBase64(f);
-            if (!res) {
-               setIconBase64("");
-               try {
-                  if (input) input.value = "";
-               } catch {
-               }
-               updateName();
-               return;
-            }
-
-            setIconBase64(res.base64);
-            updateName();
-         })();
-      };
-
-      updateName();
-
-      chooseBtn?.addEventListener("click", onChoose);
-      clearBtn?.addEventListener("click", onClear);
-      input?.addEventListener("change", onInput);
-
-      return () => {
-         chooseBtn?.removeEventListener("click", onChoose);
-         clearBtn?.removeEventListener("click", onClear);
-         input?.removeEventListener("change", onInput);
-      };
-   }, []);
-
-   useEffect(() => {
-      const buildName = document.getElementById("buildName") as HTMLInputElement | null;
-      const extensionInput = document.getElementById("extension") as HTMLInputElement | null;
-      if (!buildName || !extensionInput) return;
-
-      const updateExtensionFromName = () => {
-         let raw = String(buildName.value || "").trim();
-         if (!raw) {
-            extensionInput.value = "webcrystal.exe";
-            return;
-         }
-         raw = raw.replace(/[^A-Za-z0-9_-]+/g, "_").slice(0, 25);
-         extensionInput.value = raw + ".exe";
-      };
-
-      updateExtensionFromName();
-      buildName.addEventListener("input", updateExtensionFromName);
-      return () => buildName.removeEventListener("input", updateExtensionFromName);
-   }, []);
+   useBuilderFormVisibility({
+      open,
+      hidden,
+      setHidden,
+      setIsOpenClass,
+      el: formRef.current,
+   });
+   useBuilderIconInput({ setIconBase64 });
+   useExtensionSync();
 
    const onCreate = () => {
       const delaySec = clampDelay(delay);
@@ -287,13 +176,11 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
 
             <div
                id="buildProgress"
-               className="buildProgress fixed inset-0 z-[998] grid place-items-center bg-[rgba(0,0,0,0.35)]"
+               className="buildProgress fixed inset-0 z-[998] grid place-items-center bg-[rgba(0,0,0,0.62)] backdrop-blur-[6px]"
                hidden
             >
-               <div className="buildProgressInner grid h-[210px] w-[min(520px,90vw)] place-items-center rounded-[16px] border border-[rgba(255,255,255,0.14)] bg-[rgba(32,32,32,0.64)] shadow-[0_18px_40px_rgba(0,0,0,0.55),0_0_0_4px_rgba(255,255,255,0.05)] backdrop-blur-[10px]">
-                  <div id="buildProgressText" className="buildProgressText text-[18px] font-bold text-[rgba(255,255,255,0.92)]">
-                     Building
-                  </div>
+               <div id="buildProgressText" className="buildProgressText text-[20px] font-extrabold tracking-[0.02em] text-[rgba(255,255,255,0.92)] [text-shadow:0_10px_30px_rgba(0,0,0,0.75)]">
+                  Building
                </div>
             </div>
 

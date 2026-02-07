@@ -29,5 +29,14 @@ export type VictimsResponse = z.infer<typeof VictimsResponseSchema>;
 
 export async function fetchVictims(): Promise<VictimsResponse> {
    const data = await getJson<unknown>("/api/victims/");
-   return VictimsResponseSchema.parse(data);
+   try {
+      return VictimsResponseSchema.parse(data);
+   } catch (err) {
+      if (err instanceof z.ZodError) {
+         const e = new Error("Invalid server response");
+         (e as unknown as { status?: number }).status = 502;
+         throw e;
+      }
+      throw err;
+   }
 }

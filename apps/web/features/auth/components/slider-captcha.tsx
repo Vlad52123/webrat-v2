@@ -2,6 +2,13 @@
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 
+import { resetUi } from "./slider-captcha/reset-ui";
+import { useCaptchaImages } from "./slider-captcha/use-captcha-images";
+import { useCaptchaLayout } from "./slider-captcha/use-captcha-layout";
+import { useReadyExpiry } from "./slider-captcha/use-ready-expiry";
+import { useSliderDrag } from "./slider-captcha/use-slider-drag";
+import { verifyCaptchaServerSide } from "./slider-captcha/verify";
+
 export type SliderCaptchaHandle = {
    reset: () => void;
    refresh: () => void;
@@ -13,22 +20,6 @@ type CaptchaState =
    | { kind: "unavailable" };
 
 const CAPTCHA_CIRCLE_SIZE = 140;
-
-function getCookie(name: string): string {
-   const parts = String(document.cookie || "").split(";");
-   for (const p of parts) {
-      const kv = p.trim();
-      if (!kv) continue;
-      const eq = kv.indexOf("=");
-      const k = eq >= 0 ? kv.slice(0, eq) : kv;
-      if (k === name) return eq >= 0 ? decodeURIComponent(kv.slice(eq + 1)) : "";
-   }
-   return "";
-}
-
-function clamp(v: number, min: number, max: number) {
-   return Math.max(min, Math.min(max, v));
-}
 
 export const SliderCaptcha = forwardRef<
    SliderCaptchaHandle,
@@ -53,8 +44,6 @@ export const SliderCaptcha = forwardRef<
 
    const lockedRef = useRef(true);
    const changeImageCooldownUntilRef = useRef(0);
-   const imagesCacheRef = useRef<string[] | null>(null);
-   const imagesCacheAtRef = useRef<number>(0);
 
    const readyUntilRef = useRef<number>(0);
    const startAngleRef = useRef<number>(0);
@@ -63,9 +52,22 @@ export const SliderCaptcha = forwardRef<
    const unlockTimerRef = useRef<number | null>(null);
    const initSeqRef = useRef(0);
 
-   const draggingRef = useRef(false);
-   const dragStartXRef = useRef(0);
-   const thumbStartLeftRef = useRef(0);
+   const { pickImage } = useCaptchaImages();
+
+   const { placeTargets, updateMoverFromThumb } = useCaptchaLayout({
+      refs: {
+         wrapRef,
+         sliderRef,
+         thumbRef,
+         trackRef,
+         imgRef,
+         targetRef,
+         moverRef,
+      },
+      captchaCircleSize: CAPTCHA_CIRCLE_SIZE,
+      startAngleRef,
+      currentAngleRef,
+   });
 
    const sliderHint = useMemo(() => {
       if (verified && good === "good") return "VERIFIED";
@@ -79,103 +81,8 @@ export const SliderCaptcha = forwardRef<
       setGood(null);
       readyUntilRef.current = 0;
       onReadyChange(false);
-
-      const thumb = thumbRef.current;
-      const track = trackRef.current;
-      if (thumb) {
-         thumb.style.left = "0px";
-         thumb.setAttribute("aria-valuenow", "0");
-      }
-      if (track) track.style.width = "0px";
-
-      const mover = moverRef.current;
-      if (mover) {
-         mover.style.transform = `translateY(-50%) rotate(${startAngleRef.current}deg)`;
-      }
+      resetUi({ thumbRef, trackRef, moverRef, startAngleRef });
    }, [onReadyChange]);
-
-   const listImages = useCallback(async (): Promise<string[]> => {
-      try {
-         const cached = imagesCacheRef.current;
-         const cachedAt = imagesCacheAtRef.current;
-         if (cached && cached.length && Date.now() - cachedAt < 5 * 60 * 1000) {
-            return cached;
-         }
-
-         const res = await fetch(`/api/captcha-images`, {
-            method: "GET",
-            credentials: "include",
-         });
-         if (!res.ok) return [];
-         const data = (await res.json()) as unknown;
-         const list = Array.isArray(data) ? data.map((x) => String(x)) : [];
-         imagesCacheRef.current = list;
-         imagesCacheAtRef.current = Date.now();
-         return list;
-      } catch {
-         return [];
-      }
-   }, []);
-
-   const pickImage = useCallback(async (): Promise<string | null> => {
-      const imgs = await listImages();
-      if (!imgs.length) return null;
-      const idx = Math.floor(Math.random() * imgs.length);
-      return imgs[idx] ?? null;
-   }, [listImages]);
-
-   const placeTargets = useCallback(() => {
-      const wrap = wrapRef.current;
-      const img = imgRef.current;
-      const target = targetRef.current;
-      const mover = moverRef.current;
-      if (!wrap || !img || !target || !mover) return;
-
-      const width = wrap.clientWidth;
-      const height = wrap.clientHeight;
-
-      const targetX = width / 2 - CAPTCHA_CIRCLE_SIZE / 2;
-      const targetY = height / 2 - CAPTCHA_CIRCLE_SIZE / 2;
-
-      target.style.top = "50%";
-      target.style.left = `${targetX}px`;
-      target.style.transform = "translateY(-50%)";
-
-      const src = img.currentSrc || img.src;
-      mover.style.backgroundImage = src ? `url("${src}")` : "";
-
-      const scale = Math.max(width / img.naturalWidth, height / img.naturalHeight);
-      const renderW = img.naturalWidth * scale;
-      const renderH = img.naturalHeight * scale;
-
-      const offsetX = (renderW - width) / 2;
-      const offsetY = (renderH - height) / 2;
-
-      mover.style.backgroundSize = `${renderW}px ${renderH}px`;
-      mover.style.backgroundPosition = `-${targetX + offsetX}px -${targetY + offsetY}px`;
-
-      mover.style.top = "50%";
-      mover.style.left = `${targetX}px`;
-      mover.style.transform = `translateY(-50%) rotate(${currentAngleRef.current}deg)`;
-   }, []);
-
-   const updateMoverFromThumb = useCallback(() => {
-      const slider = sliderRef.current;
-      const thumb = thumbRef.current;
-      const mover = moverRef.current;
-      if (!slider || !thumb || !mover) return;
-
-      const sliderRect = slider.getBoundingClientRect();
-      const thumbRect = thumb.getBoundingClientRect();
-      const maxLeft = sliderRect.width - thumbRect.width;
-      const left = parseFloat(thumb.style.left || "0");
-      const t = maxLeft > 0 ? left / maxLeft : 0;
-
-      const angle = startAngleRef.current + t * 360;
-      currentAngleRef.current = angle;
-
-      mover.style.transform = `translateY(-50%) rotate(${angle}deg)`;
-   }, []);
 
    const initCaptcha = useCallback(async (minLoadingMs = 0) => {
       const seq = ++initSeqRef.current;
@@ -267,62 +174,18 @@ export const SliderCaptcha = forwardRef<
       return () => window.removeEventListener("resize", onResize);
    }, [placeTargets, updateMoverFromThumb]);
 
-   const onPointerDown = useCallback((e: React.PointerEvent) => {
-      if (verified || locked) return;
-      const thumb = thumbRef.current;
-      if (!thumb) return;
-
-      draggingRef.current = true;
-      thumb.setPointerCapture(e.pointerId);
-
-      dragStartXRef.current = e.clientX;
-      thumbStartLeftRef.current = parseFloat(thumb.style.left || "0");
-   }, [verified, locked]);
-
-   const onPointerMove = useCallback((e: React.PointerEvent) => {
-      if (!draggingRef.current || verified || locked) return;
-
-      const slider = sliderRef.current;
-      const thumb = thumbRef.current;
-      const track = trackRef.current;
-      if (!slider || !thumb || !track) return;
-
-      const sliderRect = slider.getBoundingClientRect();
-      const thumbRect = thumb.getBoundingClientRect();
-      const maxLeft = sliderRect.width - thumbRect.width;
-
-      const dx = e.clientX - dragStartXRef.current;
-      const left = clamp(thumbStartLeftRef.current + dx, 0, maxLeft);
-
-      thumb.style.left = `${left}px`;
-      track.style.width = `${left + thumbRect.width}px`;
-
-      const percent = maxLeft > 0 ? Math.round((left / maxLeft) * 100) : 0;
-      thumb.setAttribute("aria-valuenow", String(percent));
-
-      updateMoverFromThumb();
-   }, [verified, locked, updateMoverFromThumb]);
-
-   const verifyServerSide = useCallback(async (): Promise<{ ok: boolean; status: number }> => {
-      try {
-         const csrf = getCookie("webrat_csrf");
-         const res = await fetch(`/api/captcha-verify`, {
-            method: "POST",
-            credentials: "include",
-            headers: {
-               ...(csrf ? { "X-CSRF-Token": csrf } : {}),
-            },
-         });
-         return { ok: res.ok, status: res.status };
-      } catch {
-         return { ok: false, status: 0 };
-      }
-   }, []);
+   const { draggingRef, onPointerDown, onPointerMove, endDrag } = useSliderDrag({
+      locked,
+      verified,
+      thumbRef,
+      sliderRef,
+      trackRef,
+      updateMoverFromThumb,
+   });
 
    const onPointerUp = useCallback(async () => {
-      if (!draggingRef.current || verified || locked) return;
-
-      draggingRef.current = false;
+      const ended = endDrag();
+      if (!ended) return;
 
       const thumb = thumbRef.current;
       const track = trackRef.current;
@@ -341,7 +204,7 @@ export const SliderCaptcha = forwardRef<
       if (diff <= 6) {
          setVerified(true);
          setGood(null);
-         const res = await verifyServerSide();
+         const res = await verifyCaptchaServerSide();
          if (!res.ok) {
             if (res.status === 401) {
                onError("Captcha expired");
@@ -375,19 +238,13 @@ export const SliderCaptcha = forwardRef<
       if (mover) {
          mover.style.transform = `translateY(-50%) rotate(${startAngleRef.current}deg)`;
       }
-   }, [initCaptcha, locked, onError, onReadyChange, verifyServerSide, verified]);
+   }, [endDrag, initCaptcha, locked, onError, onReadyChange, verified]);
 
-   useEffect(() => {
-      if (!readyUntilRef.current) return;
-      const t = window.setInterval(() => {
-         if (readyUntilRef.current && Date.now() > readyUntilRef.current) {
-            readyUntilRef.current = 0;
-            onReadyChange(false);
-            void initCaptcha();
-         }
-      }, 1000);
-      return () => window.clearInterval(t);
-   }, [initCaptcha, onReadyChange]);
+   useReadyExpiry({
+      readyUntilRef,
+      onReadyChange,
+      initCaptcha,
+   });
 
    return (
       <div className="grid gap-[10px]" id="sliderCaptchaBlock">

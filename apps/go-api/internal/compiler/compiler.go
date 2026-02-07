@@ -3,6 +3,8 @@ package compiler
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -41,6 +43,14 @@ func readGoModulePath(goModPath string) string {
 		}
 	}
 	return ""
+}
+
+func randomGarbleSeed() string {
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		return "random"
+	}
+	return hex.EncodeToString(b)
 }
 
 func findGoModDir(start string, maxParents int) (string, bool) {
@@ -350,13 +360,29 @@ func CompileZip(ctx context.Context, baseDir string, req Request) ([]byte, strin
 				continue
 			}
 			if strings.HasPrefix(f, "-seed=") || strings.HasPrefix(f, "-debugdir=") {
+				if strings.HasPrefix(f, "-seed=") {
+					seed := strings.TrimSpace(strings.TrimPrefix(f, "-seed="))
+					if seed == "" || seed == "random" {
+						seed = randomGarbleSeed()
+					}
+					garbleFlags = append(garbleFlags, "-seed="+seed)
+					continue
+				}
 				garbleFlags = append(garbleFlags, f)
 				continue
 			}
 			if _, ok := knownGarbleWithArg[f]; ok {
 				garbleFlags = append(garbleFlags, f)
 				if i+1 < len(fields) {
-					garbleFlags = append(garbleFlags, fields[i+1])
+					if f == "-seed" {
+						seed := strings.TrimSpace(fields[i+1])
+						if seed == "" || seed == "random" {
+							seed = randomGarbleSeed()
+						}
+						garbleFlags = append(garbleFlags, seed)
+					} else {
+						garbleFlags = append(garbleFlags, fields[i+1])
+					}
 					i++
 				}
 				continue
@@ -364,7 +390,7 @@ func CompileZip(ctx context.Context, baseDir string, req Request) ([]byte, strin
 			goExtraFlags = append(goExtraFlags, f)
 		}
 	} else {
-		garbleFlags = []string{"-literals", "-seed=random"}
+		garbleFlags = []string{"-literals", "-seed=" + randomGarbleSeed()}
 		goExtraFlags = []string{"-trimpath"}
 	}
 
