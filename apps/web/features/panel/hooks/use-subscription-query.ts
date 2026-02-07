@@ -12,7 +12,17 @@ export type SubscriptionResponse = {
 };
 
 function subCacheKey(): string {
-   return "webrat_subscription_cache";
+   try {
+      if (typeof window === "undefined") return "webrat_subscription_cache";
+      const login = String(localStorage.getItem("webrat_login") || "")
+         .trim()
+         .toLowerCase()
+         .replace(/[^a-z0-9_-]/g, "")
+         .slice(0, 32);
+      return login ? `webrat_subscription_cache:${login}` : "webrat_subscription_cache";
+   } catch {
+      return "webrat_subscription_cache";
+   }
 }
 
 function readCachedSubscription(): SubscriptionResponse | undefined {
@@ -37,6 +47,10 @@ function writeCachedSubscription(data: SubscriptionResponse) {
    try {
       if (typeof window === "undefined") return;
       localStorage.setItem(subCacheKey(), JSON.stringify(data));
+      try {
+         localStorage.removeItem("webrat_subscription_cache");
+      } catch {
+      }
    } catch {
    }
 }

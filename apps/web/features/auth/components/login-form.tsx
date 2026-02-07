@@ -133,6 +133,18 @@ export function LoginForm() {
          } catch {
          }
          try {
+            localStorage.removeItem("webrat_subscription_cache");
+            const loginKey = String(values?.login || "")
+               .trim()
+               .toLowerCase()
+               .replace(/[^A-Za-z0-9_-]/g, "")
+               .slice(0, 32);
+            if (loginKey) {
+               localStorage.removeItem(`webrat_subscription_cache:${loginKey}`);
+            }
+         } catch {
+         }
+         try {
             localStorage.setItem("webrat_post_auth", "1");
          } catch {
          }

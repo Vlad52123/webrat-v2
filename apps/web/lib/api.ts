@@ -2,6 +2,14 @@ import { env } from "../env";
 
 export const API_BASE_URL = env.NEXT_PUBLIC_API_URL ?? "";
 
+function resolveUrl(path: string): string {
+   const p = String(path || "");
+   if (typeof window !== "undefined") {
+      return p;
+   }
+   return `${API_BASE_URL}${p}`;
+}
+
 type JsonObject = Record<string, unknown>;
 
 function safeParseJSON(text: string): unknown {
@@ -15,7 +23,7 @@ function safeParseJSON(text: string): unknown {
 }
 
 export async function getJson<T>(path: string): Promise<T> {
-   const res = await fetch(`${API_BASE_URL}${path}`, {
+   const res = await fetch(resolveUrl(path), {
       method: "GET",
       credentials: "include",
       cache: "no-store",
@@ -42,7 +50,7 @@ export async function getJson<T>(path: string): Promise<T> {
 }
 
 export async function postJson<T>(path: string, body: JsonObject): Promise<T> {
-   const res = await fetch(`${API_BASE_URL}${path}`, {
+   const res = await fetch(resolveUrl(path), {
       method: "POST",
       credentials: "include",
       cache: "no-store",
