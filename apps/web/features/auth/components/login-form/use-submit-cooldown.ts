@@ -1,22 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import type { LoginNoticeType } from "../login-notice";
-
-type Notice =
-   | {
-      type: LoginNoticeType;
-      message: string;
-      sticky?: boolean;
-   }
-   | null;
-
 type Params = {
-   setNotice: (v: Notice) => void;
+   showToast: (type: string, message: string) => void;
    setInputsError: (v: boolean) => void;
 };
 
 export function useSubmitCooldown(p: Params) {
-   const { setNotice, setInputsError } = p;
+   const { showToast, setInputsError } = p;
 
    const submitCooldownUntilRef = useRef<number>(0);
    const submitCooldownTimerRef = useRef<number | null>(null);
@@ -55,11 +45,11 @@ export function useSubmitCooldown(p: Params) {
             const mm = Math.floor(left / 60);
             const ss = left % 60;
             const pretty = mm > 0 ? `${mm}m ${String(ss).padStart(2, "0")}s` : `${left} seconds`;
-            setNotice({ type: "warning", message: `Blocked. Wait ${pretty}`, sticky: true });
+            showToast("warning", `Blocked. Wait ${pretty}`);
             setCooldownTick((x) => x + 1);
          }
       }, 250);
-   }, [clearSubmitCooldown, setNotice]);
+   }, [clearSubmitCooldown, showToast]);
 
    useEffect(() => {
       return () => {
@@ -94,8 +84,8 @@ export function useSubmitCooldown(p: Params) {
       const ss = left % 60;
       const pretty = mm > 0 ? `${mm}m ${String(ss).padStart(2, "0")}s` : `${left} seconds`;
       setInputsError(true);
-      setNotice({ type: "warning", message: `Blocked. Wait ${pretty}` });
-   }, [isCooldownActive, setInputsError, setNotice]);
+      showToast("warning", `Blocked. Wait ${pretty}`);
+   }, [isCooldownActive, setInputsError, showToast]);
 
    return {
       cooldownTick,

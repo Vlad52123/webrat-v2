@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 
 import { login } from "../api";
 import { loginSchema, type LoginValues } from "../schemas";
-import { LoginNotice, type LoginNoticeType } from "./login-notice";
+import { showToast } from "@/features/panel/toast";
 import { SliderCaptcha, type SliderCaptchaHandle } from "./slider-captcha";
 import { useInputsErrorReset } from "./login-form/use-inputs-error-reset";
 import { useSubmitCooldown } from "./login-form/use-submit-cooldown";
@@ -20,14 +20,6 @@ import { useTurnstile as useTurnstileHook } from "./login-form/use-turnstile";
 export function LoginForm() {
    const router = useRouter();
    const captchaRef = useRef<SliderCaptchaHandle | null>(null);
-   const [notice, setNotice] = useState<
-      | {
-         type: LoginNoticeType;
-         message: string;
-         sticky?: boolean;
-      }
-      | null
-   >(null);
    const [useTurnstile, setUseTurnstile] = useState(false);
    const [captchaReady, setCaptchaReady] = useState(false);
    const [inputsError, setInputsError] = useState(false);
@@ -41,7 +33,7 @@ export function LoginForm() {
       isCooldownActive,
       showCooldownNoticeNow,
    } = useSubmitCooldown({
-      setNotice,
+      showToast,
       setInputsError,
    });
 
@@ -50,7 +42,7 @@ export function LoginForm() {
    }, []);
 
    const handleCaptchaError = useCallback((msg: string) => {
-      setNotice({ type: "error", message: msg });
+      showToast("error", msg);
    }, []);
 
    const handleToggleCaptcha = useCallback(() => {
@@ -84,7 +76,6 @@ export function LoginForm() {
    const mutation = useMutation({
       mutationFn: (values: LoginValues) => login(values, useTurnstile ? turnstileToken : ""),
       onSuccess: (_, values) => {
-         setNotice(null);
          setInputsError(false);
          clearSubmitCooldown();
          try {
@@ -125,16 +116,13 @@ export function LoginForm() {
          }
 
          if (code === "invalid_credentials" || code === "HTTP_401" || code === "HTTP_400") {
-            setNotice({ type: "error", message: "Invalid login or password" });
+            showToast("error", "Invalid login or password");
             setInputsError(true);
             return;
          }
 
          if (code === "security_check_failed" || code === "HTTP_403") {
-            setNotice({
-               type: "error",
-               message: "Security check failed. Refresh the page (Ctrl+F5) and try again.",
-            });
+            showToast("error", "Security check failed. Refresh the page (Ctrl+F5) and try again.");
             setInputsError(true);
             captchaRef.current?.refresh();
             setCaptchaReady(false);
@@ -148,7 +136,15 @@ export function LoginForm() {
             return;
          }
 
-         setNotice({ type: "error", message: "Login failed" });
+         if (code === "TURNSTILE_FAILED") {
+            showToast("error", "Security check failed");
+            setInputsError(true);
+            setTurnstileToken(null);
+            setCaptchaReady(false);
+            return;
+         }
+
+         showToast("error", "Login failed");
          setInputsError(true);
          captchaRef.current?.refresh();
          setCaptchaReady(false);
@@ -166,20 +162,18 @@ export function LoginForm() {
             className="grid w-full gap-[10px] justify-items-center"
             autoComplete="on"
             onSubmit={form.handleSubmit((values) => {
-               setNotice(null);
-
                if (isCooldownActive()) {
                   showCooldownNoticeNow();
                   return;
                }
 
                if (!captchaReady) {
-                  setNotice({ type: "warning", message: "Complete the captcha first" });
+                  showToast("warning", "Complete the captcha first");
                   setInputsError(true);
                   return;
                }
                if (!credsOk) {
-                  setNotice({ type: "error", message: "Invalid login or password" });
+                  showToast("error", "Invalid login or password");
                   setInputsError(true);
                   return;
                }
@@ -267,12 +261,6 @@ export function LoginForm() {
                {mutation.isPending ? "Signing in..." : "Register or Login"}
             </Button>
          </form>
-
-         {notice ? (
-            <div className="absolute left-0 right-0 top-full">
-               <LoginNotice type={notice.type} message={notice.message} sticky={notice.sticky} />
-            </div>
-         ) : null}
       </div>
    );
 }
