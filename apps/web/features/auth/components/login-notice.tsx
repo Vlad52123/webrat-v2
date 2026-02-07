@@ -29,10 +29,8 @@ export function LoginNotice({
    return (
       <div
          className={[
-            "w-full max-w-[380px] overflow-hidden transition-[max-height,transform,opacity,margin-top] duration-240",
-            open
-               ? "pointer-events-auto mt-[10px] max-h-[140px] translate-y-0 opacity-100"
-               : "pointer-events-none mt-0 max-h-0 -translate-y-2 opacity-0",
+            "relative w-full max-w-[380px] h-0 overflow-visible",
+            open ? "pointer-events-auto" : "pointer-events-none",
             type === "error" ? "isError" : type === "warning" ? "isWarning" : "isInfo",
          ].join(" ")}
          aria-live="polite"
@@ -40,11 +38,13 @@ export function LoginNotice({
       >
          <div
             className={[
-               "relative grid place-items-center rounded-2xl border px-3 py-3",
+               "absolute left-0 right-0 top-0 grid place-items-center border px-3 py-3 rounded-t-2xl rounded-b-none",
                "bg-[rgba(255,70,70,0.92)] text-black shadow-[0_16px_44px_rgba(0,0,0,0.40)]",
+               "transition-[transform,opacity] duration-220",
+               open ? "translate-y-[10px] opacity-100" : "translate-y-[-6px] opacity-0",
             ].join(" ")}
          >
-            <div className="min-w-0 text-center text-[22px] font-black leading-7 text-black/95 break-words">
+            <div className="min-w-0 text-center text-[16px] font-black leading-6 text-black/95 break-words">
                {message}
             </div>
          </div>
