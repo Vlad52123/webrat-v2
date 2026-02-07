@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 export type LoginNoticeType = "error" | "warning" | "info";
 
@@ -26,12 +26,6 @@ export function LoginNotice({
       return () => clearTimeout(t);
    }, [sticky, type, message]);
 
-   const title = useMemo(() => {
-      if (type === "error") return "Error";
-      if (type === "warning") return "Warning";
-      return "Info";
-   }, [type]);
-
    return (
       <div
          className={[
@@ -50,9 +44,8 @@ export function LoginNotice({
                "bg-[rgba(255,70,70,0.92)] text-black shadow-[0_16px_44px_rgba(0,0,0,0.40)]",
             ].join(" ")}
          >
-            <div className="min-w-0 text-center">
-               <div className="text-center text-[18px] font-black tracking-[0.2px] text-black/95">{title}</div>
-               <div className="text-center text-[18px] font-black leading-6 text-black/95 break-words">{message}</div>
+            <div className="min-w-0 text-center text-[22px] font-black leading-7 text-black/95 break-words">
+               {message}
             </div>
          </div>
       </div>
