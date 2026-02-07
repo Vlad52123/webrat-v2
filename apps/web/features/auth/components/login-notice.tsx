@@ -46,44 +46,20 @@ export function LoginNotice({
       >
          <div
             className={[
-               "relative grid grid-cols-[34px_1fr_30px] items-center gap-2.5 rounded-2xl border px-3 py-3",
-               "bg-[radial-gradient(700px_140px_at_10%_0%,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0)_55%),linear-gradient(180deg,rgba(18,10,34,0.86)_0%,rgba(10,7,18,0.76)_100%)]",
-               "shadow-[0_16px_44px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.06)_inset] backdrop-blur-[14px]",
-               type === "error"
-                  ? "border-[rgba(255,70,70,0.60)] shadow-[0_18px_55px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,70,70,0.18)_inset,0_0_22px_rgba(255,70,70,0.18)]"
-                  : type === "warning"
-                     ? "border-[rgba(163,130,255,0.55)] shadow-[0_18px_55px_rgba(0,0,0,0.55),0_0_0_1px_rgba(163,130,255,0.16)_inset,0_0_24px_rgba(117,61,255,0.18)]"
-                     : "border-[rgba(117,61,255,0.55)]",
+               "relative grid grid-cols-[1fr_30px] items-center gap-2.5 rounded-2xl border px-3 py-3",
+               "bg-[rgba(255,70,70,0.92)] text-black shadow-[0_16px_44px_rgba(0,0,0,0.40)]",
             ].join(" ")}
          >
-            <div
-               aria-hidden="true"
-               className={[
-                  "grid size-[30px] place-items-center rounded-full text-base font-black shadow-[0_10px_22px_rgba(0,0,0,0.28),0_0_0_1px_rgba(255,255,255,0.12)_inset]",
-                  type === "error"
-                     ? "bg-[linear-gradient(180deg,rgba(255,120,120,0.95)_0%,rgba(255,70,70,0.90)_100%)] text-white"
-                     : type === "warning"
-                        ? "bg-[linear-gradient(180deg,rgba(200,175,255,0.95)_0%,rgba(117,61,255,0.92)_100%)] text-white"
-                        : "bg-[linear-gradient(180deg,rgba(163,130,255,0.95)_0%,rgba(117,61,255,0.92)_100%)] text-white",
-               ].join(" ")}
-            >
-               !
-            </div>
-
             <div className="min-w-0">
-               <div className="text-left text-base font-black tracking-[0.2px] text-white/95">
-                  {title}
-               </div>
-               <div className="text-left text-sm leading-5 text-white/85 break-words">
-                  {message}
-               </div>
+               <div className="text-left text-base font-black tracking-[0.2px] text-black/95">{title}</div>
+               <div className="text-left text-sm leading-5 text-black/90 break-words">{message}</div>
             </div>
 
             <button
                type="button"
                aria-label="Close"
                onClick={() => setOpen(false)}
-               className="grid size-[30px] place-items-center rounded-full border border-white/10 bg-white/8 text-lg leading-none text-white/90 hover:bg-white/14"
+               className="grid size-[30px] place-items-center rounded-full border border-black/15 bg-black/5 text-lg leading-none text-black/90 hover:bg-black/10"
             >
                ×
             </button>

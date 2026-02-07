@@ -19,6 +19,14 @@ function createSnowflakes() {
    const existing = root.querySelector(".snowflake");
    if (existing) return;
 
+   const isLogin = (() => {
+      try {
+         return root.classList.contains("isLoginSnow");
+      } catch {
+         return false;
+      }
+   })();
+
    let hc = 4;
    try {
       const n = (navigator as unknown as { hardwareConcurrency?: unknown }).hardwareConcurrency;
@@ -36,7 +44,7 @@ function createSnowflakes() {
 
    const base = hc <= 4 ? 34 : hc <= 8 ? 54 : 70;
    const scaled = Math.round((vw / 1200) * base);
-   const count = Math.max(24, Math.min(80, scaled));
+   const count = Math.max(16, Math.min(80, isLogin ? Math.round(scaled * 0.6) : scaled));
 
    const frag = document.createDocumentFragment();
 
@@ -48,14 +56,14 @@ function createSnowflakes() {
       inner.className = "snowflakeInner";
       el.appendChild(inner);
 
-      const size = rand(1.6, 5.2).toFixed(2);
-      const alpha = rand(0.28, 0.9).toFixed(2);
+      const size = rand(1.4, isLogin ? 4.2 : 5.2).toFixed(2);
+      const alpha = rand(isLogin ? 0.22 : 0.28, isLogin ? 0.72 : 0.9).toFixed(2);
       const x = rand(0, 100).toFixed(2) + "vw";
       const durationVal = rand(3.6, 7.8);
       const duration = durationVal.toFixed(2) + "s";
       const delay = (-rand(0, durationVal)).toFixed(2) + "s";
-      const drift = rand(-34, 34).toFixed(2) + "px";
-      const blur = rand(0, 1.1).toFixed(2) + "px";
+      const drift = rand(isLogin ? -20 : -34, isLogin ? 20 : 34).toFixed(2) + "px";
+      const blur = rand(0, isLogin ? 0 : 1.1).toFixed(2) + "px";
       const sway = Math.max(1.6, durationVal / 2.8).toFixed(2) + "s";
 
       el.style.setProperty("--s", size + "px");
