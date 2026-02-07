@@ -37,4 +37,25 @@ $sshArgs = @($remote, "bash -s")
 $scriptRaw = Get-Content -LiteralPath $scriptPath -Raw
 # Ensure LF line endings; CRLF may break bash/systemctl args on the remote.
 $scriptLf = $scriptRaw -replace "`r`n", "`n"
-$scriptLf | ssh @sshArgs
+
+# IMPORTANT: don't pipe strings to ssh (PowerShell can re-insert CRLF). Write bytes to stdin.
+$psi = New-Object System.Diagnostics.ProcessStartInfo
+$psi.FileName = "ssh"
+$psi.UseShellExecute = $false
+$psi.RedirectStandardInput = $true
+foreach ($a in $sshArgs) { [void]$psi.ArgumentList.Add($a) }
+
+$p = New-Object System.Diagnostics.Process
+$p.StartInfo = $psi
+[void]$p.Start()
+
+$bytes = [System.Text.Encoding]::UTF8.GetBytes($scriptLf)
+$stdinStream = $p.StandardInput.BaseStream
+$stdinStream.Write($bytes, 0, $bytes.Length)
+$stdinStream.Flush()
+$p.StandardInput.Close()
+
+$p.WaitForExit()
+if ($p.ExitCode -ne 0) {
+  throw "Remote deploy failed (ssh exit code: $($p.ExitCode))"
+}
