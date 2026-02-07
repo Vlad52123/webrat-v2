@@ -33,106 +33,18 @@ function WcToastView(props: {
 
    const [hiding, setHiding] = useState(false);
 
-   const { barBg, borderBottomColor } = useMemo(() => {
-      const bar =
+   const { accent, labelColor } = useMemo(() => {
+      const a =
          type === "success" ? "#2ecc71" : type === "error" ? "#ff4b4b" : type === "warning" ? "#8b5cf6" : "#3498db";
-      const border =
+      const lc =
          type === "success"
-            ? "rgba(46, 204, 113, 0.4)"
+            ? "rgba(46, 204, 113, 0.85)"
             : type === "error"
-               ? "rgba(255, 75, 75, 0.45)"
+               ? "rgba(255, 75, 75, 0.90)"
                : type === "warning"
-                  ? "rgba(139, 92, 246, 0.45)"
-                  : "rgba(52, 152, 219, 0.45)";
-      return { barBg: bar, borderBottomColor: border };
-   }, [type]);
-
-   const icon = useMemo(() => {
-      const common = {
-         width: 16,
-         height: 16,
-         viewBox: "0 0 24 24",
-         fill: "none",
-         xmlns: "http://www.w3.org/2000/svg",
-      };
-
-      if (type === "success") {
-         return createElement(
-            "svg",
-            { ...common },
-            createElement("path", {
-               d: "M20 6L9 17l-5-5",
-               stroke: "currentColor",
-               strokeWidth: 2.2,
-               strokeLinecap: "round",
-               strokeLinejoin: "round",
-            }),
-         );
-      }
-      if (type === "error") {
-         return createElement(
-            "svg",
-            { ...common },
-            createElement("path", {
-               d: "M18 6L6 18",
-               stroke: "currentColor",
-               strokeWidth: 2.2,
-               strokeLinecap: "round",
-            }),
-            createElement("path", {
-               d: "M6 6l12 12",
-               stroke: "currentColor",
-               strokeWidth: 2.2,
-               strokeLinecap: "round",
-            }),
-         );
-      }
-      if (type === "warning") {
-         return createElement(
-            "svg",
-            { ...common },
-            createElement("path", {
-               d: "M12 9v4",
-               stroke: "currentColor",
-               strokeWidth: 2.2,
-               strokeLinecap: "round",
-            }),
-            createElement("path", {
-               d: "M12 17h.01",
-               stroke: "currentColor",
-               strokeWidth: 3,
-               strokeLinecap: "round",
-            }),
-            createElement("path", {
-               d: "M10.3 4.6l-8 14A2 2 0 004 22h16a2 2 0 001.7-3.4l-8-14a2 2 0 00-3.4 0z",
-               stroke: "currentColor",
-               strokeWidth: 2.2,
-               strokeLinejoin: "round",
-            }),
-         );
-      }
-      return createElement(
-         "svg",
-         { ...common },
-         createElement("path", {
-            d: "M12 16v-4",
-            stroke: "currentColor",
-            strokeWidth: 2.2,
-            strokeLinecap: "round",
-         }),
-         createElement("path", {
-            d: "M12 8h.01",
-            stroke: "currentColor",
-            strokeWidth: 3,
-            strokeLinecap: "round",
-         }),
-         createElement("path", {
-            d: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z",
-            stroke: "currentColor",
-            strokeWidth: 2.2,
-            strokeLinejoin: "round",
-         }),
-      );
+                  ? "rgba(139, 92, 246, 0.90)"
+                  : "rgba(52, 152, 219, 0.90)";
+      return { accent: a, labelColor: lc };
    }, [type]);
 
    useEffect(() => {
@@ -169,13 +81,14 @@ function WcToastView(props: {
          "div",
          {
             className:
-               "wc-toast toast--show relative w-[292px] overflow-hidden rounded-[16px] border border-white/[0.16] bg-[rgba(16,16,16,0.90)] px-[12px] py-[10px] text-[13px] text-white/[0.96] shadow-[0_18px_56px_rgba(0,0,0,0.70)] backdrop-blur-[12px]" +
+               "wc-toast toast--show relative w-[300px] overflow-hidden rounded-[16px] border border-white/[0.14] bg-[rgba(18,18,18,0.66)] px-[14px] py-[12px] text-[13px] text-white/[0.96] shadow-[0_18px_44px_rgba(0,0,0,0.60),0_0_0_4px_rgba(255,255,255,0.05)] backdrop-blur-[8px]" +
                (hiding ? " toast--hide" : ""),
             style: ({ "--wc-toast-ttl": `${ttlMs}ms` } as unknown as CSSProperties),
          },
          createElement("div", {
-            className: "absolute left-0 top-0 bottom-0 w-[3px] opacity-95",
-            style: { background: barBg },
+            className: "pointer-events-none absolute left-0 right-0 top-0 h-[2px] opacity-95",
+            style: { background: "var(--line)" },
+            "aria-hidden": "true",
          }),
          createElement(
             "div",
@@ -185,16 +98,11 @@ function WcToastView(props: {
                {
                   className: "flex items-start gap-[10px]",
                },
-               createElement(
-                  "div",
-                  {
-                     className:
-                        "mt-[1px] grid h-[28px] w-[28px] flex-none place-items-center rounded-[10px] border border-white/[0.14] bg-white/[0.06]",
-                     style: { color: barBg },
-                     "aria-hidden": "true",
-                  },
-                  icon,
-               ),
+               createElement("div", {
+                  className: "mt-[6px] h-[10px] w-[10px] flex-none rounded-[3px]",
+                  style: { background: accent },
+                  "aria-hidden": "true",
+               }),
                createElement(
                   "div",
                   { className: "min-w-0 flex-1" },
@@ -202,8 +110,8 @@ function WcToastView(props: {
                      "div",
                      {
                         className:
-                           "w-full border-b pb-[6px] pr-[24px] text-left text-[12px] font-extrabold uppercase tracking-[0.10em] text-white/90 whitespace-nowrap overflow-hidden text-ellipsis",
-                        style: { borderBottomColor },
+                           "w-full border-b border-white/[0.12] pb-[6px] pr-[24px] text-left text-[12px] font-extrabold uppercase tracking-[0.10em] whitespace-nowrap overflow-hidden text-ellipsis",
+                        style: { color: labelColor },
                      },
                      String(title || ""),
                   ),
@@ -211,7 +119,7 @@ function WcToastView(props: {
                      "div",
                      {
                         className:
-                           "w-full mt-[6px] text-left text-[13px] text-white/[0.92] leading-[1.25] max-h-[calc(1.25em*3)] overflow-hidden",
+                           "w-full mt-[8px] text-left text-[13px] text-white/[0.92] leading-[1.25] max-h-[calc(1.25em*3)] overflow-hidden",
                      },
                      message,
                   ),
@@ -242,7 +150,7 @@ function WcToastView(props: {
          ),
          createElement("div", {
             className: "wc-toast-progress absolute left-0 right-0 bottom-0 h-[2px] opacity-90",
-            style: { background: barBg },
+            style: { background: accent },
             "aria-hidden": "true",
          }),
       ),

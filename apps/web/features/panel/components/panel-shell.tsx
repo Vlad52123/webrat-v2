@@ -104,7 +104,7 @@ function PanelShellInner() {
       return () => window.clearTimeout(t);
    }, [isPendingRestrictedTab, loaderUntilTs]);
 
-   const displayTab = isBlockedRestrictedTab ? "shop" : tab;
+   const displayTab = isBlockedRestrictedTab || isPendingRestrictedTab ? "shop" : tab;
 
    const guardedSetTab = useCallback(
       (next: Parameters<typeof setTab>[0]) => {
