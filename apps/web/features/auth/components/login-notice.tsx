@@ -38,7 +38,7 @@ export function LoginNotice({
       >
          <div
             className={[
-               "absolute left-0 right-0 top-0 z-50 grid place-items-center border px-3 py-3 rounded-t-2xl rounded-b-none",
+               "absolute left-0 right-0 top-full z-50 grid place-items-center border px-3 py-3 rounded-t-2xl rounded-b-none",
                "bg-[rgba(255,70,70,0.92)] text-black shadow-[0_16px_44px_rgba(0,0,0,0.40)]",
                "transition-[transform,opacity] duration-220",
                open ? "translate-y-[10px] opacity-100" : "-translate-y-full opacity-0",
