@@ -18,22 +18,34 @@ import { PanelTopbar } from "./panel-topbar";
 
 const BuilderScreen = dynamic(
    () => import("../screens/builder-screen").then((m) => m.BuilderScreen),
-   { ssr: false },
+   {
+      ssr: false,
+      loading: () => <div className="h-full w-full bg-transparent" />,
+   },
 );
 
 const ShopScreen = dynamic(
    () => import("../screens/shop-screen").then((m) => m.ShopScreen),
-   { ssr: false },
+   {
+      ssr: false,
+      loading: () => <div className="h-full w-full bg-transparent" />,
+   },
 );
 
 const CommunityScreen = dynamic(
    () => import("../screens/community-screen").then((m) => m.CommunityScreen),
-   { ssr: false },
+   {
+      ssr: false,
+      loading: () => <div className="h-full w-full bg-transparent" />,
+   },
 );
 
 const SettingsScreen = dynamic(
    () => import("../screens/settings-screen").then((m) => m.SettingsScreen),
-   { ssr: false },
+   {
+      ssr: false,
+      loading: () => <div className="h-full w-full bg-transparent" />,
+   },
 );
 
 export function PanelShell() {

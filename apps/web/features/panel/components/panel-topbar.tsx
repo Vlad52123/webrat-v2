@@ -96,7 +96,7 @@ export function PanelTopbar(props: {
                         id="filterOptionsBtn"
                         type="button"
                         aria-label="filter options"
-                        className="ml-[10px] inline-grid h-[32px] w-[38px] place-items-center overflow-hidden rounded-[10px] border border-white/[0.14] bg-transparent p-0 text-white backdrop-blur-[8px] transition-[background,border-color,transform] duration-150 hover:bg-white/[0.08] hover:border-white/[0.2]"
+                        className="ml-[10px] inline-grid h-[32px] w-[38px] cursor-pointer place-items-center overflow-hidden rounded-[10px] border border-white/[0.14] bg-transparent p-0 text-white backdrop-blur-[8px] transition-[background,border-color,transform] duration-150 hover:bg-white/[0.08] hover:border-white/[0.2]"
                         onClick={() => victimsPrefs.openFilterModal()}
                      >
                         <img

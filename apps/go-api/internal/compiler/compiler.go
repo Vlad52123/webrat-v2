@@ -11,11 +11,37 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"bufio"
 	"strings"
 	"time"
 
 	"github.com/yeka/zip"
 )
+
+func readGoModulePath(goModPath string) string {
+	f, err := os.Open(goModPath)
+	if err != nil {
+		return ""
+	}
+	defer f.Close()
+
+	s := bufio.NewScanner(f)
+	for s.Scan() {
+		line := strings.TrimSpace(s.Text())
+		if line == "" || strings.HasPrefix(line, "//") {
+			continue
+		}
+		if strings.HasPrefix(line, "module ") {
+			mod := strings.TrimSpace(strings.TrimPrefix(line, "module "))
+			mod = strings.Trim(mod, "\"`")
+			if strings.Contains(mod, " ") {
+				mod = strings.Fields(mod)[0]
+			}
+			return strings.TrimSpace(mod)
+		}
+	}
+	return ""
+}
 
 func findGoModDir(start string, maxParents int) (string, bool) {
 	if strings.TrimSpace(start) == "" {
@@ -311,7 +337,6 @@ func CompileZip(ctx context.Context, baseDir string, req Request) ([]byte, strin
 		fields := strings.Fields(v)
 		knownGarbleNoArg := map[string]struct{}{
 			"-literals": {},
-			"-tiny":     {},
 			"-debug":    {},
 		}
 		knownGarbleWithArg := map[string]struct{}{
@@ -356,7 +381,12 @@ func CompileZip(ctx context.Context, baseDir string, req Request) ([]byte, strin
 	cmd.Dir = tmpDir
 	gog := strings.TrimSpace(os.Getenv("WEBRAT_GOGARBLE"))
 	if gog == "" {
-		gog = "*"
+		mod := readGoModulePath(filepath.Join(baseDir, "go.mod"))
+		if mod != "" {
+			gog = mod + "/..."
+		} else {
+			gog = "*"
+		}
 	}
 	cmd.Env = append(env, "GOGARBLE="+gog)
 

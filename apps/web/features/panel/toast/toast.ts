@@ -33,18 +33,18 @@ function WcToastView(props: {
 
    const [hiding, setHiding] = useState(false);
 
-   const { accent, labelColor } = useMemo(() => {
-      const a =
-         type === "success" ? "#2ecc71" : type === "error" ? "#ff4b4b" : type === "warning" ? "#8b5cf6" : "#3498db";
-      const lc =
-         type === "success"
-            ? "rgba(46, 204, 113, 0.85)"
-            : type === "error"
-               ? "rgba(255, 75, 75, 0.90)"
-               : type === "warning"
-                  ? "rgba(139, 92, 246, 0.90)"
-                  : "rgba(52, 152, 219, 0.90)";
-      return { accent: a, labelColor: lc };
+   const accent = useMemo(() => {
+      if (type === "success") return "#2ecc71";
+      if (type === "error") return "#ff4b4b";
+      if (type === "warning") return "#f1c40f";
+      return "#3498db";
+   }, [type]);
+
+   const borderBottomColor = useMemo(() => {
+      if (type === "success") return "rgba(46, 204, 113, 0.4)";
+      if (type === "error") return "rgba(255, 75, 75, 0.45)";
+      if (type === "warning") return "rgba(241, 196, 15, 0.45)";
+      return "rgba(52, 152, 219, 0.45)";
    }, [type]);
 
    useEffect(() => {
@@ -81,13 +81,13 @@ function WcToastView(props: {
          "div",
          {
             className:
-               "wc-toast toast--show relative w-[300px] overflow-hidden rounded-[16px] border border-white/[0.14] bg-[rgba(18,18,18,0.66)] px-[14px] py-[12px] text-[13px] text-white/[0.96] shadow-[0_18px_44px_rgba(0,0,0,0.60),0_0_0_4px_rgba(255,255,255,0.05)] backdrop-blur-[8px]" +
+               "wc-toast toast--show relative w-[280px] overflow-hidden rounded-[12px] border border-white/[0.16] bg-[rgba(18,18,18,0.86)] px-[14px] py-[10px] text-[13px] text-white/[0.96] shadow-[0_12px_28px_rgba(0,0,0,0.55)] backdrop-blur-[6px]" +
                (hiding ? " toast--hide" : ""),
             style: ({ "--wc-toast-ttl": `${ttlMs}ms` } as unknown as CSSProperties),
          },
          createElement("div", {
-            className: "pointer-events-none absolute left-0 right-0 top-0 h-[2px] opacity-95",
-            style: { background: "var(--line)" },
+            className: "absolute left-0 top-0 bottom-0 w-[4px] opacity-95",
+            style: { background: accent },
             "aria-hidden": "true",
          }),
          createElement(
@@ -96,22 +96,17 @@ function WcToastView(props: {
             createElement(
                "div",
                {
-                  className: "flex items-start gap-[10px]",
+                  className: "grid gap-0",
                },
-               createElement("div", {
-                  className: "mt-[6px] h-[10px] w-[10px] flex-none rounded-[3px]",
-                  style: { background: accent },
-                  "aria-hidden": "true",
-               }),
                createElement(
                   "div",
-                  { className: "min-w-0 flex-1" },
+                  { className: "min-w-0" },
                   createElement(
                      "div",
                      {
                         className:
-                           "w-full border-b border-white/[0.12] pb-[6px] pr-[24px] text-left text-[12px] font-extrabold uppercase tracking-[0.10em] whitespace-nowrap overflow-hidden text-ellipsis",
-                        style: { color: labelColor },
+                           "w-full border-b pb-[4px] pl-[8px] text-left text-[14px] font-extrabold uppercase tracking-[0.06em] text-white whitespace-nowrap overflow-hidden text-ellipsis",
+                        style: { borderBottomColor },
                      },
                      String(title || ""),
                   ),
@@ -119,40 +114,13 @@ function WcToastView(props: {
                      "div",
                      {
                         className:
-                           "w-full mt-[8px] text-left text-[13px] text-white/[0.92] leading-[1.25] max-h-[calc(1.25em*3)] overflow-hidden",
+                           "w-full mt-[4px] pl-[8px] text-left text-[14px] text-white/[0.92] leading-[1.25] max-h-[calc(1.25em*2)] overflow-hidden",
                      },
                      message,
                   ),
                ),
-               createElement(
-                  "button",
-                  {
-                     type: "button",
-                     className:
-                        "absolute right-[6px] top-[2px] grid h-[22px] w-[22px] place-items-center rounded-[8px] border border-white/[0.10] bg-white/[0.03] text-[16px] leading-none text-white/80 transition-[background,border-color,transform] hover:bg-white/[0.07] hover:border-white/[0.16] active:translate-y-[1px]",
-                     "aria-label": "Dismiss",
-                     onClick: (e: unknown) => {
-                        try {
-                           if (e && typeof e === "object" && "stopPropagation" in e && typeof (e as { stopPropagation?: unknown }).stopPropagation === "function") {
-                              (e as { stopPropagation: () => void }).stopPropagation();
-                           }
-                        } catch {
-                        }
-                        try {
-                           setHiding(true);
-                        } catch {
-                        }
-                     },
-                  },
-                  "×",
-               ),
             ),
          ),
-         createElement("div", {
-            className: "wc-toast-progress absolute left-0 right-0 bottom-0 h-[2px] opacity-90",
-            style: { background: accent },
-            "aria-hidden": "true",
-         }),
       ),
    );
 }
