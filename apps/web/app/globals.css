@@ -156,6 +156,10 @@ html.lowPerf .wc-community-logo-shake {
 
 @layer utilities {
    body.isPanelShell .wc-bottom-line {
+      opacity: 1;
+   }
+
+   body.isPanelShell .wc-bottom-line {
       left: 46px;
    }
 

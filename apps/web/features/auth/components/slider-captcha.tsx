@@ -291,7 +291,7 @@ export const SliderCaptcha = forwardRef<
          <div
             ref={sliderRef}
             className={[
-               "relative h-[42px] overflow-hidden rounded-full border bg-[linear-gradient(180deg,rgba(255,255,255,0.06)_0%,rgba(0,0,0,0.18)_100%)]",
+               "relative h-[42px] overflow-hidden rounded-full border bg-[rgba(24,14,42,0.52)]",
                good === null
                   ? "border-[rgba(117,61,255,0.32)] shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_18px_50px_rgba(0,0,0,0.30)]"
                   : "",
@@ -303,7 +303,7 @@ export const SliderCaptcha = forwardRef<
          >
             <div
                ref={trackRef}
-               className="absolute inset-0 w-0 rounded-full bg-[linear-gradient(90deg,rgba(186,85,211,0.18)_0%,rgba(117,61,255,0.14)_60%,rgba(255,120,210,0.12)_100%)] opacity-55 blur-[6px]"
+               className="absolute inset-0 w-0 rounded-full bg-white/10"
                aria-hidden="true"
             />
 
@@ -313,7 +313,7 @@ export const SliderCaptcha = forwardRef<
 
             <div
                ref={thumbRef}
-               className="absolute left-0 top-0 grid h-full w-[52px] cursor-grab place-items-center rounded-full border-r border-white/14 bg-[radial-gradient(120px_60px_at_30%_30%,rgba(255,255,255,0.22)_0%,rgba(255,255,255,0)_55%),linear-gradient(135deg,rgba(186,85,211,0.35)_0%,rgba(117,61,255,0.30)_55%,rgba(255,120,210,0.22)_100%)] shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset,0_16px_34px_rgba(0,0,0,0.26)] backdrop-blur-[10px] transition-[filter,transform] duration-150 hover:[filter:brightness(1.06)_saturate(1.06)] active:cursor-grabbing active:scale-[0.98]"
+               className="absolute left-0 top-0 grid h-full w-[52px] cursor-grab place-items-center rounded-full border-r border-white/14 bg-white/10 shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset,0_16px_34px_rgba(0,0,0,0.26)] backdrop-blur-[10px] transition-[filter,transform] duration-150 hover:[filter:brightness(1.06)] active:cursor-grabbing active:scale-[0.98]"
                tabIndex={0}
                role="slider"
                aria-valuemin={0}
