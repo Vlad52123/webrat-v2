@@ -32,6 +32,9 @@ if (-not (Test-Path -LiteralPath $scriptPath)) {
   throw "Missing deploy-remote.sh рядом с deploy.ps1"
 }
 
-$sshArgs = @("-t", $remote, "bash -s")
+$sshArgs = @($remote, "bash -s")
 
-Get-Content -LiteralPath $scriptPath -Raw | ssh @sshArgs
+$scriptRaw = Get-Content -LiteralPath $scriptPath -Raw
+# Ensure LF line endings; CRLF may break bash/systemctl args on the remote.
+$scriptLf = $scriptRaw -replace "`r`n", "`n"
+$scriptLf | ssh @sshArgs

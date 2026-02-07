@@ -1,6 +1,17 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+function normalizeHost(hostHeader: string | null): string {
+   return String(hostHeader || "")
+      .trim()
+      .toLowerCase()
+      .replace(/:\d+$/, "");
+}
+
+function shouldRedirectToCanonical(host: string): boolean {
+   return host === "ru.webcrystal.sbs" || host === "ua.webcrystal.sbs" || host === "kz.webcrystal.sbs";
+}
+
 function isBlockedDevice(uaRaw: string): boolean {
    const ua = String(uaRaw || "");
    if (!ua) return false;
@@ -14,6 +25,12 @@ function isBlockedDevice(uaRaw: string): boolean {
 export function proxy(req: NextRequest) {
    const { pathname } = req.nextUrl;
    const sid = req.cookies.get("webrat_session")?.value;
+
+   const host = normalizeHost(req.headers.get("host"));
+   if (shouldRedirectToCanonical(host)) {
+      const url = new URL(req.nextUrl.pathname + req.nextUrl.search, "https://webcrystal.sbs");
+      return NextResponse.redirect(url, 302);
+   }
 
    const ua = req.headers.get("user-agent") || "";
    if (isBlockedDevice(ua)) {

@@ -139,7 +139,7 @@ func (s *Service) SetSession(w http.ResponseWriter, r *http.Request, login strin
 			Value:    "",
 			Path:     "/",
 			HttpOnly: true,
-			SameSite: http.SameSiteStrictMode,
+			SameSite: http.SameSiteLaxMode,
 			MaxAge:   -1,
 			Secure:   secure,
 		})
@@ -150,7 +150,7 @@ func (s *Service) SetSession(w http.ResponseWriter, r *http.Request, login strin
 		Value:    id,
 		Path:     "/",
 		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteLaxMode,
 		MaxAge:   maxAge,
 		Secure:   secure,
 	}
@@ -178,7 +178,7 @@ func (s *Service) ClearSession(w http.ResponseWriter, r *http.Request) {
 				Value:    "",
 				Path:     "/",
 				HttpOnly: true,
-				SameSite: http.SameSiteStrictMode,
+				SameSite: http.SameSiteLaxMode,
 				MaxAge:   -1,
 				Domain:   dom,
 				Secure:   secure,
@@ -189,7 +189,7 @@ func (s *Service) ClearSession(w http.ResponseWriter, r *http.Request) {
 			Value:    "",
 			Path:     "/",
 			HttpOnly: true,
-			SameSite: http.SameSiteStrictMode,
+			SameSite: http.SameSiteLaxMode,
 			MaxAge:   -1,
 			Secure:   secure,
 		})
