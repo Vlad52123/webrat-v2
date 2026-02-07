@@ -17,7 +17,7 @@ export default function RootLayout({
 }>) {
    return (
       <html lang="en">
-         <body className="antialiased isPanelShell">
+         <body className="antialiased">
             <Providers>{children}</Providers>
             <div
                className="wc-bottom-line pointer-events-none fixed bottom-0 left-0 right-0 z-[60] h-[3px] opacity-0"
