@@ -43,7 +43,7 @@ $psi = New-Object System.Diagnostics.ProcessStartInfo
 $psi.FileName = "ssh"
 $psi.UseShellExecute = $false
 $psi.RedirectStandardInput = $true
-$psi.Arguments = "$remote \"bash -s\""
+$psi.Arguments = "$remote `"bash -s`""
 
 $p = New-Object System.Diagnostics.Process
 $p.StartInfo = $psi
