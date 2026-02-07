@@ -36,7 +36,7 @@ export function LoginPage() {
                </div>
 
                <section
-                  className="relative mt-[-8px] w-[min(460px,92vw)] overflow-hidden rounded-[18px] border border-[rgba(255,255,255,0.16)] bg-[rgba(24,14,42,0.52)] p-[12px_16px_14px] shadow-[0_24px_70px_rgba(0,0,0,0.62),0_0_0_1px_rgba(255,255,255,0.04)_inset] backdrop-blur-[14px]"
+                  className="relative mt-[-8px] w-[min(460px,92vw)] overflow-visible rounded-[18px] border border-[rgba(255,255,255,0.16)] bg-[rgba(24,14,42,0.52)] p-[12px_16px_14px] shadow-[0_24px_70px_rgba(0,0,0,0.62),0_0_0_1px_rgba(255,255,255,0.04)_inset] backdrop-blur-[14px]"
                   aria-label="Login"
                >
                   <LoginForm />

@@ -29,7 +29,7 @@ export function LoginNotice({
    return (
       <div
          className={[
-            "relative w-full max-w-[380px] h-0 overflow-visible",
+            "relative w-full h-0 overflow-visible",
             open ? "pointer-events-auto" : "pointer-events-none",
             type === "error" ? "isError" : type === "warning" ? "isWarning" : "isInfo",
          ].join(" ")}
@@ -38,10 +38,10 @@ export function LoginNotice({
       >
          <div
             className={[
-               "absolute left-0 right-0 top-0 grid place-items-center border px-3 py-3 rounded-t-2xl rounded-b-none",
+               "absolute left-0 right-0 top-0 z-50 grid place-items-center border px-3 py-3 rounded-t-2xl rounded-b-none",
                "bg-[rgba(255,70,70,0.92)] text-black shadow-[0_16px_44px_rgba(0,0,0,0.40)]",
                "transition-[transform,opacity] duration-220",
-               open ? "translate-y-[10px] opacity-100" : "translate-y-[-6px] opacity-0",
+               open ? "translate-y-[10px] opacity-100" : "-translate-y-full opacity-0",
             ].join(" ")}
          >
             <div className="min-w-0 text-center text-[16px] font-black leading-6 text-black/95 break-words">
