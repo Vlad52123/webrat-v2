@@ -139,7 +139,7 @@ export function LoginForm() {
          if (code === "TURNSTILE_FAILED") {
             showToast("error", "Security check failed");
             setInputsError(true);
-            setTurnstileToken(null);
+            setTurnstileToken("");
             setCaptchaReady(false);
             return;
          }
