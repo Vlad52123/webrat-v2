@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { PanelShell } from "../../features/panel/components/panel-shell";
+import { AppLoader } from "../../features/panel/components/app-loader";
 
 export function PanelPage() {
    const router = useRouter();
@@ -69,17 +70,7 @@ export function PanelPage() {
 
    if (!isReady) {
       return (
-         <div className="grid min-h-screen place-items-center bg-[#222222] text-white/80">
-            <div className="grid place-items-center">
-               <img
-                  src="/icons/loading.svg"
-                  alt="loading"
-                  draggable={false}
-                  className="h-[44px] w-[44px] animate-spin invert brightness-200"
-               />
-               <span className="sr-only">{isChecking ? "Checking session" : "Redirecting"}</span>
-            </div>
-         </div>
+         <AppLoader label={isChecking ? "Checking session" : "Redirecting"} fullScreen />
       );
    }
 
