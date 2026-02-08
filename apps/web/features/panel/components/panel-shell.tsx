@@ -234,16 +234,13 @@ function PanelShellInner() {
    if (shouldShowLoader) {
       return (
          <div className="grid h-[100dvh] overflow-hidden place-items-center bg-[#222222] text-white/80">
-            <div className="wc-loader" aria-label="Loading">
-               <div className="wc-loaderRing" aria-hidden="true" />
-               <div className="wc-loaderText" aria-hidden="true">
-                  Loading
-               </div>
-               <div className="wc-loaderDots" aria-hidden="true">
-                  <span className="wc-loaderDot" />
-                  <span className="wc-loaderDot" />
-                  <span className="wc-loaderDot" />
-               </div>
+            <div className="grid place-items-center">
+               <img
+                  src="/icons/loading.svg"
+                  alt="loading"
+                  draggable={false}
+                  className="h-[44px] w-[44px] animate-spin invert brightness-200"
+               />
                <span className="sr-only">Checking subscription</span>
             </div>
          </div>
