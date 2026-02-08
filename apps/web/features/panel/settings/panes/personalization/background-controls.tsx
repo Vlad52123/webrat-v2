@@ -44,7 +44,8 @@ export function BackgroundControls(props: {
                   src="/icons/gallery.svg"
                   alt="image"
                   draggable={false}
-                  className="h-[20px] w-[20px] opacity-100 invert brightness-[1.7] contrast-[1.1]"
+                  className="h-[20px] w-[20px] opacity-100 invert brightness-[1.7] contrast-[1.1] wc-no-copy"
+                  onContextMenu={(e) => e.preventDefault()}
                />
             </button>
             <button
@@ -72,7 +73,8 @@ export function BackgroundControls(props: {
                   src="/icons/video.svg"
                   alt="video"
                   draggable={false}
-                  className="h-[20px] w-[20px] opacity-100 invert brightness-[1.7] contrast-[1.1]"
+                  className="h-[20px] w-[20px] opacity-100 invert brightness-[1.7] contrast-[1.1] wc-no-copy"
+                  onContextMenu={(e) => e.preventDefault()}
                />
             </button>
             <button
@@ -89,7 +91,8 @@ export function BackgroundControls(props: {
                   src="/icons/default.svg"
                   alt="solid"
                   draggable={false}
-                  className="h-[20px] w-[20px] opacity-100 invert brightness-[1.7] contrast-[1.1]"
+                  className="h-[20px] w-[20px] opacity-100 invert brightness-[1.7] contrast-[1.1] wc-no-copy"
+                  onContextMenu={(e) => e.preventDefault()}
                />
             </button>
          </div>

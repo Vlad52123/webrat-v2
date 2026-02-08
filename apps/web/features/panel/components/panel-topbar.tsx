@@ -103,7 +103,8 @@ export function PanelTopbar(props: {
                            src="/icons/filter.svg"
                            alt="filter"
                            draggable={false}
-                           className="h-[18px] w-[18px] object-contain opacity-100 [filter:brightness(0)_invert(1)]"
+                           className="h-[18px] w-[18px] object-contain opacity-100 [filter:brightness(0)_invert(1)] wc-no-copy"
+                           onContextMenu={(e) => e.preventDefault()}
                         />
                      </button>
                   </div>

@@ -32,7 +32,8 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
             <img
                src="/icons/arrow.svg"
                alt="back"
-               className="h-[30px] w-[30px] opacity-[0.85] wc-sidebar-icon"
+               className="h-[30px] w-[30px] opacity-[0.85] wc-sidebar-icon wc-no-copy"
+               onContextMenu={(e) => e.preventDefault()}
                draggable={false}
             />
          </button>
@@ -69,7 +70,8 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
                   onClick={() => setTab("builder")}
                >
                   <img
-                     className="h-7 w-7 cursor-pointer opacity-[0.85] wc-sidebar-icon"
+                     className="h-7 w-7 cursor-pointer opacity-[0.85] wc-sidebar-icon wc-no-copy"
+                     onContextMenu={(e) => e.preventDefault()}
                      src="/icons/builder.svg"
                      alt="builder"
                      draggable={false}
@@ -89,7 +91,8 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
                   onClick={() => setTab("community")}
                >
                   <img
-                     className="h-7 w-7 cursor-pointer opacity-[0.85] wc-sidebar-icon"
+                     className="h-7 w-7 cursor-pointer opacity-[0.85] wc-sidebar-icon wc-no-copy"
+                     onContextMenu={(e) => e.preventDefault()}
                      src="/icons/chat.svg"
                      alt="community"
                      draggable={false}
@@ -108,7 +111,8 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
                   onClick={() => setTab("shop")}
                >
                   <img
-                     className="h-7 w-7 cursor-pointer opacity-[0.85] wc-sidebar-icon"
+                     className="h-7 w-7 cursor-pointer opacity-[0.85] wc-sidebar-icon wc-no-copy"
+                     onContextMenu={(e) => e.preventDefault()}
                      src="/icons/shop.svg"
                      alt="shop"
                      draggable={false}
@@ -128,7 +132,8 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
                   onClick={() => setTab("settings")}
                >
                   <img
-                     className="h-7 w-7 cursor-pointer opacity-[0.85] wc-sidebar-icon"
+                     className="h-7 w-7 cursor-pointer opacity-[0.85] wc-sidebar-icon wc-no-copy"
+                     onContextMenu={(e) => e.preventDefault()}
                      src="/icons/settings.svg"
                      alt="settings"
                      draggable={false}

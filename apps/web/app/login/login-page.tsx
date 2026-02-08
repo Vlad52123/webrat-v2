@@ -28,9 +28,10 @@ export function LoginPage() {
             <div className="relative flex w-[min(460px,92vw)] flex-col items-center justify-center">
                <div className="grid w-full place-items-center pb-0 mb-[-78px]">
                   <img
-                     className="mt-2 h-[220px] w-auto select-none [image-rendering:pixelated]"
+                     className="mt-2 h-[220px] w-auto select-none [image-rendering:pixelated] wc-no-copy"
                      src="/logo/register_logo.ico"
                      alt="WebCrystal"
+                     onContextMenu={(e) => e.preventDefault()}
                      draggable={false}
                   />
                </div>
