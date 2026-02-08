@@ -155,6 +155,10 @@ html.lowPerf .wc-community-logo-shake {
 }
 
 @layer utilities {
+   .wc-sidebar-icon {
+      filter: brightness(0) saturate(100%) invert(77%) sepia(7%) saturate(240%) hue-rotate(176deg) brightness(94%) contrast(90%);
+   }
+
    body.isPanelShell .wc-bottom-line {
       opacity: 1;
    }
