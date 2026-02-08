@@ -44,8 +44,8 @@ export function WsServerSelect(props: {
             ref={wsBtnRef}
             type="button"
             className={
-               "w-full h-[34px] px-[12px] pr-[32px] rounded-[12px] border border-white/[0.14] bg-[rgba(0,0,0,0.28)] text-[13px] text-white/[0.92] cursor-pointer text-left whitespace-nowrap overflow-hidden text-ellipsis transition-[border-color,background,box-shadow,transform] " +
-               (wsOpen ? "border-white/[0.30] shadow-[0_0_0_3px_rgba(80,230,255,0.12)]" : "hover:bg-white/[0.06] hover:border-white/[0.22]")
+               "w-full h-[34px] px-[12px] pr-[32px] rounded-[12px] border border-white/[0.12] bg-white/[0.03] text-[13px] font-semibold text-white/[0.92] cursor-pointer text-left whitespace-nowrap overflow-hidden text-ellipsis transition-[border-color,background,transform] " +
+               (wsOpen ? "border-white/[0.22] bg-white/[0.05]" : "hover:bg-white/[0.045] hover:border-white/[0.18]")
             }
             onClick={() => setWsOpen((v) => !v)}
          >
@@ -64,7 +64,7 @@ export function WsServerSelect(props: {
             ? createPortal(
                <div
                   ref={wsMenuRef}
-                  className="fixed z-[9999] max-h-[240px] overflow-auto rounded-[14px] border border-white/[0.14] bg-[rgba(12,12,12,0.96)] p-[6px] text-white shadow-[0_22px_54px_rgba(0,0,0,0.65)]"
+                  className="fixed z-[9999] max-h-[240px] overflow-auto rounded-[14px] border border-white/[0.12] bg-[rgba(16,16,16,0.96)] p-[6px] text-white shadow-[0_14px_34px_rgba(0,0,0,0.55)]"
                   style={{ left: wsMenuPos.left, top: wsMenuPos.top, width: wsMenuPos.width }}
                   role="listbox"
                >
@@ -75,10 +75,10 @@ export function WsServerSelect(props: {
                            key={opt.value}
                            type="button"
                            className={
-                              "w-full text-left px-[10px] py-[9px] rounded-[12px] text-[13px] leading-[1.15] font-semibold text-white transition-[background,transform] cursor-pointer " +
+                              "w-full text-left px-[10px] py-[9px] rounded-[12px] text-[13px] leading-[1.15] font-semibold text-white/90 transition-[background,border-color] cursor-pointer border " +
                               (selected
-                                 ? "bg-[rgba(80,230,255,0.12)] border border-[rgba(80,230,255,0.20)]"
-                                 : "bg-transparent hover:bg-white/[0.08]")
+                                 ? "bg-white/[0.07] border-white/[0.16] text-white"
+                                 : "bg-transparent border-transparent hover:bg-white/[0.045] hover:border-white/[0.10]")
                            }
                            onClick={() => {
                               setWsHost(opt.value);
