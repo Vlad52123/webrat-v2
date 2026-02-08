@@ -15,13 +15,12 @@ import type { SettingsTabKey } from "../state/settings-tab";
 import { PanelWsProvider } from "../ws/ws-provider";
 import { PanelSidebar } from "./panel-sidebar";
 import { PanelTopbar } from "./panel-topbar";
-import { AppLoader } from "./app-loader";
 
 const BuilderScreen = dynamic(
    () => import("../screens/builder-screen").then((m) => m.BuilderScreen),
    {
       ssr: false,
-      loading: () => <AppLoader label="Loading" className="h-full" />,
+      loading: () => <div className="h-full w-full bg-transparent" />,
    },
 );
 
@@ -29,7 +28,7 @@ const ShopScreen = dynamic(
    () => import("../screens/shop-screen").then((m) => m.ShopScreen),
    {
       ssr: false,
-      loading: () => <AppLoader label="Loading" className="h-full" />,
+      loading: () => <div className="h-full w-full bg-transparent" />,
    },
 );
 
@@ -37,7 +36,7 @@ const CommunityScreen = dynamic(
    () => import("../screens/community-screen").then((m) => m.CommunityScreen),
    {
       ssr: false,
-      loading: () => <AppLoader label="Loading" className="h-full" />,
+      loading: () => <div className="h-full w-full bg-transparent" />,
    },
 );
 
@@ -45,7 +44,7 @@ const SettingsScreen = dynamic(
    () => import("../screens/settings-screen").then((m) => m.SettingsScreen),
    {
       ssr: false,
-      loading: () => <AppLoader label="Loading" className="h-full" />,
+      loading: () => <div className="h-full w-full bg-transparent" />,
    },
 );
 
@@ -233,7 +232,19 @@ function PanelShellInner() {
    const shouldShowLoader = (loaderUntilTs ? Date.now() < loaderUntilTs : false) || isPendingRestrictedTab;
 
    if (shouldShowLoader) {
-      return <AppLoader label="Checking subscription" fullScreen />;
+      return (
+         <div className="grid h-[100dvh] overflow-hidden place-items-center bg-[#222222] text-white/80">
+            <div className="grid place-items-center">
+               <img
+                  src="/icons/loading.svg"
+                  alt="loading"
+                  draggable={false}
+                  className="h-[44px] w-[44px] animate-spin invert brightness-200"
+               />
+               <span className="sr-only">Checking subscription</span>
+            </div>
+         </div>
+      );
    }
 
    return (
