@@ -95,7 +95,7 @@ func (d *DB) ListVictimsForOwner(owner string, limit, offset int) ([]*Victim, er
 	}
 	defer rows.Close()
 
-	var out []*Victim
+	out := make([]*Victim, 0)
 	for rows.Next() {
 		var v Victim
 		var lastActive int64
