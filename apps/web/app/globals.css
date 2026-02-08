@@ -149,6 +149,14 @@ html.lowPerf [class^="shadow-"] {
       filter: brightness(0) saturate(100%) invert(42%) sepia(86%) saturate(2086%) hue-rotate(236deg) brightness(100%) contrast(98%);
    }
 
+   .wc-scrollbar-transparent::-webkit-scrollbar-track {
+      background: transparent;
+   }
+
+   .wc-scrollbar-transparent {
+      scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+   }
+
    .wc-no-copy {
       user-select: none;
       -webkit-user-select: none;
