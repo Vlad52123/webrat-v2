@@ -59,13 +59,14 @@ function HeaderCell(props: {
    return (
       <th
          className={cn(
-            "sticky top-0 z-[2] bg-[#202020] px-[4px] pb-[3px] pt-0 text-left text-[20px] font-normal leading-[1.05] text-white/[0.98]",
+            "sticky top-0 z-[2] bg-[rgba(42,42,42,0.86)] px-[4px] pb-[3px] pt-0 text-left text-[20px] font-normal leading-[1.05] text-white/[0.98]",
+            "hover:bg-[rgba(42,42,42,0.86)] active:bg-[rgba(42,42,42,0.86)] focus:bg-[rgba(42,42,42,0.86)] focus-within:bg-[rgba(42,42,42,0.86)]",
             "select-none whitespace-nowrap",
             "isReorderable",
             col,
             victimsColumnSizeClass(col),
          )}
-         style={{ borderBottom: "3px solid var(--line)" }}
+         style={{ borderTop: "1px solid var(--line)", borderBottom: "3px solid var(--line)" }}
       >
          {col === "h-admin" || col === "h-id" ? (
             label
