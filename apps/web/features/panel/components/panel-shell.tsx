@@ -233,7 +233,7 @@ function PanelShellInner() {
 
    if (shouldShowLoader) {
       return (
-         <div className="grid h-[100dvh] overflow-hidden place-items-center bg-[#222222] text-white/80">
+         <div className="grid h-[100dvh] overflow-hidden place-items-center text-white/80" style={{ background: "var(--wc-panel-bg)" }}>
             <div className="grid place-items-center">
                <img
                   src="/icons/loading.svg"
@@ -249,7 +249,7 @@ function PanelShellInner() {
 
    return (
       <PanelSettingsProvider contentRef={contentRef}>
-         <div className="h-[100dvh] overflow-hidden bg-[#222222] text-white/90">
+         <div className="h-[100dvh] overflow-hidden text-white/90" style={{ background: "var(--wc-panel-bg)" }}>
             <div className={detail.isOpen ? "grid h-[100dvh] grid-cols-[64px_1fr]" : "grid h-[100dvh] grid-cols-[46px_1fr]"}>
                <PanelSidebar tab={displayTab} setTab={guardedSetTab} />
 
@@ -266,11 +266,31 @@ function PanelShellInner() {
                   />
 
                   <section ref={contentRef} className="content relative min-h-0 flex-1 overflow-x-visible overflow-y-hidden">
-                     {displayTab === "panel" && <PanelScreen filter={victimsFilter} />}
-                     {displayTab === "builder" && <BuilderScreen />}
-                     {displayTab === "shop" && <ShopScreen />}
-                     {displayTab === "community" && <CommunityScreen />}
-                     {displayTab === "settings" && <SettingsScreen tab={settingsTab} />}
+                     {displayTab === "panel" && (
+                        <div key="panel" className="wc-tab-switch h-full w-full">
+                           <PanelScreen filter={victimsFilter} />
+                        </div>
+                     )}
+                     {displayTab === "builder" && (
+                        <div key="builder" className="wc-tab-switch h-full w-full">
+                           <BuilderScreen />
+                        </div>
+                     )}
+                     {displayTab === "shop" && (
+                        <div key="shop" className="wc-tab-switch h-full w-full">
+                           <ShopScreen />
+                        </div>
+                     )}
+                     {displayTab === "community" && (
+                        <div key="community" className="wc-tab-switch h-full w-full">
+                           <CommunityScreen />
+                        </div>
+                     )}
+                     {displayTab === "settings" && (
+                        <div key="settings" className="wc-tab-switch h-full w-full">
+                           <SettingsScreen tab={settingsTab} />
+                        </div>
+                     )}
                   </section>
                </main>
             </div>

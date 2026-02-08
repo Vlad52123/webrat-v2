@@ -49,6 +49,10 @@
 :root {
    --radius: 0.625rem;
    --line: rgba(180, 180, 180, 0.45);
+   --wc-panel-bg: #222222;
+   --wc-panel-surface: rgba(18, 18, 18, 0.78);
+   --wc-panel-surface-strong: rgba(18, 18, 18, 0.92);
+   --wc-panel-border: rgba(255, 255, 255, 0.16);
    --font-geist-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
    --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
    --background: oklch(1 0 0);
@@ -149,12 +153,35 @@ html.lowPerf [class^="shadow-"] {
       filter: brightness(0) saturate(100%) invert(42%) sepia(86%) saturate(2086%) hue-rotate(236deg) brightness(100%) contrast(98%);
    }
 
+   .wc-scrollbar-transparent::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+   }
+
    .wc-scrollbar-transparent::-webkit-scrollbar-track {
       background: transparent;
    }
 
+   .wc-scrollbar-transparent::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.28);
+      border-radius: 999px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+   }
+
+   .wc-scrollbar-transparent:hover::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.38);
+      border: 2px solid transparent;
+      background-clip: padding-box;
+   }
+
    .wc-scrollbar-transparent {
       scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+   }
+
+   .wc-tab-switch {
+      animation: wcTabIn 170ms cubic-bezier(0.2, 0, 0, 1) both;
+      will-change: transform, opacity;
    }
 
    .wc-no-copy {
@@ -307,6 +334,18 @@ html.lowPerf [class^="shadow-"] {
       transform-origin: left;
       transform: scaleX(1);
       animation: toast-progress var(--wc-toast-ttl, 4200ms) linear forwards;
+   }
+
+   @keyframes wcTabIn {
+      from {
+         opacity: 0;
+         transform: translateY(4px);
+      }
+
+      to {
+         opacity: 1;
+         transform: translateY(0);
+      }
    }
 
    @keyframes wcCommunityLogoShake {
