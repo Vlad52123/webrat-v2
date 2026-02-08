@@ -175,7 +175,6 @@ export function VictimsTable(props: {
                                        colId,
                                        victimsColumnSizeClass(colId),
                                     )}
-                                    style={{ borderBottom: "3px solid var(--line)" }}
                                  >
                                     {h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}
                                  </th>
