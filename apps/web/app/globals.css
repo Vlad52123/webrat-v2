@@ -156,7 +156,7 @@ html.lowPerf .wc-community-logo-shake {
 
 @layer utilities {
    .wc-sidebar-icon {
-      filter: brightness(0) saturate(100%) invert(77%) sepia(7%) saturate(240%) hue-rotate(176deg) brightness(94%) contrast(90%);
+      filter: brightness(0) saturate(100%) invert(42%) sepia(86%) saturate(2086%) hue-rotate(236deg) brightness(100%) contrast(98%);
    }
 
    .wc-no-copy {
