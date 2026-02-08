@@ -169,7 +169,7 @@ export function VictimsTable(props: {
                                  <th
                                     key={h.id}
                                     className={cn(
-                                       "sticky top-0 z-[2] bg-[rgba(42,42,42,0.86)] px-[4px] pb-[3px] pt-0 text-left text-[20px] font-normal leading-[1.05] text-white/[0.98] shadow-[inset_0_1px_0_rgba(255,255,255,0.10),inset_0_-1px_0_rgba(255,255,255,0.08),inset_0_-18px_24px_rgba(0,0,0,0.18)]",
+                                       "sticky top-0 z-[2] bg-[rgba(42,42,42,0.86)] px-[4px] pb-[3px] pt-0 text-left text-[20px] font-normal leading-[1.05] text-white/[0.98] shadow-[inset_0_1px_0_rgba(255,255,255,0.10),inset_0_-1px_0_rgba(255,255,255,0.08),inset_0_-22px_30px_rgba(0,0,0,0.28)]",
                                        "hover:bg-[rgba(42,42,42,0.86)] active:bg-[rgba(42,42,42,0.86)] focus:bg-[rgba(42,42,42,0.86)] focus-within:bg-[rgba(42,42,42,0.86)]",
                                        "outline-none focus:outline-none focus-visible:outline-none",
                                        "select-none whitespace-nowrap",
