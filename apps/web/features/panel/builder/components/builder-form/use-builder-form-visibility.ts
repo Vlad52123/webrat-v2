@@ -15,13 +15,11 @@ export function useBuilderFormVisibility(p: Params): void {
       if (!el) return;
 
       if (open) {
-         if (hidden) {
-            window.setTimeout(() => {
-               setHidden(false);
-            }, 0);
-         }
+         if (hidden) setHidden(false);
          requestAnimationFrame(() => {
-            setIsOpenClass(true);
+            requestAnimationFrame(() => {
+               setIsOpenClass(true);
+            });
          });
          return;
       }
