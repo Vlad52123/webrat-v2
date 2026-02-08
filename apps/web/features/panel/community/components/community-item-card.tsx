@@ -9,9 +9,10 @@ export const CommunityItemCard = memo(function CommunityItemCard(props: {
    item: CommunityItem;
    isOpen: boolean;
    messageCount: number;
+   enterShake: boolean;
    onToggle: (key: string) => void;
 }) {
-   const { item, isOpen, messageCount, onToggle } = props;
+   const { item, isOpen, messageCount, enterShake, onToggle } = props;
 
    return (
       <div
@@ -22,7 +23,7 @@ export const CommunityItemCard = memo(function CommunityItemCard(props: {
       >
          <div className="grid h-[56px] w-[56px] select-none place-items-center overflow-hidden rounded-[10px] border border-white/20 bg-[rgba(25,25,25,0.55)]">
             <img
-               className="wc-community-logo-shake h-[56px] w-[56px] object-cover"
+               className={"h-[56px] w-[56px] object-cover " + (enterShake ? "wc-community-logo-shake" : "")}
                src="/logo/main_logo.ico"
                alt="logo"
                draggable={false}
