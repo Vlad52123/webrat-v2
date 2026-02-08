@@ -20,12 +20,14 @@ export const CommunityItemCard = memo(function CommunityItemCard(props: {
          }
          onClick={() => onToggle(item.key)}
       >
-         <img
-            className="wc-community-logo-shake h-[56px] w-[56px] select-none rounded-[10px] border border-white/20 bg-[rgba(25,25,25,0.55)] object-cover"
-            src="/logo/main_logo.ico"
-            alt="logo"
-            draggable={false}
-         />
+         <div className="grid h-[56px] w-[56px] select-none place-items-center overflow-hidden rounded-[10px] border border-white/20 bg-[rgba(25,25,25,0.55)]">
+            <img
+               className="wc-community-logo-shake h-[56px] w-[56px] object-cover"
+               src="/logo/main_logo.ico"
+               alt="logo"
+               draggable={false}
+            />
+         </div>
 
          <div className="min-w-0">
             <div className="flex items-start justify-between gap-4">
