@@ -159,7 +159,7 @@ export function VictimsTable(props: {
       <div className="h-full w-full min-w-0 overflow-hidden">
          <div ref={tableContainerRef} className="h-full w-full overflow-x-auto overflow-y-auto">
             <div className="inline-block min-w-full align-top">
-               <table className="victims-table table-auto w-full min-w-max border-collapse text-[20px] font-[550] leading-[1.05] text-white/[0.99]">
+               <table className="victims-table table-auto w-full min-w-max border-collapse text-[14px] font-semibold leading-[1.25] text-white/[0.96]">
                   <thead>
                      {table.getHeaderGroups().map((hg) => (
                         <tr key={hg.id} ref={hg.id === table.getHeaderGroups()[0]?.id ? headerRowRef : undefined}>
@@ -169,13 +169,13 @@ export function VictimsTable(props: {
                                  <th
                                     key={h.id}
                                     className={cn(
-                                       "sticky top-0 z-[2] bg-[#202020] px-[4px] pb-[3px] pt-0 text-left text-[20px] font-normal leading-[1.05] text-white/[0.98]",
+                                       "sticky top-0 z-[2] bg-[rgba(18,18,18,0.92)] px-[8px] py-[8px] text-left text-[13px] font-bold leading-[1.1] text-white/[0.92]",
                                        "select-none whitespace-nowrap",
                                        "isReorderable",
                                        colId,
                                        victimsColumnSizeClass(colId),
                                     )}
-                                    style={{ borderBottom: "3px solid var(--line)" }}
+                                    style={{ borderBottom: "1px solid rgba(255,255,255,0.10)" }}
                                  >
                                     {h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}
                                  </th>
@@ -187,11 +187,11 @@ export function VictimsTable(props: {
                   <tbody>
                      {isLoading ? (
                         <tr>
-                           <td className="py-3 text-sm text-white/80">loading...</td>
+                           <td className="px-[10px] py-[12px] text-[13px] font-semibold text-white/75">loading...</td>
                         </tr>
                      ) : isError ? (
                         <tr>
-                           <td className="py-3 text-sm text-white/80">{errorText || "failed to load"}</td>
+                           <td className="px-[10px] py-[12px] text-[13px] font-semibold text-white/75">{errorText || "failed to load"}</td>
                         </tr>
                      ) : (
                         table.getRowModel().rows.map((row) => {
@@ -204,9 +204,9 @@ export function VictimsTable(props: {
                                  key={row.id}
                                  data-victim-id={id}
                                  className={cn(
-                                    "border-b border-white/[0.04]",
-                                    "hover:bg-white/[0.03]",
-                                    isSelected && "bg-white/[0.04]",
+                                    "border-b border-white/[0.06]",
+                                    "hover:bg-white/[0.035]",
+                                    isSelected && "bg-white/[0.055]",
                                  )}
                                  onClick={() => onSelectVictim(id)}
                                  onDoubleClick={() => onOpenDetail(id)}
@@ -217,7 +217,7 @@ export function VictimsTable(props: {
                                     return (
                                        <td
                                           key={cell.id}
-                                          className={cn(colId, victimsColumnSizeClass(colId), "px-[8px] py-[4px] text-left whitespace-nowrap")}
+                                          className={cn(colId, victimsColumnSizeClass(colId), "px-[10px] py-[8px] text-left whitespace-nowrap")}
                                        >
                                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                        </td>
