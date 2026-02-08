@@ -40,22 +40,6 @@ function WcToastView(props: {
       return "#3498db";
    }, [type]);
 
-   const glow = useMemo(() => {
-      if (type === "success") return "rgba(46, 204, 113, 0.28)";
-      if (type === "error") return "rgba(255, 75, 75, 0.32)";
-      if (type === "warning") return "rgba(241, 196, 15, 0.28)";
-      return "rgba(127, 92, 255, 0.30)";
-   }, [type]);
-
-   const titleText = useMemo(() => {
-      const t = String(title || "").trim();
-      if (t === "success") return "SUCCESS";
-      if (t === "error") return "ERROR";
-      if (t === "warning") return "WARNING";
-      if (t === "info") return "INFO";
-      return t || "INFO";
-   }, [title]);
-
    const borderBottomColor = useMemo(() => {
       if (type === "success") return "rgba(46, 204, 113, 0.4)";
       if (type === "error") return "rgba(255, 75, 75, 0.45)";
@@ -97,21 +81,13 @@ function WcToastView(props: {
          "div",
          {
             className:
-               "wc-toast toast--show relative w-[320px] overflow-hidden rounded-[14px] border border-white/[0.16] bg-[linear-gradient(180deg,rgba(35,18,65,0.88)_0%,rgba(12,10,20,0.82)_100%)] px-[14px] py-[12px] text-[13px] text-white/[0.96] shadow-[0_18px_46px_rgba(0,0,0,0.58),0_0_0_1px_rgba(255,255,255,0.03)_inset] backdrop-blur-[10px]" +
+               "wc-toast toast--show relative w-[280px] overflow-hidden rounded-[12px] border border-white/[0.16] bg-[rgba(18,18,18,0.86)] px-[14px] py-[10px] text-[13px] text-white/[0.96] shadow-[0_12px_28px_rgba(0,0,0,0.55)] backdrop-blur-[6px]" +
                (hiding ? " toast--hide" : ""),
             style: ({ "--wc-toast-ttl": `${ttlMs}ms` } as unknown as CSSProperties),
          },
          createElement("div", {
             className: "absolute left-0 top-0 bottom-0 w-[4px] opacity-95",
             style: { background: accent },
-            "aria-hidden": "true",
-         }),
-         createElement("div", {
-            className: "absolute -inset-[40px] opacity-100",
-            style: {
-               background: `radial-gradient(closest-side, ${glow} 0%, rgba(0,0,0,0) 70%)`,
-               filter: "blur(16px)",
-            },
             "aria-hidden": "true",
          }),
          createElement(
@@ -129,16 +105,16 @@ function WcToastView(props: {
                      "div",
                      {
                         className:
-                           "w-full border-b pb-[6px] pl-[10px] text-left text-[12px] font-extrabold uppercase tracking-[0.16em] text-white/95 whitespace-nowrap overflow-hidden text-ellipsis",
+                           "w-full border-b pb-[4px] pl-[8px] text-left text-[14px] font-extrabold uppercase tracking-[0.06em] text-white whitespace-nowrap overflow-hidden text-ellipsis",
                         style: { borderBottomColor },
                      },
-                     titleText,
+                     String(title || ""),
                   ),
                   createElement(
                      "div",
                      {
                         className:
-                           "w-full mt-[6px] pl-[10px] text-left text-[14px] font-semibold text-white/[0.92] leading-[1.22] max-h-[calc(1.22em*2)] overflow-hidden",
+                           "w-full mt-[4px] pl-[8px] text-left text-[14px] text-white/[0.92] leading-[1.25] max-h-[calc(1.25em*2)] overflow-hidden",
                      },
                      message,
                   ),
