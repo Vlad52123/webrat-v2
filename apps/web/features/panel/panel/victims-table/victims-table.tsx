@@ -169,7 +169,7 @@ export function VictimsTable(props: {
                                  <th
                                     key={h.id}
                                     className={cn(
-                                       "sticky top-0 z-[2] bg-[#202020] px-[4px] pb-[3px] pt-0 text-left text-[20px] font-normal leading-[1.05] text-white/[0.98]",
+                                       "sticky top-0 z-[2] bg-[rgba(12,12,12,0.92)] px-[4px] pb-[3px] pt-0 text-left text-[20px] font-normal leading-[1.05] text-white/[0.98] shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]",
                                        "select-none whitespace-nowrap",
                                        "isReorderable",
                                        colId,
