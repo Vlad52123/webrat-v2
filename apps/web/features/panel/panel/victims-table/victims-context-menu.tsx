@@ -19,7 +19,7 @@ export function VictimsContextMenu(props: {
       <div
          ref={menuRef}
          style={{ left: pos.left, top: pos.top }}
-         className="fixed z-[9999] w-[160px] select-none overflow-hidden rounded-[12px] border border-white/[0.14] bg-[rgba(12,12,12,0.96)] shadow-[0_22px_54px_rgba(0,0,0,0.65)]"
+         className="fixed z-[9999] w-[160px] select-none overflow-hidden rounded-[12px] border border-white/[0.12] bg-[rgba(16,16,16,0.96)] shadow-[0_14px_34px_rgba(0,0,0,0.55)]"
       >
          <button
             type="button"

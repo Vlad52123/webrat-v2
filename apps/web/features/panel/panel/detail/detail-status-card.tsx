@@ -140,7 +140,7 @@ export function DetailStatusCard(props: { victim: Victim | null }) {
                ? createPortal(
                   <div
                      ref={menuRef}
-                     className="fixed z-[9999] rounded-[14px] border border-white/[0.14] bg-[rgba(12,12,12,0.96)] p-[8px] text-white shadow-[0_22px_54px_rgba(0,0,0,0.65)]"
+                     className="fixed z-[9999] max-h-[240px] overflow-auto rounded-[14px] border border-white/[0.12] bg-[rgba(16,16,16,0.96)] p-[6px] text-white shadow-[0_14px_34px_rgba(0,0,0,0.55)]"
                      style={{ left: wsMenuPos.left, top: wsMenuPos.top, width: wsMenuPos.width }}
                      role="listbox"
                   >
@@ -156,10 +156,10 @@ export function DetailStatusCard(props: { victim: Victim | null }) {
                               key={opt.value}
                               type="button"
                               className={
-                                 "w-full text-left px-[10px] py-[10px] rounded-[12px] text-[13px] leading-[1.15] font-semibold text-white transition-[background,transform] cursor-pointer " +
+                                 "w-full text-left px-[10px] py-[9px] rounded-[12px] text-[13px] leading-[1.15] font-semibold text-white/90 transition-[background,border-color] cursor-pointer border " +
                                  (selected
-                                    ? "bg-[rgba(80,230,255,0.12)] border border-[rgba(80,230,255,0.20)]"
-                                    : "bg-transparent hover:bg-white/[0.08]")
+                                    ? "bg-white/[0.07] border-white/[0.16] text-white"
+                                    : "bg-transparent border-transparent hover:bg-white/[0.045] hover:border-white/[0.10]")
                               }
                               onClick={() => {
                                  setWsValue(opt.value);

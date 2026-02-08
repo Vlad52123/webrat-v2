@@ -118,10 +118,8 @@ export function BuilderNiceSelect(props: {
             type="button"
             className={
                buttonClassName ??
-               "w-full h-[32px] px-[10px] pr-[32px] rounded-[12px] border border-[rgba(255,255,255,0.14)] bg-[rgba(20,20,20,0.4)] text-[13px] text-[rgba(220,220,220,0.92)] cursor-pointer text-left whitespace-nowrap overflow-hidden text-ellipsis transition-[border-color,background,box-shadow,transform] " +
-               (open
-                  ? "border-[rgba(255,255,255,0.28)] shadow-[0_0_0_3px_rgba(80,230,255,0.12)] bg-[rgba(255,255,255,0.04)]"
-                  : "hover:bg-[rgba(255,255,255,0.04)]")
+               "w-full h-[32px] px-[10px] pr-[32px] rounded-[12px] border border-white/[0.12] bg-white/[0.03] text-[13px] font-semibold text-white/[0.92] cursor-pointer text-left whitespace-nowrap overflow-hidden text-ellipsis transition-[border-color,background,transform] " +
+               (open ? "border-white/[0.22] bg-white/[0.05]" : "hover:bg-white/[0.045] hover:border-white/[0.18]")
             }
             onClick={() => setOpen((v) => !v)}
             aria-haspopup="listbox"
@@ -144,7 +142,7 @@ export function BuilderNiceSelect(props: {
                   ref={menuRef}
                   className={
                      menuClassName ??
-                     "fixed z-[9999] rounded-[14px] border border-white/[0.14] bg-[rgba(12,12,12,0.96)] p-[8px] text-white shadow-[0_22px_54px_rgba(0,0,0,0.65)]"
+                     "fixed z-[9999] max-h-[240px] overflow-auto rounded-[14px] border border-white/[0.12] bg-[rgba(16,16,16,0.96)] p-[6px] text-white shadow-[0_14px_34px_rgba(0,0,0,0.55)]"
                   }
                   style={{ left: menuPos.left, top: menuPos.top, width: menuPos.width }}
                   role="listbox"
@@ -156,10 +154,10 @@ export function BuilderNiceSelect(props: {
                            key={opt.value}
                            type="button"
                            className={
-                              "w-full text-left px-[10px] py-[10px] rounded-[12px] text-[13px] leading-[1.15] font-semibold text-white transition-[background,transform] cursor-pointer " +
+                              "w-full text-left px-[10px] py-[9px] rounded-[12px] text-[13px] leading-[1.15] font-semibold text-white/90 transition-[background,border-color] cursor-pointer border " +
                               (selected
-                                 ? "bg-[rgba(80,230,255,0.12)] border border-[rgba(80,230,255,0.20)]"
-                                 : "bg-transparent hover:bg-white/[0.08]")
+                                 ? "bg-white/[0.07] border-white/[0.16] text-white"
+                                 : "bg-transparent border-transparent hover:bg-white/[0.045] hover:border-white/[0.10]")
                            }
                            onClick={() => selectValue(opt.value)}
                            role="option"
