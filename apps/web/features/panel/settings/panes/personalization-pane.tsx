@@ -72,6 +72,7 @@ export function PersonalizationPane(props: {
                               (state.bgMode === "image" ? "bg-white/[0.16]" : "bg-[rgba(35,35,35,0.4)] hover:bg-white/[0.10]")
                            }
                            aria-pressed={state.bgMode === "image"}
+                           onContextMenu={(e) => e.preventDefault()}
                            onClick={() => {
                               if (!state.bgImage) {
                                  try {
@@ -88,7 +89,8 @@ export function PersonalizationPane(props: {
                               src="/icons/gallery.svg"
                               alt="image"
                               draggable={false}
-                              className="h-[20px] w-[20px] opacity-100 invert brightness-[1.7] contrast-[1.1]"
+                              className="h-[20px] w-[20px] opacity-100 invert brightness-[1.7] contrast-[1.1] wc-no-copy"
+                              onContextMenu={(e) => e.preventDefault()}
                            />
                         </button>
                         <button
@@ -99,6 +101,7 @@ export function PersonalizationPane(props: {
                               (state.bgMode === "video" ? "bg-white/[0.16]" : "bg-[rgba(35,35,35,0.4)] hover:bg-white/[0.10]")
                            }
                            aria-pressed={state.bgMode === "video"}
+                           onContextMenu={(e) => e.preventDefault()}
                            onClick={() => {
                               if (state.bgMode === "video" && state.bgVideoMarker) return;
                               if (!state.bgVideoMarker) {
@@ -116,7 +119,8 @@ export function PersonalizationPane(props: {
                               src="/icons/video.svg"
                               alt="video"
                               draggable={false}
-                              className="h-[20px] w-[20px] opacity-100 invert brightness-[1.7] contrast-[1.1]"
+                              className="h-[20px] w-[20px] opacity-100 invert brightness-[1.7] contrast-[1.1] wc-no-copy"
+                              onContextMenu={(e) => e.preventDefault()}
                            />
                         </button>
                         <button
@@ -127,13 +131,15 @@ export function PersonalizationPane(props: {
                               (state.bgMode === "default" ? "bg-white/[0.16]" : "bg-[rgba(35,35,35,0.4)] hover:bg-white/[0.10]")
                            }
                            aria-pressed={state.bgMode === "default"}
+                           onContextMenu={(e) => e.preventDefault()}
                            onClick={() => setBgMode("default")}
                         >
                            <img
                               src="/icons/default.svg"
                               alt="solid"
                               draggable={false}
-                              className="h-[20px] w-[20px] opacity-100 invert brightness-[1.7] contrast-[1.1]"
+                              className="h-[20px] w-[20px] opacity-100 invert brightness-[1.7] contrast-[1.1] wc-no-copy"
+                              onContextMenu={(e) => e.preventDefault()}
                            />
                         </button>
                      </div>

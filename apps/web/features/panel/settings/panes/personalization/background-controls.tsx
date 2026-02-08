@@ -28,6 +28,7 @@ export function BackgroundControls(props: {
                   (state.bgMode === "image" ? "bg-white/[0.16]" : "bg-[rgba(35,35,35,0.4)] hover:bg-white/[0.10]")
                }
                aria-pressed={state.bgMode === "image"}
+               onContextMenu={(e) => e.preventDefault()}
                onClick={() => {
                   if (!state.bgImage) {
                      try {
@@ -56,6 +57,7 @@ export function BackgroundControls(props: {
                   (state.bgMode === "video" ? "bg-white/[0.16]" : "bg-[rgba(35,35,35,0.4)] hover:bg-white/[0.10]")
                }
                aria-pressed={state.bgMode === "video"}
+               onContextMenu={(e) => e.preventDefault()}
                onClick={() => {
                   if (state.bgMode === "video" && state.bgVideoMarker) return;
                   if (!state.bgVideoMarker) {
@@ -85,6 +87,7 @@ export function BackgroundControls(props: {
                   (state.bgMode === "default" ? "bg-white/[0.16]" : "bg-[rgba(35,35,35,0.4)] hover:bg-white/[0.10]")
                }
                aria-pressed={state.bgMode === "default"}
+               onContextMenu={(e) => e.preventDefault()}
                onClick={() => setBgMode("default")}
             >
                <img

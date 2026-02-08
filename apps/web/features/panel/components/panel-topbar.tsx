@@ -40,8 +40,8 @@ export function PanelTopbar(props: {
 
    const pillClass = (active: boolean) =>
       cn(
-         "inline-flex items-center gap-2 rounded-full border border-white/[0.14] bg-[rgba(20,20,20,0.35)] px-[10px] py-[6px] cursor-pointer",
-         "text-[13px] font-bold text-white/[0.92] transition-[background,border-color,transform]",
+         "inline-flex items-center gap-2 rounded-full border border-white/[0.14] bg-[rgba(20,20,20,0.35)] px-[12px] py-[7px] cursor-pointer select-none",
+         "text-[14px] font-bold text-white/[0.92] transition-[background,border-color,transform] wc-no-copy",
          "hover:bg-white/[0.06] hover:border-white/[0.22]",
          active && "bg-white/[0.10] border-white/[0.30]",
       );
@@ -124,7 +124,7 @@ export function PanelTopbar(props: {
                      data-settings-tab="personalization"
                      onClick={() => onSettingsTabChange?.("personalization")}
                   >
-                     <span>Personalization</span>
+                     <span className="select-none">Personalization</span>
                   </button>
                   <button
                      id="settingsTabSecurity"
@@ -133,7 +133,7 @@ export function PanelTopbar(props: {
                      data-settings-tab="security"
                      onClick={() => onSettingsTabChange?.("security")}
                   >
-                     <span>Security</span>
+                     <span className="select-none">Security</span>
                   </button>
                </div>
             </div>
@@ -146,7 +146,7 @@ export function PanelTopbar(props: {
                      type="button"
                      data-community-tab="information"
                   >
-                     <span>Information</span>
+                     <span className="select-none">Information</span>
                   </button>
                </div>
             </div>
@@ -159,7 +159,7 @@ export function PanelTopbar(props: {
                      type="button"
                      data-builder-tab="builds"
                   >
-                     <span>Builds</span>
+                     <span className="select-none">Builds</span>
                   </button>
                </div>
             </div>
