@@ -88,8 +88,8 @@ function PanelShellInner() {
    const postAuthRef = useRef(false);
    const suppressBlockedToastOnceRef = useRef(false);
    const [loaderUntilTs, setLoaderUntilTs] = useState(0);
-   const [loaderMounted, setLoaderMounted] = useState(false);
    const [loaderFadingOut, setLoaderFadingOut] = useState(false);
+   const prevShouldShowLoaderRef = useRef(false);
 
    const isVip = useMemo(() => {
       const st = String(subQ.data?.status || "").toLowerCase();
@@ -257,27 +257,26 @@ function PanelShellInner() {
    const shouldShowLoader = (loaderUntilTs ? Date.now() < loaderUntilTs : false) || isPendingRestrictedTab;
 
    useEffect(() => {
+      const prev = prevShouldShowLoaderRef.current;
+      prevShouldShowLoaderRef.current = shouldShowLoader;
+
       if (shouldShowLoader) {
-         setLoaderMounted(true);
-         setLoaderFadingOut(false);
+         if (loaderFadingOut) setLoaderFadingOut(false);
          return;
       }
 
-      if (!loaderMounted) return;
+      if (!prev) return;
       setLoaderFadingOut(true);
-      const t = window.setTimeout(() => {
-         setLoaderMounted(false);
-         setLoaderFadingOut(false);
-      }, 220);
+      const t = window.setTimeout(() => setLoaderFadingOut(false), 220);
       return () => window.clearTimeout(t);
-   }, [loaderMounted, shouldShowLoader]);
+   }, [loaderFadingOut, shouldShowLoader]);
 
-   if (loaderMounted) {
+   if (shouldShowLoader || loaderFadingOut) {
       return (
          <div
             className={
                "grid h-[100dvh] overflow-hidden place-items-center text-white/80 transition-opacity duration-200 " +
-               (loaderFadingOut ? "opacity-0" : "opacity-100")
+               (shouldShowLoader && !loaderFadingOut ? "opacity-100" : "opacity-0")
             }
             style={{ background: "var(--wc-panel-bg)" }}
          >
