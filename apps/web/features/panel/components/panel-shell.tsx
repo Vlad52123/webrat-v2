@@ -16,11 +16,27 @@ import { PanelWsProvider } from "../ws/ws-provider";
 import { PanelSidebar } from "./panel-sidebar";
 import { PanelTopbar } from "./panel-topbar";
 
+function PanelScreenFallback(props: { label: string }) {
+   return (
+      <div className="grid h-full w-full place-items-center text-white/70">
+         <div className="grid place-items-center gap-2">
+            <img
+               src="/icons/loading.svg"
+               alt="loading"
+               draggable={false}
+               className="h-[28px] w-[28px] animate-spin invert brightness-200"
+            />
+            <span className="text-[12px] font-semibold tracking-[0.01em]">{props.label}</span>
+         </div>
+      </div>
+   );
+}
+
 const BuilderScreen = dynamic(
    () => import("../screens/builder-screen").then((m) => m.BuilderScreen),
    {
       ssr: false,
-      loading: () => <div className="h-full w-full bg-transparent" />,
+      loading: () => <PanelScreenFallback label="Loading" />,
    },
 );
 
@@ -28,7 +44,7 @@ const ShopScreen = dynamic(
    () => import("../screens/shop-screen").then((m) => m.ShopScreen),
    {
       ssr: false,
-      loading: () => <div className="h-full w-full bg-transparent" />,
+      loading: () => <PanelScreenFallback label="Loading" />,
    },
 );
 
@@ -36,7 +52,7 @@ const CommunityScreen = dynamic(
    () => import("../screens/community-screen").then((m) => m.CommunityScreen),
    {
       ssr: false,
-      loading: () => <div className="h-full w-full bg-transparent" />,
+      loading: () => <PanelScreenFallback label="Loading" />,
    },
 );
 
@@ -44,7 +60,7 @@ const SettingsScreen = dynamic(
    () => import("../screens/settings-screen").then((m) => m.SettingsScreen),
    {
       ssr: false,
-      loading: () => <div className="h-full w-full bg-transparent" />,
+      loading: () => <PanelScreenFallback label="Loading" />,
    },
 );
 
@@ -206,6 +222,13 @@ function PanelShellInner() {
 
    useEffect(() => {
       installToastGlobal();
+   }, []);
+
+   useEffect(() => {
+      void import("../screens/builder-screen");
+      void import("../screens/shop-screen");
+      void import("../screens/community-screen");
+      void import("../screens/settings-screen");
    }, []);
 
    useEffect(() => {
