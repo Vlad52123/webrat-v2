@@ -88,6 +88,8 @@ function PanelShellInner() {
    const postAuthRef = useRef(false);
    const suppressBlockedToastOnceRef = useRef(false);
    const [loaderUntilTs, setLoaderUntilTs] = useState(0);
+   const [loaderMounted, setLoaderMounted] = useState(false);
+   const [loaderFadingOut, setLoaderFadingOut] = useState(false);
 
    const isVip = useMemo(() => {
       const st = String(subQ.data?.status || "").toLowerCase();
@@ -254,9 +256,31 @@ function PanelShellInner() {
 
    const shouldShowLoader = (loaderUntilTs ? Date.now() < loaderUntilTs : false) || isPendingRestrictedTab;
 
-   if (shouldShowLoader) {
+   useEffect(() => {
+      if (shouldShowLoader) {
+         setLoaderMounted(true);
+         setLoaderFadingOut(false);
+         return;
+      }
+
+      if (!loaderMounted) return;
+      setLoaderFadingOut(true);
+      const t = window.setTimeout(() => {
+         setLoaderMounted(false);
+         setLoaderFadingOut(false);
+      }, 220);
+      return () => window.clearTimeout(t);
+   }, [loaderMounted, shouldShowLoader]);
+
+   if (loaderMounted) {
       return (
-         <div className="grid h-[100dvh] overflow-hidden place-items-center text-white/80" style={{ background: "var(--wc-panel-bg)" }}>
+         <div
+            className={
+               "grid h-[100dvh] overflow-hidden place-items-center text-white/80 transition-opacity duration-200 " +
+               (loaderFadingOut ? "opacity-0" : "opacity-100")
+            }
+            style={{ background: "var(--wc-panel-bg)" }}
+         >
             <div className="grid place-items-center">
                <img
                   src="/icons/loading.svg"
