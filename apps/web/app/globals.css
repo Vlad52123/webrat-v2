@@ -267,7 +267,8 @@ html.lowPerf .wc-community-logo-shake {
    }
 
    .wc-community-logo-shake {
-      animation: wcCommunityLogoShake 1.6s ease-in-out infinite;
+      animation: wcCommunityLogoShake 120ms linear infinite;
+      will-change: transform;
    }
 
    body.isSnowEnabled .snowflake {
@@ -315,20 +316,32 @@ html.lowPerf .wc-community-logo-shake {
          transform: translate(0, 0) rotate(0deg);
       }
 
-      20% {
-         transform: translate(-0.5px, 0.3px) rotate(-1deg);
+      12% {
+         transform: translate(-2px, 1px) rotate(-4deg);
       }
 
-      40% {
-         transform: translate(0.6px, -0.4px) rotate(1deg);
+      24% {
+         transform: translate(2px, -1px) rotate(4deg);
+      }
+
+      36% {
+         transform: translate(-2px, -1px) rotate(-3deg);
+      }
+
+      48% {
+         transform: translate(1px, 2px) rotate(3deg);
       }
 
       60% {
-         transform: translate(-0.4px, -0.3px) rotate(-0.6deg);
+         transform: translate(-1px, 2px) rotate(-4deg);
       }
 
-      80% {
-         transform: translate(0.4px, 0.4px) rotate(0.8deg);
+      72% {
+         transform: translate(2px, 1px) rotate(4deg);
+      }
+
+      84% {
+         transform: translate(-2px, 0px) rotate(-3deg);
       }
 
       100% {
