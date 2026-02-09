@@ -9,34 +9,44 @@ export function BuildCard(props: {
    const { item, onDelete, onInfo } = props;
 
    return (
-      <div className="build-card overflow-hidden rounded-[14px] border border-white/[0.14] bg-[rgba(18,18,18,0.66)] shadow-[0_18px_44px_rgba(0,0,0,0.6),0_0_0_4px_rgba(255,255,255,0.05)] backdrop-blur-[8px]">
-         <div className="build-card-header px-[14px] py-[10px] text-[15px] font-extrabold text-white">{item.name || "build"}</div>
-         <div className="build-card-separator h-px bg-white/[0.12]" />
+      <div className="build-card w-[380px] min-h-0 rounded-[16px] border border-[rgba(255,255,255,0.14)] bg-[rgba(32,32,32,0.64)] p-[14px] pb-[12px] text-[13px] shadow-[0_18px_44px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.05)_inset] backdrop-blur-[10px] [animation:buildCardIn_420ms_cubic-bezier(0.16,1,0.3,1)_both] [will-change:transform,opacity] transition-[transform,border-color,box-shadow] duration-[140ms] hover:translate-y-[-2px] hover:scale-[1.01] hover:border-[rgba(255,255,255,0.85)] hover:shadow-[0_24px_56px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.08)_inset]">
+         <div className="build-card-header mb-[8px] text-center text-[14px] font-black tracking-[0.2px] text-[rgba(255,255,255,0.94)]">
+            {item.name || "build"}
+         </div>
+         <div className="build-card-separator mb-[8px] h-px bg-[rgba(255,255,255,0.12)]" />
 
-         <div className="build-card-row flex items-center justify-between gap-3 px-[14px] py-[10px]">
-            <div className="build-card-left flex items-center gap-[6px]">
-               <span className="build-card-label text-[12px] font-bold text-white/[0.70]">ID:</span>
-               <span className="build-card-value text-[12px] font-bold text-white/[0.92]">{item.id}</span>
+         <div className="build-card-row grid grid-cols-2 gap-[10px] py-[6px]">
+            <div className="build-card-left flex min-w-0 flex-1 items-center gap-[6px]">
+               <span className="build-card-label text-[12px] font-bold text-[rgba(255,255,255,0.72)]">ID:</span>
+               <span className="build-card-value overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-extrabold text-[rgba(255,255,255,0.94)]">
+                  {item.id}
+               </span>
             </div>
-            <div className="build-card-right">
-               <span className="build-card-value text-[12px] font-semibold text-white/[0.78]">{item.created ? `Created: ${item.created}` : "Created:"}</span>
+            <div className="build-card-right flex min-w-0 flex-1 items-center justify-end gap-[6px]">
+               <span className="build-card-value overflow-hidden text-ellipsis whitespace-nowrap text-right text-[13px] font-extrabold text-[rgba(255,255,255,0.94)]">
+                  {item.created ? `Created: ${item.created}` : "Created:"}
+               </span>
             </div>
          </div>
 
-         <div className="build-card-row flex items-center justify-between gap-3 px-[14px] pb-[12px]">
-            <div className="build-card-left flex items-center gap-[6px]">
-               <span className="build-card-label text-[12px] font-bold text-white/[0.70]">Version:</span>
-               <span className="build-card-value text-[12px] font-bold text-white/[0.92]">{item.version || ""}</span>
+         <div className="build-card-row grid grid-cols-2 gap-[10px] py-[6px]">
+            <div className="build-card-left flex min-w-0 flex-1 items-center gap-[6px]">
+               <span className="build-card-label text-[12px] font-bold text-[rgba(255,255,255,0.72)]">Version:</span>
+               <span className="build-card-value overflow-hidden text-ellipsis whitespace-nowrap text-right text-[13px] font-extrabold text-[rgba(255,255,255,0.94)]">
+                  {item.version != null ? String(item.version) : ""}
+               </span>
             </div>
-            <div className="build-card-right flex items-center gap-[6px]">
-               <span className="build-card-label text-[12px] font-bold text-white/[0.70]">Victims:</span>
-               <span className="build-card-value text-[12px] font-bold text-white/[0.92]">{typeof item.victims === "number" ? item.victims : ""}</span>
+            <div className="build-card-right flex min-w-0 flex-1 items-center justify-end gap-[6px]">
+               <span className="build-card-label text-[12px] font-bold text-[rgba(255,255,255,0.72)]">Victims:</span>
+               <span className="build-card-value overflow-hidden text-ellipsis whitespace-nowrap text-right text-[13px] font-extrabold text-[rgba(255,255,255,0.94)]">
+                  {item.victims != null ? String(item.victims) : ""}
+               </span>
             </div>
          </div>
 
-         <div className="build-card-actions flex items-center gap-[10px] px-[14px] pb-[14px]">
+         <div className="build-card-actions mt-[8px] flex border-t border-t-[rgba(255,255,255,0.12)] pt-[10px]">
             <button
-               className="build-card-btn build-card-btn--danger h-[30px] rounded-[10px] border border-[rgba(255,75,75,0.35)] bg-[rgba(255,75,75,0.10)] px-[12px] text-[12px] font-extrabold text-[#ff7070] transition-[background,border-color,transform] hover:bg-[rgba(255,75,75,0.16)] hover:border-[rgba(255,75,75,0.45)] active:translate-y-[1px]"
+               className="build-card-btn h-[30px] flex-1 cursor-pointer rounded-[12px] border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.06)] text-[12px] font-extrabold text-[rgba(255,255,255,0.92)] transition-[background,border-color,transform,box-shadow] duration-[140ms] hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(235,200,255,0.26)] active:translate-y-[1px] focus-visible:outline-none focus-visible:border-[rgba(186,85,211,0.7)] focus-visible:shadow-[0_0_0_3px_rgba(186,85,211,0.22)]"
                type="button"
                onClick={() => {
                   if (!item.id) {
@@ -50,7 +60,7 @@ export function BuildCard(props: {
             </button>
 
             <button
-               className="build-card-btn build-card-btn--info h-[30px] rounded-[10px] border border-white/[0.14] bg-[rgba(20,20,20,0.35)] px-[12px] text-[12px] font-extrabold text-white/[0.92] transition-[background,border-color,transform] hover:bg-white/[0.06] hover:border-white/[0.22] active:translate-y-[1px]"
+               className="build-card-btn ml-[10px] h-[30px] flex-1 cursor-pointer rounded-[12px] border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.06)] text-[12px] font-extrabold text-[rgba(255,255,255,0.92)] transition-[background,border-color,transform,box-shadow] duration-[140ms] hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(235,200,255,0.26)] active:translate-y-[1px] focus-visible:outline-none focus-visible:border-[rgba(186,85,211,0.7)] focus-visible:shadow-[0_0_0_3px_rgba(186,85,211,0.22)]"
                type="button"
                onClick={() => {
                   if (!item.id) {

@@ -153,6 +153,18 @@ html.lowPerf [class^="shadow-"] {
       filter: brightness(0) saturate(100%) invert(42%) sepia(86%) saturate(2086%) hue-rotate(236deg) brightness(100%) contrast(98%);
    }
 
+   @keyframes buildCardIn {
+      from {
+         opacity: 0;
+         transform: translateY(14px);
+      }
+
+      to {
+         opacity: 1;
+         transform: translateY(0);
+      }
+   }
+
    .wc-scrollbar-transparent::-webkit-scrollbar {
       width: 10px;
       height: 10px;
