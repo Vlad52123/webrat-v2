@@ -12,5 +12,8 @@ export function wsLabel(value: string): string {
    if (value === "ru.webcrystal.sbs") return "Russia";
    if (value === "kz.webcrystal.sbs") return "Kazakhstan";
    if (value === "ua.webcrystal.sbs") return "Ukraine";
+   if (value === "ru.ws.webcrystal.sbs") return "Russia (ws)";
+   if (value === "kz.ws.webcrystal.sbs") return "Kazakhstan (ws)";
+   if (value === "ua.ws.webcrystal.sbs") return "Ukraine (ws)";
    return value;
 }
