@@ -5,6 +5,26 @@ import { createPortal } from "react-dom";
 
 import { WS_OPTIONS, wsLabel } from "./ws-options";
 
+function navigateToHost(host: string) {
+   try {
+      const cleaned = String(host || "").trim();
+      if (!cleaned || cleaned === "__default__") {
+         window.location.reload();
+         return;
+      }
+
+      const proto = window.location.protocol || "https:";
+      const path = window.location.pathname + window.location.search + window.location.hash;
+      const target = `${proto}//${cleaned}${path}`;
+      window.location.replace(target);
+   } catch {
+      try {
+         window.location.reload();
+      } catch {
+      }
+   }
+}
+
 export function WsServerSelect(props: {
    setWsHost: (host: string) => void;
    wsSelectValue: string;
@@ -26,7 +46,7 @@ export function WsServerSelect(props: {
             onChange={(e) => {
                setWsHost(e.target.value);
                try {
-                  window.setTimeout(() => window.location.reload(), 60);
+                  window.setTimeout(() => navigateToHost(e.target.value), 60);
                } catch {
                }
             }}
@@ -84,7 +104,7 @@ export function WsServerSelect(props: {
                               setWsHost(opt.value);
                               setWsOpen(false);
                               try {
-                                 window.setTimeout(() => window.location.reload(), 60);
+                                 window.setTimeout(() => navigateToHost(opt.value), 60);
                               } catch {
                               }
                            }}
