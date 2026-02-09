@@ -409,7 +409,7 @@ func CompileZip(ctx context.Context, baseDir string, req Request) ([]byte, strin
 	if gog == "" {
 		mod := readGoModulePath(filepath.Join(baseDir, "go.mod"))
 		if mod != "" {
-			gog = mod + "/..."
+			gog = mod + "," + mod + "/..."
 		} else {
 			gog = "*"
 		}

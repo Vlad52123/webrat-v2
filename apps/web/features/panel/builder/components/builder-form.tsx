@@ -176,11 +176,16 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
 
             <div
                id="buildProgress"
-               className="buildProgress fixed inset-0 z-[998] grid place-items-center bg-[rgba(0,0,0,0.62)] backdrop-blur-[6px]"
+               className="buildProgress grid w-full place-items-center py-[10px]"
                hidden
             >
-               <div id="buildProgressText" className="buildProgressText text-[20px] font-extrabold tracking-[0.02em] text-[rgba(255,255,255,0.92)] [text-shadow:0_10px_30px_rgba(0,0,0,0.75)]">
-                  Building
+               <div className="buildProgressInner grid h-[210px] w-[min(520px,90vw)] place-items-center rounded-[16px] border border-[rgba(255,255,255,0.14)] bg-[rgba(32,32,32,0.64)] shadow-[0_18px_40px_rgba(0,0,0,0.55),0_0_0_4px_rgba(255,255,255,0.05)] backdrop-blur-[10px]">
+                  <div
+                     id="buildProgressText"
+                     className="buildProgressText text-[18px] font-bold text-[rgba(255,255,255,0.92)]"
+                  >
+                     Building
+                  </div>
                </div>
             </div>
 

@@ -96,7 +96,7 @@ export function VictimsFilterModal() {
                   id="filterModalClose"
                   type="button"
                   aria-label="Close"
-                  className="grid h-[30px] w-[30px] place-items-center overflow-hidden rounded-[10px] border border-white/[0.14] bg-white/[0.06] text-[18px] leading-none text-white transition-[background,border-color,transform] duration-150 hover:bg-white/[0.10] hover:border-white/[0.22] active:translate-y-[1px]"
+                  className="grid h-[30px] w-[30px] cursor-pointer select-none place-items-center overflow-hidden rounded-[10px] border border-white/[0.14] bg-white/[0.06] text-[18px] leading-none text-white transition-[background,border-color,transform] duration-150 hover:bg-white/[0.10] hover:border-white/[0.22] active:translate-y-[1px]"
                   onClick={() => prefs.closeFilterModal()}
                >
                   <span aria-hidden="true" className="block h-[18px] w-[18px] text-center leading-[18px]">

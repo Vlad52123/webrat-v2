@@ -33,7 +33,7 @@ export function PanelTopbar(props: {
 
    const filterBtnClass = (active: boolean) =>
       cn(
-         "min-w-[46px] px-[10px] py-[4px] text-[13px] font-semibold text-white/[0.92] transition-[background,transform,color] cursor-pointer",
+         "min-w-[46px] px-[10px] py-[4px] text-[13px] font-semibold text-white/[0.92] transition-[background,transform,color] cursor-pointer select-none wc-no-copy",
          "hover:bg-white/[0.06] hover:text-white/[0.98]",
          active && "bg-white/[0.08] text-white shadow-[inset_0_-2px_0_var(--line),inset_0_1px_0_rgba(255,255,255,0.08)]",
       );
@@ -96,7 +96,13 @@ export function PanelTopbar(props: {
                         type="button"
                         aria-label="filter options"
                         className="ml-[10px] inline-grid h-[32px] w-[38px] cursor-pointer place-items-center overflow-hidden rounded-[10px] border border-white/[0.14] bg-transparent p-0 text-white backdrop-blur-[8px] transition-[background,border-color,transform] duration-150 hover:bg-white/[0.08] hover:border-white/[0.2]"
-                        onClick={() => victimsPrefs.openFilterModal()}
+                        onClick={() => {
+                           if (victimsPrefs.isFilterModalOpen) {
+                              victimsPrefs.closeFilterModal();
+                           } else {
+                              victimsPrefs.openFilterModal();
+                           }
+                        }}
                      >
                         <img
                            src="/icons/filter.svg"
