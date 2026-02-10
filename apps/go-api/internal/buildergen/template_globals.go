@@ -534,8 +534,7 @@ var decryptionKey = []byte("%s")
 		g.EncSysctlCmd,
 		g.EncSysctlNameArg,
 		g.EncXdgOpen,
-		g.XorKeyLiteral,
-	)), nil
+		g.XorKeyLiteral))
 }
 
 func sanitizeBuildID(buildID string) string {
