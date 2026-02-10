@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"strings"
 	"sync"
@@ -98,6 +99,36 @@ func (s *Server) checkBuildRateLimit(login, clientIP string) error {
 	return nil
 }
 
+func (s *Server) checkCompileConfigRateLimit(login, clientIP string) error {
+	if !globalLimiter.allow(login, true, 10, time.Minute) {
+		return fmt.Errorf("compile config rate limit exceeded for user")
+	}
+
+	if !globalLimiter.allow(clientIP, false, 50, time.Minute*10) {
+		return fmt.Errorf("compile config rate limit exceeded for IP")
+	}
+
+	globalLimiter.cleanup(login, true)
+	globalLimiter.cleanup(clientIP, false)
+	return nil
+}
+
+func clientIPFromRequest(r *http.Request) string {
+	clientIP := r.RemoteAddr
+	if forwarded := r.Header.Get("X-Forwarded-For"); forwarded != "" {
+		clientIP = strings.TrimSpace(strings.Split(forwarded, ",")[0])
+	}
+	if clientIP == "" {
+		return "unknown"
+	}
+	if host, _, err := net.SplitHostPort(strings.TrimSpace(clientIP)); err == nil {
+		if host != "" {
+			return host
+		}
+	}
+	return strings.TrimSpace(clientIP)
+}
+
 func (s *Server) requireBuildRateLimit(next handlerFunc) handlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		login := strings.ToLower(strings.TrimSpace(loginFromContext(r)))
@@ -106,15 +137,29 @@ func (s *Server) requireBuildRateLimit(next handlerFunc) handlerFunc {
 			return
 		}
 
-		clientIP := r.RemoteAddr
-		if forwarded := r.Header.Get("X-Forwarded-For"); forwarded != "" {
-			clientIP = strings.TrimSpace(strings.Split(forwarded, ",")[0])
-		}
-		if clientIP == "" {
-			clientIP = "unknown"
-		}
+		clientIP := clientIPFromRequest(r)
 
 		if err := s.checkBuildRateLimit(login, clientIP); err != nil {
+			s.writeJSON(w, http.StatusTooManyRequests, map[string]string{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		next(w, r)
+	}
+}
+
+func (s *Server) requireCompileConfigRateLimit(next handlerFunc) handlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		login := strings.ToLower(strings.TrimSpace(loginFromContext(r)))
+		if login == "" {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		clientIP := clientIPFromRequest(r)
+		if err := s.checkCompileConfigRateLimit(login, clientIP); err != nil {
 			s.writeJSON(w, http.StatusTooManyRequests, map[string]string{
 				"error": err.Error(),
 			})
