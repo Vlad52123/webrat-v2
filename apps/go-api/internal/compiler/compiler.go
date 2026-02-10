@@ -3,8 +3,6 @@ package compiler
 import (
 	"bytes"
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,45 +11,11 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"bufio"
 	"strings"
 	"time"
 
 	"github.com/yeka/zip"
 )
-
-func readGoModulePath(goModPath string) string {
-	f, err := os.Open(goModPath)
-	if err != nil {
-		return ""
-	}
-	defer f.Close()
-
-	s := bufio.NewScanner(f)
-	for s.Scan() {
-		line := strings.TrimSpace(s.Text())
-		if line == "" || strings.HasPrefix(line, "//") {
-			continue
-		}
-		if strings.HasPrefix(line, "module ") {
-			mod := strings.TrimSpace(strings.TrimPrefix(line, "module "))
-			mod = strings.Trim(mod, "\"`")
-			if strings.Contains(mod, " ") {
-				mod = strings.Fields(mod)[0]
-			}
-			return strings.TrimSpace(mod)
-		}
-	}
-	return ""
-}
-
-func randomGarbleSeed() string {
-	b := make([]byte, 16)
-	if _, err := rand.Read(b); err != nil {
-		return "random"
-	}
-	return hex.EncodeToString(b)
-}
 
 func findGoModDir(start string, maxParents int) (string, bool) {
 	if strings.TrimSpace(start) == "" {
@@ -274,71 +238,32 @@ func CompileZip(ctx context.Context, baseDir string, req Request) ([]byte, strin
 		return nil, "", errors.New("module download error:\n" + msg)
 	}
 
-	findOrInstallTool := func(module string, name string) (string, error) {
-		if p, err := exec.LookPath(name); err == nil && strings.TrimSpace(p) != "" {
-			return p, nil
-		}
-
+	garblePath, err := exec.LookPath("garble")
+	if err != nil {
 		candidates := []string{}
 		if gp := strings.TrimSpace(os.Getenv("GOPATH")); gp != "" {
-			candidates = append(candidates, filepath.Join(gp, "bin", name))
+			candidates = append(candidates, filepath.Join(gp, "bin", "garble"))
 		}
 		candidates = append(candidates,
-			filepath.Join(tmpDir, "bin", name),
-			"/root/go/bin/"+name,
-			"/usr/local/bin/"+name,
-			"/usr/bin/"+name,
+			"/root/go/bin/garble",
+			"/usr/local/bin/garble",
+			"/usr/bin/garble",
 		)
+
 		for _, p := range candidates {
-			if strings.TrimSpace(p) == "" {
+			if p == "" {
 				continue
 			}
 			if _, stErr := os.Stat(p); stErr == nil {
-				return p, nil
+				garblePath = p
+				break
 			}
 		}
-
-		toolCtx, toolCancel := context.WithTimeout(ctx, 2*time.Minute)
-		defer toolCancel()
-
-		gobin := filepath.Join(tmpDir, "bin")
-		_ = os.MkdirAll(gobin, 0o755)
-
-		toolEnv := make([]string, 0, len(os.Environ())+2)
-		for _, kv := range os.Environ() {
-			if strings.HasPrefix(kv, "GOOS=") || strings.HasPrefix(kv, "GOARCH=") || strings.HasPrefix(kv, "CGO_ENABLED=") || strings.HasPrefix(kv, "GOFLAGS=") || strings.HasPrefix(kv, "GOTMPDIR=") || strings.HasPrefix(kv, "GOGARBLE=") {
-				continue
-			}
-			toolEnv = append(toolEnv, kv)
+		if strings.TrimSpace(garblePath) == "" {
+			pathEnv := strings.TrimSpace(os.Getenv("PATH"))
+			gpEnv := strings.TrimSpace(os.Getenv("GOPATH"))
+			return nil, "", errors.New("garble not found on build server\nPATH=" + pathEnv + "\nGOPATH=" + gpEnv)
 		}
-		toolEnv = append(toolEnv, "GOBIN="+gobin)
-
-		instCmd := exec.CommandContext(toolCtx, "go", "install", module)
-		instCmd.Dir = tmpDir
-		instCmd.Env = toolEnv
-
-		out, err := instCmd.CombinedOutput()
-		if err != nil {
-			msg := strings.TrimSpace(string(out))
-			if msg == "" {
-				msg = err.Error()
-			}
-			return "", errors.New("tool install error (" + name + "):\n" + msg)
-		}
-
-		p := filepath.Join(gobin, name)
-		if _, stErr := os.Stat(p); stErr == nil {
-			return p, nil
-		}
-
-		pathEnv := strings.TrimSpace(os.Getenv("PATH"))
-		gpEnv := strings.TrimSpace(os.Getenv("GOPATH"))
-		return "", errors.New("tool not found after install (" + name + ")\nPATH=" + pathEnv + "\nGOPATH=" + gpEnv)
-	}
-
-	garblePath, err := findOrInstallTool("mvdan.cc/garble@latest", "garble")
-	if err != nil {
-		return nil, "", err
 	}
 
 	garbleFlags := []string{}
@@ -347,6 +272,7 @@ func CompileZip(ctx context.Context, baseDir string, req Request) ([]byte, strin
 		fields := strings.Fields(v)
 		knownGarbleNoArg := map[string]struct{}{
 			"-literals": {},
+			"-tiny":     {},
 			"-debug":    {},
 		}
 		knownGarbleWithArg := map[string]struct{}{
@@ -360,29 +286,13 @@ func CompileZip(ctx context.Context, baseDir string, req Request) ([]byte, strin
 				continue
 			}
 			if strings.HasPrefix(f, "-seed=") || strings.HasPrefix(f, "-debugdir=") {
-				if strings.HasPrefix(f, "-seed=") {
-					seed := strings.TrimSpace(strings.TrimPrefix(f, "-seed="))
-					if seed == "" || seed == "random" {
-						seed = randomGarbleSeed()
-					}
-					garbleFlags = append(garbleFlags, "-seed="+seed)
-					continue
-				}
 				garbleFlags = append(garbleFlags, f)
 				continue
 			}
 			if _, ok := knownGarbleWithArg[f]; ok {
 				garbleFlags = append(garbleFlags, f)
 				if i+1 < len(fields) {
-					if f == "-seed" {
-						seed := strings.TrimSpace(fields[i+1])
-						if seed == "" || seed == "random" {
-							seed = randomGarbleSeed()
-						}
-						garbleFlags = append(garbleFlags, seed)
-					} else {
-						garbleFlags = append(garbleFlags, fields[i+1])
-					}
+					garbleFlags = append(garbleFlags, fields[i+1])
 					i++
 				}
 				continue
@@ -390,8 +300,8 @@ func CompileZip(ctx context.Context, baseDir string, req Request) ([]byte, strin
 			goExtraFlags = append(goExtraFlags, f)
 		}
 	} else {
-		garbleFlags = []string{"-literals", "-seed=" + randomGarbleSeed()}
-		goExtraFlags = []string{"-trimpath", "-ldflags=-w -s"}
+		garbleFlags = []string{"-literals", "-seed=random"}
+		goExtraFlags = []string{"-trimpath"}
 	}
 
 	buildCtx, buildCancel := context.WithTimeout(ctx, 9*time.Minute)
@@ -407,12 +317,7 @@ func CompileZip(ctx context.Context, baseDir string, req Request) ([]byte, strin
 	cmd.Dir = tmpDir
 	gog := strings.TrimSpace(os.Getenv("WEBRAT_GOGARBLE"))
 	if gog == "" {
-		mod := readGoModulePath(filepath.Join(baseDir, "go.mod"))
-		if mod != "" {
-			gog = mod + "," + mod + "/..."
-		} else {
-			gog = "*"
-		}
+		gog = "*"
 	}
 	cmd.Env = append(env, "GOGARBLE="+gog)
 

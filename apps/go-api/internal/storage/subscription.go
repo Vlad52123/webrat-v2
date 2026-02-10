@@ -27,16 +27,8 @@ func (d *DB) GetSubscription(login string) (string, time.Time, string, error) {
 		return "none", time.Time{}, "none", nil
 	}
 	st := strings.ToLower(strings.TrimSpace(status.String))
-	if st != "vip" {
+	if st != "vip" || !activatedAt.Valid {
 		return "none", time.Time{}, "none", nil
-	}
-
-	// Backward-compat / admin-set VIP: allow vip even when activated_at is NULL.
-	// Otherwise frontend will think it's not premium and VIP endpoints will 403.
-	if !activatedAt.Valid {
-		now := time.Now().UTC()
-		_, _ = d.sql.Exec(`UPDATE users SET subscription_activated_at = $1 WHERE login = $2 AND subscription_activated_at IS NULL`, now, login)
-		return "vip", now.AddDate(100, 0, 0), "forever", nil
 	}
 
 	kind := "month"
