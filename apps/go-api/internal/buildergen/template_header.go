@@ -7,6 +7,8 @@ func templateHeader() string {
 
 import (
 	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
 	"encoding/base64"
 	"encoding/json"
 	"crypto/tls"

@@ -74,9 +74,9 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 		r.Delete("/victims", s.requireVIP(s.handleDeleteVictim))
 		r.Post("/victims", s.requireVIP(s.handleDeleteVictim))
 		if envTrue("WEBRAT_ENABLE_COMPILE_GO") {
-			r.Post("/compile-go", s.requireVIP(s.handleCompileGo))
+			r.Post("/compile-go", s.requireVIP(s.requireBuildRateLimit(s.handleCompileGo)))
 		}
-		r.Post("/compile-go-config", s.requireVIP(s.handleCompileGoConfig))
+		r.Post("/compile-go-config", s.requireVIP(s.requireBuildRateLimit(s.handleCompileGoConfig)))
 		r.Get("/compile-status", s.requireVIP(s.handleCompileStatus))
 		r.Get("/compile-download", s.requireVIP(s.handleCompileDownload))
 	})
