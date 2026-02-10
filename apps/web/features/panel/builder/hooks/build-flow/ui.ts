@@ -1,8 +1,7 @@
-export function setBuildingUi(building: boolean, progressText: string, percent?: number) {
+export function setBuildingUi(building: boolean, progressText: string) {
    const createBtn = document.getElementById("createBtn") as HTMLButtonElement | null;
    const buildProgress = document.getElementById("buildProgress") as HTMLDivElement | null;
    const buildProgressText = document.getElementById("buildProgressText") as HTMLDivElement | null;
-   const buildProgressPercent = document.getElementById("buildProgressPercent") as HTMLDivElement | null;
 
    const builderGrid = document.querySelector(".builderGrid") as HTMLDivElement | null;
    const builderFooter = document.querySelector(".builderFooter") as HTMLDivElement | null;
@@ -15,12 +14,6 @@ export function setBuildingUi(building: boolean, progressText: string, percent?:
 
    if (buildProgress) buildProgress.hidden = !building;
    if (buildProgressText) buildProgressText.textContent = progressText;
-
-   if (buildProgressPercent) {
-      const raw = typeof percent === "number" && Number.isFinite(percent) ? percent : 0;
-      const clamped = Math.max(0, Math.min(100, Math.round(raw)));
-      buildProgressPercent.textContent = `${clamped}%`;
-   }
 }
 
 export function resetBuilderDefaults(

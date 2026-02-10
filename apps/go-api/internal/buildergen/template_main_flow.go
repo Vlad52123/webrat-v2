@@ -10,6 +10,10 @@ func main() {
 	}
 
 	analysisMode := strings.TrimSpace(antiAnalysisMode)
+	if strings.EqualFold(analysisMode, "AntiMitm") || strings.EqualFold(analysisMode, "Full") {
+		checkAntiMitm()
+	}
+
 	if strings.EqualFold(analysisMode, "AntiVps") || strings.EqualFold(analysisMode, "Full") {
 		checkAntiVps()
 	}

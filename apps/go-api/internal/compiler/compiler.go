@@ -93,11 +93,7 @@ func sanitizeFileName(name string) string {
 	return clean
 }
 
-func CompileZip(ctx context.Context, baseDir string, req Request, onProgress func(int)) ([]byte, string, error) {
-	if onProgress == nil {
-		onProgress = func(int) {}
-	}
-	onProgress(5)
+func CompileZip(ctx context.Context, baseDir string, req Request) ([]byte, string, error) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -105,7 +101,6 @@ func CompileZip(ctx context.Context, baseDir string, req Request, onProgress fun
 		return nil, "", errors.New("missing code")
 	}
 
-	onProgress(10)
 	if dir, ok := findGoModDir(baseDir, 0); ok {
 		baseDir = dir
 	} else {
@@ -148,7 +143,6 @@ func CompileZip(ctx context.Context, baseDir string, req Request, onProgress fun
 	}
 	defer os.RemoveAll(tmpDir)
 
-	onProgress(15)
 	srcPath := filepath.Join(tmpDir, "client.go")
 	if err := os.WriteFile(srcPath, []byte(req.Code), 0o644); err != nil {
 		return nil, "", err
@@ -214,7 +208,6 @@ func CompileZip(ctx context.Context, baseDir string, req Request, onProgress fun
 		}
 	}
 
-	onProgress(20)
 	copyFile := func(src, dst string) error {
 		in, err := os.Open(src)
 		if err != nil {
@@ -264,7 +257,6 @@ func CompileZip(ctx context.Context, baseDir string, req Request, onProgress fun
 		env = append(env, "GOMAXPROCS="+v)
 	}
 
-	onProgress(30)
 	dlCtx, dlCancel := context.WithTimeout(ctx, 4*time.Minute)
 	defer dlCancel()
 
@@ -282,7 +274,6 @@ func CompileZip(ctx context.Context, baseDir string, req Request, onProgress fun
 		return nil, "", errors.New("module download error:\n" + msg)
 	}
 
-	onProgress(45)
 	findOrInstallTool := func(module string, name string) (string, error) {
 		if p, err := exec.LookPath(name); err == nil && strings.TrimSpace(p) != "" {
 			return p, nil
@@ -403,7 +394,6 @@ func CompileZip(ctx context.Context, baseDir string, req Request, onProgress fun
 		goExtraFlags = []string{"-trimpath"}
 	}
 
-	onProgress(60)
 	buildCtx, buildCancel := context.WithTimeout(ctx, 9*time.Minute)
 	defer buildCancel()
 
@@ -436,7 +426,6 @@ func CompileZip(ctx context.Context, baseDir string, req Request, onProgress fun
 		return nil, "", errors.New("compile error:\n" + msg)
 	}
 
-	onProgress(90)
 	exeFile, err := os.Open(exePath)
 	if err != nil {
 		return nil, "", err
@@ -480,6 +469,5 @@ func CompileZip(ctx context.Context, baseDir string, req Request, onProgress fun
 	archiveName := buildName + ".zip"
 	data := buf.Bytes()
 	_ = json.Valid(data)
-	onProgress(100)
 	return data, archiveName, nil
 }

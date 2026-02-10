@@ -119,8 +119,6 @@ func StartWorker(db *storage.DB) error {
 				Password:   job.Password,
 				Icon:       job.Icon,
 				ForceAdmin: job.ForceAdmin,
-			}, func(p int) {
-				_ = db.SetCompileJobProgress(job.ID, p)
 			})
 
 			cancel()

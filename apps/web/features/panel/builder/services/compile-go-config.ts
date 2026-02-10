@@ -24,7 +24,6 @@ export type CompileGoEnqueueResponse = {
 export type CompileGoStatusResponse = {
    status: "pending" | "running" | "done" | "error" | string;
    error?: string;
-   progress?: number;
 };
 
 export async function enqueueCompileGoFromConfig(req: CompileGoConfigRequest): Promise<string> {
@@ -86,13 +85,9 @@ export async function getCompileStatus(jobId: string): Promise<CompileGoStatusRe
    }
 
    const st = (await stResp.json().catch(() => ({}))) as Partial<CompileGoStatusResponse>;
-
-   const rawProgress = (st as { progress?: unknown })?.progress;
-   const parsedProgress = typeof rawProgress === "number" && Number.isFinite(rawProgress) ? rawProgress : undefined;
    return {
       status: st && st.status ? (String(st.status) as CompileGoStatusResponse["status"]) : "pending",
       error: st && st.error ? String(st.error) : undefined,
-      progress: parsedProgress,
    };
 }
 

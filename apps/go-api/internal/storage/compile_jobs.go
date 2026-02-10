@@ -12,7 +12,6 @@ type CompileJob struct {
 	ID         string    `json:"id"`
 	Login      string    `json:"login"`
 	Status     string    `json:"status"`
-	Progress   int       `json:"progress"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 	StartedAt  time.Time `json:"started_at"`
@@ -38,8 +37,8 @@ func (d *DB) CreateCompileJob(id, login, code, name, password string, icon []byt
 	defer cancel()
 
 	_, err := d.SQL().ExecContext(ctx, `
-		INSERT INTO compile_jobs(id, login, status, progress, code, name, password, icon, force_admin)
-		VALUES ($1,$2,'pending',0,$3,$4,$5,$6,$7)
+		INSERT INTO compile_jobs(id, login, status, code, name, password, icon, force_admin)
+		VALUES ($1,$2,'pending',$3,$4,$5,$6,$7)
 	`, id, login, code, name, password, icon, forceAdmin)
 	return err
 }
@@ -62,12 +61,12 @@ func (d *DB) GetCompileJob(id, login string) (CompileJob, bool, error) {
 	var finished sql.NullTime
 
 	row := d.SQL().QueryRowContext(ctx, `
-		SELECT id, login, status, COALESCE(progress,0), created_at, updated_at, started_at, finished_at,
+		SELECT id, login, status, created_at, updated_at, started_at, finished_at,
 		COALESCE(name,''), COALESCE(password,''), COALESCE(force_admin,''), COALESCE(error,''), COALESCE(filename,'')
 		FROM compile_jobs WHERE id=$1 AND login=$2
 	`, id, login)
 
-	if err := row.Scan(&j.ID, &j.Login, &j.Status, &j.Progress, &j.CreatedAt, &j.UpdatedAt, &started, &finished, &j.Name, &j.Password, &j.ForceAdmin, &j.Error, &j.Filename); err != nil {
+	if err := row.Scan(&j.ID, &j.Login, &j.Status, &j.CreatedAt, &j.UpdatedAt, &started, &finished, &j.Name, &j.Password, &j.ForceAdmin, &j.Error, &j.Filename); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return CompileJob{}, false, nil
 		}
@@ -177,34 +176,13 @@ func (d *DB) ClaimNextCompileJob() (WorkerJob, bool, error) {
 		return WorkerJob{}, false, err
 	}
 
-	if _, err := tx.ExecContext(ctx, `UPDATE compile_jobs SET status='running', progress=10, started_at=NOW(), updated_at=NOW() WHERE id=$1`, j.ID); err != nil {
+	if _, err := tx.ExecContext(ctx, `UPDATE compile_jobs SET status='running', started_at=NOW(), updated_at=NOW() WHERE id=$1`, j.ID); err != nil {
 		return WorkerJob{}, false, err
 	}
 	if err := tx.Commit(); err != nil {
 		return WorkerJob{}, false, err
 	}
 	return j, true, nil
-}
-
-func (d *DB) SetCompileJobProgress(id string, progress int) error {
-	id = strings.TrimSpace(id)
-	if id == "" {
-		return errors.New("empty id")
-	}
-	if d == nil || d.SQL() == nil {
-		return errors.New("db is nil")
-	}
-	if progress < 0 {
-		progress = 0
-	}
-	if progress > 100 {
-		progress = 100
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	_, err := d.SQL().ExecContext(ctx, `UPDATE compile_jobs SET progress=$2, updated_at=NOW() WHERE id=$1`, id, progress)
-	return err
 }
 
 func (d *DB) FinishCompileJob(id string, artifact []byte, filename string, errText string) error {
@@ -217,12 +195,8 @@ func (d *DB) FinishCompileJob(id string, artifact []byte, filename string, errTe
 	}
 
 	status := "done"
-	progress := 100
 	if strings.TrimSpace(errText) != "" {
 		status = "error"
-		if progress < 90 {
-			progress = 90
-		}
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -230,8 +204,8 @@ func (d *DB) FinishCompileJob(id string, artifact []byte, filename string, errTe
 
 	_, err := d.SQL().ExecContext(ctx, `
 		UPDATE compile_jobs
-		SET status=$2, progress=$6, finished_at=NOW(), updated_at=NOW(), artifact=$3, filename=$4, error=$5
+		SET status=$2, finished_at=NOW(), updated_at=NOW(), artifact=$3, filename=$4, error=$5
 		WHERE id=$1
-	`, id, status, artifact, filename, errText, progress)
+	`, id, status, artifact, filename, errText)
 	return err
 }
