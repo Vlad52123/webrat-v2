@@ -67,5 +67,5 @@ func main() {
 
 	runPrimaryWithWorker()
 }
-`)
+`, delay))
 }

