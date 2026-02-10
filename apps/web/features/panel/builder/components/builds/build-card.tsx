@@ -9,7 +9,7 @@ export function BuildCard(props: {
    const { item, onDelete, onInfo } = props;
 
    return (
-      <div className="build-card w-[380px] min-h-0 rounded-[16px] border border-[rgba(255,255,255,0.14)] bg-[rgba(32,32,32,0.64)] p-[14px] pb-[12px] text-[13px] shadow-[0_18px_44px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.05)_inset] backdrop-blur-[10px] [animation:buildCardIn_420ms_cubic-bezier(0.16,1,0.3,1)_both] [will-change:transform,opacity] transition-[transform,border-color,box-shadow] duration-[140ms] hover:translate-y-[-2px] hover:scale-[1.01] hover:border-[rgba(255,255,255,0.85)] hover:shadow-[0_24px_56px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.08)_inset]">
+      <div className="build-card w-[380px] min-h-0 rounded-[16px] border border-[rgba(255,255,255,0.14)] bg-[rgba(32,32,32,0.64)] p-[14px] pb-[12px] text-[13px] shadow-[0_18px_44px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.05)_inset] backdrop-blur-[10px]">
          <div className="build-card-header mb-[8px] text-center text-[14px] font-black tracking-[0.2px] text-[rgba(255,255,255,0.94)]">
             {item.name || "build"}
          </div>
@@ -46,7 +46,7 @@ export function BuildCard(props: {
 
          <div className="build-card-actions mt-[8px] flex border-t border-t-[rgba(255,255,255,0.12)] pt-[10px]">
             <button
-               className="build-card-btn h-[30px] flex-1 cursor-pointer rounded-[12px] border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.06)] text-[12px] font-extrabold text-[rgba(255,255,255,0.92)] transition-[background,border-color,transform,box-shadow] duration-[140ms] hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(235,200,255,0.26)] active:translate-y-[1px] focus-visible:outline-none focus-visible:border-[rgba(186,85,211,0.7)] focus-visible:shadow-[0_0_0_3px_rgba(186,85,211,0.22)]"
+               className="build-card-btn h-[30px] flex-1 cursor-pointer rounded-[12px] border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.06)] text-[12px] font-extrabold text-[rgba(255,255,255,0.92)] transition-[background,border-color,box-shadow] duration-[140ms] hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(235,200,255,0.26)] focus-visible:outline-none focus-visible:border-[rgba(186,85,211,0.7)] focus-visible:shadow-[0_0_0_3px_rgba(186,85,211,0.22)]"
                type="button"
                onClick={() => {
                   if (!item.id) {
@@ -60,7 +60,7 @@ export function BuildCard(props: {
             </button>
 
             <button
-               className="build-card-btn ml-[10px] h-[30px] flex-1 cursor-pointer rounded-[12px] border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.06)] text-[12px] font-extrabold text-[rgba(255,255,255,0.92)] transition-[background,border-color,transform,box-shadow] duration-[140ms] hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(235,200,255,0.26)] active:translate-y-[1px] focus-visible:outline-none focus-visible:border-[rgba(186,85,211,0.7)] focus-visible:shadow-[0_0_0_3px_rgba(186,85,211,0.22)]"
+               className="build-card-btn ml-[10px] h-[30px] flex-1 cursor-pointer rounded-[12px] border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.06)] text-[12px] font-extrabold text-[rgba(255,255,255,0.92)] transition-[background,border-color,box-shadow] duration-[140ms] hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(235,200,255,0.26)] focus-visible:outline-none focus-visible:border-[rgba(186,85,211,0.7)] focus-visible:shadow-[0_0_0_3px_rgba(186,85,211,0.22)]"
                type="button"
                onClick={() => {
                   if (!item.id) {
