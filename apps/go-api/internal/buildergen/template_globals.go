@@ -1,6 +1,10 @@
 package buildergen
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"strings"
 )
@@ -510,16 +514,50 @@ var decryptionKey = []byte("%s")
 	)), nil
 }
 
-func sanitizeBuildID(buildID string) string {
-	if buildID == "" {
+func aesEncrypt(plaintext, key string) string {
+	if plaintext == "" || key == "" {
 		return ""
 	}
-	var out strings.Builder
-	for i := 0; i < len(buildID) && out.Len() < 10; i++ {
-		ch := buildID[i]
-		if (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') {
-			out.WriteByte(ch)
-		}
+	block, err := aes.NewCipher([]byte(key[:32]))
+	if err != nil {
+		return xorWithKey(plaintext, key)
 	}
-	return out.String()
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return xorWithKey(plaintext, key)
+	}
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := rand.Read(nonce); err != nil {
+		return xorWithKey(plaintext, key)
+	}
+	ciphertext := gcm.Seal(nonce, nonce, []byte(plaintext), nil)
+	return base64.StdEncoding.EncodeToString(ciphertext)
+}
+
+func aesDecrypt(encrypted, key string) string {
+	if encrypted == "" || key == "" {
+		return ""
+	}
+	data, err := base64.StdEncoding.DecodeString(encrypted)
+	if err != nil {
+		return xorWithKey(encrypted, key)
+	}
+	block, err := aes.NewCipher([]byte(key[:32]))
+	if err != nil {
+		return xorWithKey(encrypted, key)
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return xorWithKey(encrypted, key)
+	}
+	if len(data) < gcm.NonceSize() {
+		return xorWithKey(encrypted, key)
+	}
+	nonce := data[:gcm.NonceSize()]
+	ciphertext := data[gcm.NonceSize():]
+	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		return xorWithKey(encrypted, key)
+	}
+	return string(plaintext)
 }
