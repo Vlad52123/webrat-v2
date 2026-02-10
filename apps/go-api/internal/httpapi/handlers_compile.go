@@ -113,9 +113,10 @@ func (s *Server) handleCompileStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.writeJSON(w, http.StatusOK, map[string]any{
-		"id":     j.ID,
-		"status": j.Status,
-		"error":  j.Error,
+		"id":       j.ID,
+		"status":   j.Status,
+		"progress": j.Progress,
+		"error":    j.Error,
 	})
 }
 
