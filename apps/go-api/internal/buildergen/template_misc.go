@@ -1,11 +1,11 @@
 package buildergen
 
 import (
+	"fmt"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
-	"time"
 )
 
 func templateMisc(cfg Config) string {
