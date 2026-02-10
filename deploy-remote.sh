@@ -28,6 +28,7 @@ if ! install_deps; then
   install_deps
 fi
 
+sudo rm -rf "$WEB_DIR/.next/lock"
 sudo rm -rf "$WEB_DIR/.next"
 as_deploy "cd '$REPO_DIR' && pnpm --filter web build"
 
