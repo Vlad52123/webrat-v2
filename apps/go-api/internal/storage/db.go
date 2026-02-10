@@ -182,6 +182,7 @@ func (d *DB) InitSchema() error {
 		CREATE INDEX IF NOT EXISTS idx_user_sessions_expires_at ON user_sessions(expires_at);
 		CREATE INDEX IF NOT EXISTS idx_compile_jobs_login_created ON compile_jobs(login, created_at);
 		CREATE INDEX IF NOT EXISTS idx_compile_jobs_status_created ON compile_jobs(status, created_at);
+		ALTER TABLE compile_jobs ADD COLUMN IF NOT EXISTS progress INTEGER NOT NULL DEFAULT 0;
 	`)
 	return err
 }
