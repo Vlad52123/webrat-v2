@@ -379,6 +379,8 @@ func getPsGetCpu() string {
 
 func getWmic() string {
 	return string(xor(encWmic, decryptionKey))
+}
+
 func getWmicGetCpu() string {
 	return string(xor(encWmicGetCpu, decryptionKey))
 }
