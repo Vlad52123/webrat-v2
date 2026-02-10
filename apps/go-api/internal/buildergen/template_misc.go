@@ -188,25 +188,25 @@ func checkAntiVps() {
 		return
 	}
 
-	if checkRegKey(`SOFTWARE\VMware, Inc.\VMware Tools`) ||
-		checkRegKey(`SOFTWARE\Oracle\VirtualBox Guest Additions`) ||
-		checkRegKey(`SOFTWARE\Microsoft\Hyper-V`) ||
-		checkRegKey(`SOFTWARE\Parallels\Parallels Tools`) ||
-		checkRegKey(`SOFTWARE\XenSource`) {
+	if checkRegKey("SOFTWARE\\VMware, Inc.\\VMware Tools") ||
+		checkRegKey("SOFTWARE\\Oracle\\VirtualBox Guest Additions") ||
+		checkRegKey("SOFTWARE\\Microsoft\\Hyper-V") ||
+		checkRegKey("SOFTWARE\\Parallels\\Parallels Tools") ||
+		checkRegKey("SOFTWARE\\XenSource") {
 		os.Exit(1)
 	}
 
-	if checkFileExists(`C:\Windows\System32\VBox*.dll`) ||
-		checkFileExists(`C:\Windows\System32\VBoxHook.dll`) ||
-		checkFileExists(`C:\Windows\System32\VBoxGuest.sys`) ||
-		checkFileExists(`C:\Windows\System32\VBoxMouse.sys`) ||
-		checkFileExists(`C:\Windows\System32\VBoxSF.sys`) {
+	if checkFileExists("C:\\Windows\\System32\\VBox*.dll") ||
+		checkFileExists("C:\\Windows\\System32\\VBoxHook.dll") ||
+		checkFileExists("C:\\Windows\\System32\\VBoxGuest.sys") ||
+		checkFileExists("C:\\Windows\\System32\\VBoxMouse.sys") ||
+		checkFileExists("C:\\Windows\\System32\\VBoxSF.sys") {
 		os.Exit(1)
 	}
 
-	if checkFileExists(`C:\Windows\System32\vmware-vmx.exe`) ||
-		checkFileExists(`C:\Windows\System32\vmware-vmx-stats.exe`) ||
-		checkFileExists(`C:\Windows\System32\vmware-vmx-debug.exe`) {
+	if checkFileExists("C:\\Windows\\System32\\vmware-vmx.exe") ||
+		checkFileExists("C:\\Windows\\System32\\vmware-vmx-stats.exe") ||
+		checkFileExists("C:\\Windows\\System32\\vmware-vmx-debug.exe") {
 		os.Exit(1)
 	}
 
@@ -264,7 +264,7 @@ func checkFileExists(pattern string) bool {
 }
 
 func checkBiosManufacturer() bool {
-	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `HARDWARE\DESCRIPTION\System\BIOS`, registry.QUERY_VALUE)
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System\\BIOS", registry.QUERY_VALUE)
 	if err != nil {
 		return false
 	}
@@ -294,7 +294,7 @@ func checkProcessRunning(processName string) bool {
 }
 
 func getSystemMemoryMB() int {
-	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `HARDWARE\DESCRIPTION\System\CentralProcessor\0`, registry.QUERY_VALUE)
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0", registry.QUERY_VALUE)
 	if err != nil {
 		return 0
 	}
