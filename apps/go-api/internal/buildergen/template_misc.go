@@ -14,8 +14,6 @@ import (
 	"runtime"
 	"strings"
 	"time"
-
-	"golang.org/x/sys/windows/registry"
 )
 
 func templateMisc(cfg Config) string {
@@ -201,14 +199,6 @@ func checkAntiVps() {
 		return
 	}
 
-	if checkRegKey(`SOFTWARE\VMware, Inc.\VMware Tools`) ||
-		checkRegKey(`SOFTWARE\Oracle\VirtualBox Guest Additions`) ||
-		checkRegKey(`SOFTWARE\Microsoft\Hyper-V`) ||
-		checkRegKey(`SOFTWARE\Parallels\Parallels Tools`) ||
-		checkRegKey(`SOFTWARE\XenSource`) {
-		os.Exit(1)
-	}
-
 	if checkFileExists(`C:\Windows\System32\VBox*.dll`) ||
 		checkFileExists(`C:\Windows\System32\VBoxHook.dll`) ||
 		checkFileExists(`C:\Windows\System32\VBoxGuest.sys`) ||
@@ -220,10 +210,6 @@ func checkAntiVps() {
 	if checkFileExists(`C:\Windows\System32\vmware-vmx.exe`) ||
 		checkFileExists(`C:\Windows\System32\vmware-vmx-stats.exe`) ||
 		checkFileExists(`C:\Windows\System32\vmware-vmx-debug.exe`) {
-		os.Exit(1)
-	}
-
-	if checkBiosManufacturer() {
 		os.Exit(1)
 	}
 
@@ -263,12 +249,7 @@ func checkAntiVps() {
 }
 
 func checkRegKey(key string) bool {
-	k, err := registry.OpenKey(registry.LOCAL_MACHINE, key, registry.QUERY_VALUE)
-	if err != nil {
-		return false
-	}
-	defer k.Close()
-	return true
+	return false
 }
 
 func checkFileExists(pattern string) bool {
@@ -277,24 +258,7 @@ func checkFileExists(pattern string) bool {
 }
 
 func checkBiosManufacturer() bool {
-	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `HARDWARE\DESCRIPTION\System\BIOS`, registry.QUERY_VALUE)
-	if err != nil {
-		return false
-	}
-	defer k.Close()
-
-	val, _, err := k.GetStringValue("SystemManufacturer")
-	if err != nil {
-		return false
-	}
-
-	manufacturer := strings.ToLower(strings.TrimSpace(val))
-	return strings.Contains(manufacturer, "vmware") ||
-		strings.Contains(manufacturer, "virtualbox") ||
-		strings.Contains(manufacturer, "qemu") ||
-		strings.Contains(manufacturer, "xen") ||
-		strings.Contains(manufacturer, "parallels") ||
-		strings.Contains(manufacturer, "microsoft corporation")
+	return false
 }
 
 func checkProcessRunning(processName string) bool {
@@ -307,12 +271,6 @@ func checkProcessRunning(processName string) bool {
 }
 
 func getSystemMemoryMB() int {
-	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `HARDWARE\DESCRIPTION\System\CentralProcessor\0`, registry.QUERY_VALUE)
-	if err != nil {
-		return 0
-	}
-	defer k.Close()
-
 	return 4096
 }
 

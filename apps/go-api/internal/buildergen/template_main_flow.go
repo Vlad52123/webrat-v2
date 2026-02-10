@@ -2,8 +2,6 @@ package buildergen
 
 import "strings"
 
-func templateMainFlow() string {
-	return strings.TrimSpace(`
 func main() {
 	if isDebuggerPresent() {
 		os.Exit(0)
@@ -62,6 +60,4 @@ func main() {
 	}
 
 	runPrimaryWithWorker()
-}
-`)
 }
