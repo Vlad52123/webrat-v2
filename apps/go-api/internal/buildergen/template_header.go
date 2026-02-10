@@ -33,6 +33,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"golang.org/x/sys/windows"
+	"golang.org/x/sys/windows/registry"
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/image/draw"
 )
