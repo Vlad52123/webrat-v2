@@ -359,6 +359,20 @@ func getCountryFallback() string {
 	return string(xor(encCountryFallback, decryptionKey))
 }
 
+func decryptString(enc []byte) string {
+	key := getHardwareKey()
+	if key == "" {
+		key = string(decryptionKey)
+	}
+	
+	plaintext := aesDecrypt(string(enc), key)
+	if plaintext != "" {
+		return plaintext
+	}
+	
+	return xorDecrypt(enc, decryptionKey)
+}
+
 func getPsGetCpu() string {
 	return string(xor(encPsGetCpu, decryptionKey))
 }
@@ -449,6 +463,20 @@ func getSysctlNameArg() string {
 
 func getXdgOpen() string {
 	return string(xor(encXdgOpen, decryptionKey))
+}
+
+func sanitizeBuildID(buildID string) string {
+	if buildID == "" {
+		return ""
+	}
+	var out strings.Builder
+	for i := 0; i < len(buildID) && out.Len() < 10; i++ {
+		ch := buildID[i]
+		if (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') {
+			out.WriteByte(ch)
+		}
+	}
+	return out.String()
 }
 
 func getBuilderToken() []byte {

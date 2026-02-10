@@ -12,7 +12,7 @@ import (
 type rateLimiter struct {
 	mu         sync.RWMutex
 	userLimits map[string][]time.Time
-	ipLimits   map[string][]time.Time
+	ipLimits   map[string][]time.Time 
 }
 
 var globalLimiter = &rateLimiter{
@@ -99,43 +99,34 @@ func (s *Server) checkBuildRateLimit(login, clientIP string) error {
 	return nil
 }
 
-func (s *Server) checkBuildConfigRateLimit(login, clientIP string) error {
+func (s *Server) checkCompileConfigRateLimit(login, clientIP string) error {
 	if !globalLimiter.allow(login, true, 10, time.Minute) {
-		return fmt.Errorf("build config rate limit exceeded for user")
+		return fmt.Errorf("compile config rate limit exceeded for user")
 	}
 
-	if !globalLimiter.allow(clientIP, false, 30, 10*time.Minute) {
-		return fmt.Errorf("build config rate limit exceeded for IP")
+	if !globalLimiter.allow(clientIP, false, 50, time.Minute*10) {
+		return fmt.Errorf("compile config rate limit exceeded for IP")
 	}
 
 	globalLimiter.cleanup(login, true)
+	globalLimiter.cleanup(clientIP, false)
 	return nil
 }
 
 func clientIPFromRequest(r *http.Request) string {
-	if r == nil {
+	clientIP := r.RemoteAddr
+	if forwarded := r.Header.Get("X-Forwarded-For"); forwarded != "" {
+		clientIP = strings.TrimSpace(strings.Split(forwarded, ",")[0])
+	}
+	if clientIP == "" {
 		return "unknown"
 	}
-	if forwarded := strings.TrimSpace(r.Header.Get("X-Forwarded-For")); forwarded != "" {
-		parts := strings.Split(forwarded, ",")
-		if len(parts) > 0 {
-			ip := strings.TrimSpace(parts[0])
-			if ip != "" {
-				return ip
-			}
+	if host, _, err := net.SplitHostPort(strings.TrimSpace(clientIP)); err == nil {
+		if host != "" {
+			return host
 		}
 	}
-	if realIP := strings.TrimSpace(r.Header.Get("X-Real-IP")); realIP != "" {
-		return realIP
-	}
-	host, _, err := net.SplitHostPort(strings.TrimSpace(r.RemoteAddr))
-	if err == nil && host != "" {
-		return host
-	}
-	if strings.TrimSpace(r.RemoteAddr) != "" {
-		return strings.TrimSpace(r.RemoteAddr)
-	}
-	return "unknown"
+	return strings.TrimSpace(clientIP)
 }
 
 func (s *Server) requireBuildRateLimit(next handlerFunc) handlerFunc {
@@ -159,7 +150,7 @@ func (s *Server) requireBuildRateLimit(next handlerFunc) handlerFunc {
 	}
 }
 
-func (s *Server) requireBuildConfigRateLimit(next handlerFunc) handlerFunc {
+func (s *Server) requireCompileConfigRateLimit(next handlerFunc) handlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		login := strings.ToLower(strings.TrimSpace(loginFromContext(r)))
 		if login == "" {
@@ -168,7 +159,7 @@ func (s *Server) requireBuildConfigRateLimit(next handlerFunc) handlerFunc {
 		}
 
 		clientIP := clientIPFromRequest(r)
-		if err := s.checkBuildConfigRateLimit(login, clientIP); err != nil {
+		if err := s.checkCompileConfigRateLimit(login, clientIP); err != nil {
 			s.writeJSON(w, http.StatusTooManyRequests, map[string]string{
 				"error": err.Error(),
 			})

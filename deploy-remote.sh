@@ -31,7 +31,6 @@ fi
 sudo rm -rf "$WEB_DIR/.next"
 as_deploy "cd '$REPO_DIR' && pnpm --filter web build"
 
-as_deploy "cd '$API_DIR' && go mod tidy"
 as_deploy "cd '$API_DIR' && mkdir -p bin && go build -o ./bin/webcrystal-api ./cmd/server"
 
 sudo systemctl restart webcrystal-web.service webcrystal-api.service
