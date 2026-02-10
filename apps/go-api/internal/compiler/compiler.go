@@ -391,7 +391,7 @@ func CompileZip(ctx context.Context, baseDir string, req Request) ([]byte, strin
 		}
 	} else {
 		garbleFlags = []string{"-literals", "-seed=" + randomGarbleSeed()}
-		goExtraFlags = []string{"-trimpath", "-ldflags=-w -s"}
+		goExtraFlags = []string{"-trimpath"}
 	}
 
 	buildCtx, buildCancel := context.WithTimeout(ctx, 9*time.Minute)
