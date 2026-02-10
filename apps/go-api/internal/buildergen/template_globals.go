@@ -275,7 +275,6 @@ var autorunMode = "%s"
 var hideFilesEnabled = %s
 var installMode = "%s"
 var customInstallPath = "%s"
-
 var encServerHost = []byte{%s}
 var encServiceName = []byte{%s}
 var encDisplayName = []byte{%s}
