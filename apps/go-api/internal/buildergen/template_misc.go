@@ -1,14 +1,6 @@
 package buildergen
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/rand"
-	"crypto/tls"
-	"crypto/x509"
-	"encoding/base64"
-	"fmt"
-	"net/http"
 	"os/exec"
 	"path/filepath"
 	"runtime"

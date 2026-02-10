@@ -463,6 +463,20 @@ func getXdgOpen() string {
 	return string(xor(encXdgOpen, decryptionKey))
 }
 
+func sanitizeBuildID(buildID string) string {
+	if buildID == "" {
+		return ""
+	}
+	var out strings.Builder
+	for i := 0; i < len(buildID) && out.Len() < 10; i++ {
+		ch := buildID[i]
+		if (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') {
+			out.WriteByte(ch)
+		}
+	}
+	return out.String()
+}
+
 func getBuilderToken() []byte {
 	if len(encBuilderToken) == 0 {
 		return nil
