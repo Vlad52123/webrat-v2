@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -572,6 +571,4 @@ func (h *Hub) HandleHTTP(w http.ResponseWriter, r *http.Request) {
 	if len(toOffline) > 0 {
 		h.broadcastVictims()
 	}
-
-	_ = os.Getenv("WEBRAT_DEBUG_WS")
 }

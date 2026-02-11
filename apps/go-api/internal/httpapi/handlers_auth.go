@@ -26,6 +26,10 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	const maxLoginBody = 64 * 1024
+	r.Body = http.MaxBytesReader(w, r.Body, maxLoginBody)
+	defer r.Body.Close()
+
 	var body struct {
 		Login    string `json:"login"`
 		Password string `json:"password"`
@@ -99,8 +103,13 @@ func (s *Server) handleMe(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost && r.Method != http.MethodGet {
+	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	if !s.checkCSRF(w, r) {
+		s.writeJSON(w, http.StatusForbidden, map[string]string{"error": "security_check_failed"})
 		return
 	}
 

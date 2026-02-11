@@ -3,7 +3,6 @@ package httpapi
 import (
 	"encoding/json"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 
@@ -11,8 +10,6 @@ import (
 
 	"webrat-go-api/internal/storage"
 )
-
-var passwordUpdateRe = regexp.MustCompile(`^[A-Za-z0-9_-]{6,24}$`)
 
 func (s *Server) handleChangePassword(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -45,7 +42,7 @@ func (s *Server) handleChangePassword(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	if !passwordUpdateRe.MatchString(newPw) {
+	if !passwordRe.MatchString(newPw) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

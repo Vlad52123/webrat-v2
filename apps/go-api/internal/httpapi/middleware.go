@@ -20,6 +20,7 @@ type handlerFunc = func(http.ResponseWriter, *http.Request)
 
 func (s *Server) ensureCSRF(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Content-Type-Options", "nosniff")
 		_ = s.ensureCSRFToken(w, r)
 		next.ServeHTTP(w, r)
 	})
@@ -75,7 +76,6 @@ func (s *Server) ensureCSRFCookie(w http.ResponseWriter, r *http.Request, value 
 }
 
 func (s *Server) checkCSRF(w http.ResponseWriter, r *http.Request) bool {
-	_ = w
 	if r == nil {
 		return false
 	}

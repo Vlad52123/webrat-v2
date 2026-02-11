@@ -12,6 +12,19 @@ function resolveUrl(path: string): string {
 
 type JsonObject = Record<string, unknown>;
 
+function getCsrfCookie(): string {
+   if (typeof document === "undefined") return "";
+   const parts = String(document.cookie || "").split(";");
+   for (const p of parts) {
+      const kv = p.trim();
+      if (!kv) continue;
+      const eq = kv.indexOf("=");
+      const k = eq >= 0 ? kv.slice(0, eq) : kv;
+      if (k === "webrat_csrf") return eq >= 0 ? decodeURIComponent(kv.slice(eq + 1)) : "";
+   }
+   return "";
+}
+
 function safeParseJSON(text: string): unknown {
    const t = String(text ?? "");
    if (!t.trim()) return null;
@@ -50,6 +63,7 @@ export async function getJson<T>(path: string): Promise<T> {
 }
 
 export async function postJson<T>(path: string, body: JsonObject): Promise<T> {
+   const csrf = getCsrfCookie();
    const res = await fetch(resolveUrl(path), {
       method: "POST",
       credentials: "include",
@@ -57,6 +71,7 @@ export async function postJson<T>(path: string, body: JsonObject): Promise<T> {
       headers: {
          "Content-Type": "application/json",
          Accept: "application/json",
+         ...(csrf ? { "X-CSRF-Token": csrf } : {}),
       },
       body: JSON.stringify(body),
    });

@@ -2,9 +2,10 @@ package storage
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/subtle"
 	"database/sql"
 	"errors"
-	"math/rand"
 	"net/smtp"
 	"os"
 	"strings"
@@ -51,13 +52,14 @@ func SendEmail(to, subject, body string) error {
 }
 
 func GenerateEmailCode() string {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-	b := make([]byte, 8)
-	for i := range b {
-		b[i] = letters[r.Intn(len(letters))]
+	buf := make([]byte, 8)
+	_, _ = rand.Read(buf)
+	out := make([]byte, 8)
+	for i := range out {
+		out[i] = letters[int(buf[i])%len(letters)]
 	}
-	return string(b)
+	return string(out)
 }
 
 func (d *DB) SaveEmailVerification(login, email, code string, expiresAt time.Time) error {
@@ -108,7 +110,7 @@ func (d *DB) VerifyEmailCode(login, code string) (string, bool, error) {
 		return "", false, err
 	}
 
-	if time.Now().After(exp) || storedCode == "" || storedCode != code {
+	if time.Now().After(exp) || storedCode == "" || subtle.ConstantTimeCompare([]byte(storedCode), []byte(code)) != 1 {
 		return "", false, nil
 	}
 	return strings.TrimSpace(email), true, nil

@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"crypto/subtle"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -14,7 +15,8 @@ import (
 func (s *Server) handleCryptoPayWebhook(w http.ResponseWriter, r *http.Request) {
 	secret := strings.TrimSpace(os.Getenv("CRYPTOBOT_WEBHOOK_SECRET"))
 	if secret != "" {
-		if strings.TrimSpace(r.URL.Query().Get("secret")) != secret {
+		got := strings.TrimSpace(r.URL.Query().Get("secret"))
+		if subtle.ConstantTimeCompare([]byte(got), []byte(secret)) != 1 {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}

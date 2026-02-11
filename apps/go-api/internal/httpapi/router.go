@@ -30,8 +30,11 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 
 	r := chi.NewRouter()
 	r.Use(middleware.StripSlashes)
+	r.Use(middleware.Compress(5))
 
 	r.Use(s.ensureCSRF)
+
+	loginLimiter := newIPLimiter(0.5, 5)
 
 	remoteDir := strings.TrimSpace(os.Getenv("WEBRAT_REMOTE_DIR"))
 	if remoteDir == "" {
@@ -48,7 +51,7 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 		_, _ = w.Write([]byte("ok"))
 	})
 
-	r.Post("/login", s.handleLogin)
+	r.With(rateLimitMiddleware(loginLimiter)).Post("/login", s.handleLogin)
 	r.Get("/me", s.requireAPIAuth(s.handleMe))
 	r.Post("/logout", s.handleLogout)
 

@@ -3,7 +3,6 @@ package compile
 import (
 	"context"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -88,9 +87,6 @@ func StartWorker(db *storage.DB) error {
 	if db == nil {
 		return fmt.Errorf("db is nil")
 	}
-
-	log.SetOutput(io.Discard)
-	log.SetFlags(0)
 
 	ensureWorkerEnv()
 

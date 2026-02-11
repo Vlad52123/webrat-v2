@@ -3,12 +3,12 @@ package auth
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"net"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
+	"webrat-go-api/internal/netutil"
 	"webrat-go-api/internal/storage"
 )
 
@@ -56,56 +56,6 @@ func (s *Service) GetSession(r *http.Request) (string, bool) {
 	return login, true
 }
 
-func (s *Service) getClientIP(r *http.Request) string {
-	if r == nil {
-		return ""
-	}
-	parseIP := func(raw string) string {
-		v := strings.TrimSpace(raw)
-		if v == "" {
-			return ""
-		}
-		v = strings.Trim(v, "[]")
-		if h, _, err := net.SplitHostPort(v); err == nil {
-			v = strings.TrimSpace(h)
-			v = strings.Trim(v, "[]")
-		}
-		ip := net.ParseIP(v)
-		if ip == nil {
-			return ""
-		}
-		return ip.String()
-	}
-
-	trustProxy := strings.TrimSpace(os.Getenv("WEBRAT_TRUST_PROXY")) == "1"
-	if trustProxy {
-		if cfip := parseIP(r.Header.Get("CF-Connecting-IP")); cfip != "" {
-			return cfip
-		}
-		if xff := strings.TrimSpace(r.Header.Get("X-Forwarded-For")); xff != "" {
-			parts := strings.Split(xff, ",")
-			if len(parts) > 0 {
-				if ip := parseIP(parts[0]); ip != "" {
-					return ip
-				}
-			}
-		}
-		if xri := parseIP(r.Header.Get("X-Real-IP")); xri != "" {
-			return xri
-		}
-	}
-
-	if h, _, err := net.SplitHostPort(strings.TrimSpace(r.RemoteAddr)); err == nil {
-		if ip := parseIP(h); ip != "" {
-			return ip
-		}
-	}
-	if ip := parseIP(r.RemoteAddr); ip != "" {
-		return ip
-	}
-	return ""
-}
-
 func (s *Service) SetSession(w http.ResponseWriter, r *http.Request, login string) error {
 	login = strings.ToLower(strings.TrimSpace(login))
 	if login == "" {
@@ -120,7 +70,7 @@ func (s *Service) SetSession(w http.ResponseWriter, r *http.Request, login strin
 	exp := time.Now().Add(12 * time.Hour)
 	_ = s.db.DeleteUserSessionsByLogin(login)
 
-	ip := s.getClientIP(r)
+	ip := netutil.GetClientIP(r)
 	ua := ""
 	if r != nil {
 		ua = strings.TrimSpace(r.UserAgent())
@@ -171,19 +121,7 @@ func (s *Service) ClearSession(w http.ResponseWriter, r *http.Request) {
 	secure := os.Getenv("WEBRAT_SECURE_COOKIE") == "1" || (r != nil && r.TLS != nil)
 	dom := strings.TrimSpace(os.Getenv("WEBRAT_COOKIE_DOMAIN"))
 
-	setClear := func(secure bool) {
-		if dom != "" {
-			http.SetCookie(w, &http.Cookie{
-				Name:     sessionCookie,
-				Value:    "",
-				Path:     "/",
-				HttpOnly: true,
-				SameSite: http.SameSiteLaxMode,
-				MaxAge:   -1,
-				Domain:   dom,
-				Secure:   secure,
-			})
-		}
+	if dom != "" {
 		http.SetCookie(w, &http.Cookie{
 			Name:     sessionCookie,
 			Value:    "",
@@ -191,11 +129,17 @@ func (s *Service) ClearSession(w http.ResponseWriter, r *http.Request) {
 			HttpOnly: true,
 			SameSite: http.SameSiteLaxMode,
 			MaxAge:   -1,
+			Domain:   dom,
 			Secure:   secure,
 		})
 	}
-
-	setClear(false)
-	setClear(true)
-	_ = secure
+	http.SetCookie(w, &http.Cookie{
+		Name:     sessionCookie,
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   -1,
+		Secure:   secure,
+	})
 }
