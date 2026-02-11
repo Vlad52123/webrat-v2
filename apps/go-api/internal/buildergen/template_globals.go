@@ -2,6 +2,7 @@ package buildergen
 
 import (
 	"fmt"
+	"math/rand"
 	"strings"
 )
 
