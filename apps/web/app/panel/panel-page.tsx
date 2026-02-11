@@ -32,9 +32,9 @@ export function PanelPage() {
                } catch {
                }
                if (typeof window !== "undefined") {
-                  window.location.replace("/login");
+                  window.location.href = "/login/";
                } else {
-                  router.replace("/login");
+                  router.replace("/login/");
                }
                return;
             }
@@ -56,9 +56,9 @@ export function PanelPage() {
             } catch {
             }
             if (typeof window !== "undefined") {
-               window.location.replace("/login");
+               window.location.href = "/login/";
             } else {
-               router.replace("/login");
+               router.replace("/login/");
             }
          }
       })();

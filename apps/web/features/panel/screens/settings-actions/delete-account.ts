@@ -23,7 +23,7 @@ export async function deleteAccountAction(pwd: string, opts: {
          await wipeClientState();
          setOpen(false);
          if (typeof window !== "undefined") {
-            window.location.replace("/login");
+            window.location.href = "/login/";
          }
          return;
       }

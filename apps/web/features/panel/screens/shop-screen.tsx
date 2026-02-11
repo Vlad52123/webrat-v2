@@ -83,7 +83,7 @@ export function ShopScreen() {
          if (!res.ok) {
             if (res.status === 401) {
                try {
-                  window.location.replace("/login");
+                  window.location.href = "/login/";
                } catch {
                }
                return;

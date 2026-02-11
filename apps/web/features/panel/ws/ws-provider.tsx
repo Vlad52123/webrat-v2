@@ -71,15 +71,22 @@ export function PanelWsProvider(props: { children: React.ReactNode }) {
       }
    }, [clearReconnect]);
 
+   const reconnectAttempts = useRef(0);
+
    const scheduleReconnect = useCallback(() => {
       if (!isVip) return;
       clearReconnect();
+      const attempt = reconnectAttempts.current;
+      const baseDelay = Math.min(2000 * Math.pow(2, attempt), 30_000);
+      const jitter = Math.random() * 1000;
+      const delay = baseDelay + jitter;
+      reconnectAttempts.current = attempt + 1;
       reconnectTimer.current = window.setTimeout(() => {
          try {
             connectRef.current();
          } catch {
          }
-      }, 5000);
+      }, delay);
    }, [clearReconnect, isVip]);
 
    const connect = useCallback(() => {
@@ -111,6 +118,7 @@ export function PanelWsProvider(props: { children: React.ReactNode }) {
       setWsState("connecting");
 
       ws.onopen = () => {
+         reconnectAttempts.current = 0;
          setWsState("open");
          try {
             qc.invalidateQueries({ queryKey: ["victims"] });

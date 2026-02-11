@@ -34,7 +34,7 @@ func getBuildLockPath() string {
 		return ""
 	}
 	dir := filepath.Join(os.Getenv(getProgramDataEnvName()), getWindowsUpdateDirName())
-	return filepath.Join(dir, fmt.Sprintf("webrat_%s.lock", "%s"))
+	return filepath.Join(dir, fmt.Sprintf("webrat_%%s.lock", "%s"))
 }
 
 func ensureSingleRunPerBuild() bool {
@@ -252,7 +252,7 @@ func hasProxyConfigured() bool {
 
 	if err == nil {
 		text := strings.ToLower(string(out))
-		if strings.Contains(text, "proxy server"); text != "" && !strings.Contains(text, "direct access") {
+		if strings.Contains(text, "proxy server") && text != "" && !strings.Contains(text, "direct access") {
 			return true
 		}
 	}
@@ -266,7 +266,7 @@ func checkFileExists(pattern string) bool {
 }
 
 func checkProcessRunning(processName string) bool {
-	cmd := exec.Command("tasklist", "/FI", fmt.Sprintf("IMAGENAME eq %s", processName), "/NH")
+	cmd := exec.Command("tasklist", "/FI", fmt.Sprintf("IMAGENAME eq %%s", processName), "/NH")
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	output, err := cmd.Output()
 

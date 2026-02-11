@@ -54,7 +54,7 @@ func (s *Server) handleCaptchaImages(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		HttpOnly: false,
 		SameSite: http.SameSiteStrictMode,
-		MaxAge:   2 * 60,
+		MaxAge:   10 * 60,
 		Secure:   secure,
 	}
 	if dom != "" {
@@ -98,7 +98,7 @@ func (s *Server) handleCaptchaVerify(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
-		MaxAge:   2 * 60,
+		MaxAge:   10 * 60,
 		Secure:   secure,
 	}
 	if dom != "" {

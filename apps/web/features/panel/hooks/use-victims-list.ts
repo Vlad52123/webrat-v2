@@ -60,9 +60,9 @@ export function useVictimsList() {
       if (now - lastUnauthorizedAt.current < 3000) return;
       lastUnauthorizedAt.current = now;
       try {
-        window.location.replace("/login");
+        window.location.href = "/login/";
       } catch {
-        window.location.href = "/login";
+        window.location.href = "/login/";
       }
       return;
     }

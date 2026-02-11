@@ -11,18 +11,22 @@ import { PanelWsProvider } from "../ws/ws-provider";
 import { PanelSidebar } from "./panel-sidebar";
 import { PanelTopbar } from "./panel-topbar";
 import { PanelDynamicScreens } from "./panel-dynamic-screens";
+import { PanelErrorBoundary } from "./panel-error-boundary";
 import { usePanelSubscriptionGuard } from "./use-panel-subscription-guard";
 import { usePanelLoader } from "./use-panel-loader";
+import { useSessionRefresh } from "../hooks/use-session-refresh";
 
 export function PanelShell() {
    return (
-      <PanelWsProvider>
-         <PanelDetailViewProvider>
-            <VictimsTablePrefsProvider>
-               <PanelShellInner />
-            </VictimsTablePrefsProvider>
-         </PanelDetailViewProvider>
-      </PanelWsProvider>
+      <PanelErrorBoundary>
+         <PanelWsProvider>
+            <PanelDetailViewProvider>
+               <VictimsTablePrefsProvider>
+                  <PanelShellInner />
+               </VictimsTablePrefsProvider>
+            </PanelDetailViewProvider>
+         </PanelWsProvider>
+      </PanelErrorBoundary>
    );
 }
 
@@ -33,6 +37,7 @@ function PanelShellInner() {
    const [victimsFilter, setVictimsFilter] = useState<VictimsFilter>("all");
    const contentRef = useRef<HTMLElement | null>(null);
    const { shouldShowLoader, loaderFadingOut } = usePanelLoader(isPendingRestrictedTab);
+   useSessionRefresh();
 
    useEffect(() => {
       if (isPendingRestrictedTab) return;
