@@ -6,10 +6,10 @@ export async function logoutAndRedirect(): Promise<void> {
    } catch {
    }
    try {
-      await fetch(`/api/logout/`, { method: "POST", credentials: "include" });
+      await fetch(`/api/logout`, { method: "POST", credentials: "include" });
    } catch {
    }
    if (typeof window !== "undefined") {
-      window.location.replace("/login");
+      window.location.href = "/login/";
    }
 }

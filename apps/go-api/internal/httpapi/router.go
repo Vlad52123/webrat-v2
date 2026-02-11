@@ -46,6 +46,12 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 		r.Handle("/remote/*", http.StripPrefix("/remote/", http.FileServer(http.Dir(remoteDir))))
 	}
 
+	captchaDir := strings.TrimSpace(os.Getenv("WEBRAT_CAPTCHA_DIR"))
+	if captchaDir == "" {
+		captchaDir = filepath.Join("static", "captcha")
+	}
+	r.Handle("/captcha/*", s.handleCaptchaStatic(captchaDir))
+
 	r.Get("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("ok"))
@@ -61,6 +67,9 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 	r.HandleFunc("/api/cryptopay/webhook", s.handleCryptoPayWebhook)
 
 	r.Route("/api", func(r chi.Router) {
+		r.Get("/captcha-images", s.handleCaptchaImages)
+		r.Post("/captcha-verify", s.handleCaptchaVerify)
+
 		r.Post("/change-password", s.requireAPIAuth(s.handleChangePassword))
 		r.Post("/delete-account", s.requireAPIAuth(s.handleDeleteAccount))
 		r.Post("/set-email", s.requireAPIAuth(s.handleSetEmail))

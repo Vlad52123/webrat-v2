@@ -7,6 +7,10 @@ import { applySnow } from "@/features/panel/settings/snow";
 
 export function LoginPage() {
    useEffect(() => {
+      if (typeof window !== "undefined" && window.location.hash) {
+         history.replaceState(null, "", window.location.pathname + window.location.search);
+      }
+
       try {
          document.body.classList.add("isLoginSnow");
          applySnow(true);

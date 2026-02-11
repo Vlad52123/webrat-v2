@@ -36,10 +36,8 @@ if (-not (Test-Path -LiteralPath $scriptPath)) {
 $sshArgs = @($remote, "bash -s")
 
 $scriptRaw = Get-Content -LiteralPath $scriptPath -Raw
-# Ensure LF line endings; CRLF may break bash/systemctl args on the remote.
 $scriptLf = $scriptRaw -replace "`r`n", "`n"
 
-# IMPORTANT: don't pipe strings to ssh (PowerShell can re-insert CRLF). Write bytes to stdin.
 $psi = New-Object System.Diagnostics.ProcessStartInfo
 $psi.FileName = "ssh"
 $psi.UseShellExecute = $false
