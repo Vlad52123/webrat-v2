@@ -1,24 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 import { PanelShell } from "../../features/panel/components/panel-shell";
 
 export function PanelPage() {
-   const router = useRouter();
    const [isReady, setIsReady] = useState(false);
    const [isChecking, setIsChecking] = useState(true);
-   const [readyMinUntilTs] = useState(() => {
-      try {
-         return Date.now() + 1000;
-      } catch {
-         return 0;
-      }
-   });
+   const didRedirect = useRef(false);
 
    useEffect(() => {
       let cancelled = false;
+
       (async () => {
          try {
             const res = await fetch(`/api/me`, {
@@ -26,46 +19,39 @@ export function PanelPage() {
                credentials: "include",
             });
             if (cancelled) return;
+
             if (!res.ok) {
-               try {
-                  await fetch(`/api/logout`, { method: "POST", credentials: "include" });
-               } catch {
-               }
-               if (typeof window !== "undefined") {
+               if (!didRedirect.current) {
+                  didRedirect.current = true;
                   window.location.href = "/login/";
-               } else {
-                  router.replace("/login/");
                }
                return;
             }
+
             const finish = () => {
                setIsReady(true);
                setIsChecking(false);
             };
 
-            const remaining = readyMinUntilTs ? readyMinUntilTs - Date.now() : 0;
-            if (remaining > 0) {
+            const remaining = 1000 - (Date.now() % 1000);
+            if (remaining > 50) {
                window.setTimeout(finish, remaining);
             } else {
                finish();
             }
          } catch {
             if (cancelled) return;
-            try {
-               await fetch(`/api/logout`, { method: "POST", credentials: "include" });
-            } catch {
-            }
-            if (typeof window !== "undefined") {
+            if (!didRedirect.current) {
+               didRedirect.current = true;
                window.location.href = "/login/";
-            } else {
-               router.replace("/login/");
             }
          }
       })();
+
       return () => {
          cancelled = true;
       };
-   }, [readyMinUntilTs, router]);
+   }, []);
 
    if (!isReady) {
       return (

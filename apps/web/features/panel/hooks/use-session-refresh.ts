@@ -6,9 +6,12 @@ const SESSION_CHECK_INTERVAL = 5 * 60 * 1000;
 
 export function useSessionRefresh() {
     const lastCheckAt = useRef(Date.now());
+    const didRedirect = useRef(false);
 
     useEffect(() => {
         const check = async () => {
+            if (didRedirect.current) return;
+
             const now = Date.now();
             if (now - lastCheckAt.current < SESSION_CHECK_INTERVAL) return;
             lastCheckAt.current = now;
@@ -19,7 +22,8 @@ export function useSessionRefresh() {
                     credentials: "include",
                 });
 
-                if (res.status === 401) {
+                if (res.status === 401 && !didRedirect.current) {
+                    didRedirect.current = true;
                     window.location.href = "/login/";
                 }
             } catch {
