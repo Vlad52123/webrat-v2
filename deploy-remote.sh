@@ -15,7 +15,7 @@ as_deploy() {
   fi
 }
 
-as_deploy "cd '$REPO_DIR' && git reset --hard && git pull"
+as_deploy "cd '$REPO_DIR' && git reset --hard && git clean -fd && git pull"
 as_deploy "cd '$REPO_DIR' && corepack enable"
 
 install_deps() {
