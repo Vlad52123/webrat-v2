@@ -1,68 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import dynamic from "next/dynamic";
+import { useEffect, useRef, useState } from "react";
 
-import { usePanelTab } from "../hooks/use-panel-tab";
-import { useSubscriptionQuery } from "../hooks/use-subscription-query";
 import { PanelDetailViewProvider, usePanelDetailView } from "../panel/detail/panel-detail-view-provider";
 import { useVictimsTablePrefs, VictimsTablePrefsProvider } from "../panel/victims-table/victims-table-prefs-provider";
-import { PanelScreen } from "../screens/panel-screen";
 import { PanelSettingsProvider } from "../settings";
-import { installToastGlobal, showToast } from "../toast";
+import { installToastGlobal } from "../toast";
 import type { VictimsFilter } from "../state/victims-filter";
-import type { SettingsTabKey } from "../state/settings-tab";
 import { PanelWsProvider } from "../ws/ws-provider";
 import { PanelSidebar } from "./panel-sidebar";
 import { PanelTopbar } from "./panel-topbar";
-
-function PanelScreenFallback(props: { label: string }) {
-   return (
-      <div className="grid h-full w-full place-items-center text-white/70">
-         <div className="grid place-items-center gap-2">
-            <img
-               src="/icons/loading.svg"
-               alt="loading"
-               draggable={false}
-               className="h-[28px] w-[28px] animate-spin invert brightness-200"
-            />
-            <span className="text-[12px] font-semibold tracking-[0.01em]">{props.label}</span>
-         </div>
-      </div>
-   );
-}
-
-const BuilderScreen = dynamic(
-   () => import("../screens/builder-screen").then((m) => m.BuilderScreen),
-   {
-      ssr: false,
-      loading: () => <PanelScreenFallback label="Loading" />,
-   },
-);
-
-const ShopScreen = dynamic(
-   () => import("../screens/shop-screen").then((m) => m.ShopScreen),
-   {
-      ssr: false,
-      loading: () => <PanelScreenFallback label="Loading" />,
-   },
-);
-
-const CommunityScreen = dynamic(
-   () => import("../screens/community-screen").then((m) => m.CommunityScreen),
-   {
-      ssr: false,
-      loading: () => <PanelScreenFallback label="Loading" />,
-   },
-);
-
-const SettingsScreen = dynamic(
-   () => import("../screens/settings-screen").then((m) => m.SettingsScreen),
-   {
-      ssr: false,
-      loading: () => <PanelScreenFallback label="Loading" />,
-   },
-);
+import { PanelDynamicScreens } from "./panel-dynamic-screens";
+import { usePanelSubscriptionGuard } from "./use-panel-subscription-guard";
+import { usePanelLoader } from "./use-panel-loader";
 
 export function PanelShell() {
    return (
@@ -77,124 +27,12 @@ export function PanelShell() {
 }
 
 function PanelShellInner() {
-   const { tab, setTab } = usePanelTab();
-   const subQ = useSubscriptionQuery();
+   const { displayTab, guardedSetTab, settingsTab, setSettingsTab, isPendingRestrictedTab, tab } = usePanelSubscriptionGuard();
    const detail = usePanelDetailView();
    const victimsPrefs = useVictimsTablePrefs();
    const [victimsFilter, setVictimsFilter] = useState<VictimsFilter>("all");
-   const [settingsTab, setSettingsTab] = useState<SettingsTabKey>("personalization");
    const contentRef = useRef<HTMLElement | null>(null);
-   const blockedToastRef = useRef<string>("");
-   const postAuthRef = useRef(false);
-   const suppressBlockedToastOnceRef = useRef(false);
-   const [loaderUntilTs, setLoaderUntilTs] = useState(0);
-   const [loaderFadingOut, setLoaderFadingOut] = useState(false);
-   const prevShouldShowLoaderRef = useRef(false);
-
-   const isVip = useMemo(() => {
-      const st = String(subQ.data?.status || "").toLowerCase();
-      return st === "vip";
-   }, [subQ.data?.status]);
-
-   const isSubSettled = subQ.isSuccess || subQ.isError;
-   const isRestrictedTab = tab === "panel" || tab === "builder";
-   const isBlockedRestrictedTab = isSubSettled && isRestrictedTab && !isVip;
-   const isPendingRestrictedTab = !isSubSettled && isRestrictedTab;
-
-   useEffect(() => {
-      try {
-         if (typeof window === "undefined") return;
-         const v = localStorage.getItem("webrat_post_auth") || "";
-         if (v === "1" || v === "true" || v === "on") {
-            postAuthRef.current = true;
-            suppressBlockedToastOnceRef.current = true;
-         }
-         localStorage.removeItem("webrat_post_auth");
-      } catch {
-      }
-   }, []);
-
-   useEffect(() => {
-      if (!isPendingRestrictedTab) return;
-      if (loaderUntilTs) return;
-      setLoaderUntilTs(Date.now() + 1000);
-   }, [isPendingRestrictedTab, loaderUntilTs]);
-
-   useEffect(() => {
-      if (isPendingRestrictedTab) return;
-      if (!loaderUntilTs) return;
-
-      const remaining = loaderUntilTs - Date.now();
-      if (remaining <= 0) {
-         setLoaderUntilTs(0);
-         return;
-      }
-
-      const t = window.setTimeout(() => setLoaderUntilTs(0), remaining);
-      return () => window.clearTimeout(t);
-   }, [isPendingRestrictedTab, loaderUntilTs]);
-
-   const displayTab = isBlockedRestrictedTab || isPendingRestrictedTab ? "shop" : tab;
-
-   const guardedSetTab = useCallback(
-      (next: Parameters<typeof setTab>[0]) => {
-         if (typeof next !== "string") return;
-         const restrictedNext = next === "panel" || next === "builder";
-         if (isSubSettled && !isVip && restrictedNext) {
-            if (suppressBlockedToastOnceRef.current) {
-               suppressBlockedToastOnceRef.current = false;
-            } else {
-               try {
-                  showToast("Error", "You do not have Premium subscription");
-               } catch {
-               }
-            }
-            try {
-               setTab("shop");
-            } catch {
-            }
-            return;
-         }
-         setTab(next);
-      },
-      [isSubSettled, isVip, setTab],
-   );
-
-   useEffect(() => {
-      if (!isSubSettled) return;
-
-      if (postAuthRef.current) {
-         postAuthRef.current = false;
-         if (isVip) {
-            setTab("panel");
-         } else {
-            setTab("shop");
-         }
-         return;
-      }
-
-      if (!isVip && isRestrictedTab) {
-         const key = String(tab || "");
-         if (blockedToastRef.current !== key) {
-            blockedToastRef.current = key;
-            if (suppressBlockedToastOnceRef.current) {
-               suppressBlockedToastOnceRef.current = false;
-            } else {
-               try {
-                  showToast("Error", "You do not have Premium subscription");
-               } catch {
-               }
-            }
-         }
-         setTab("shop");
-      }
-   }, [isRestrictedTab, isSubSettled, isVip, setTab, tab]);
-
-   useEffect(() => {
-      if (tab !== "settings") {
-         setSettingsTab("personalization");
-      }
-   }, [tab]);
+   const { shouldShowLoader, loaderFadingOut } = usePanelLoader(isPendingRestrictedTab);
 
    useEffect(() => {
       if (isPendingRestrictedTab) return;
@@ -254,23 +92,6 @@ function PanelShellInner() {
       }
    }, [detail.isOpen, isPendingRestrictedTab, victimsPrefs]);
 
-   const shouldShowLoader = (loaderUntilTs ? Date.now() < loaderUntilTs : false) || isPendingRestrictedTab;
-
-   useEffect(() => {
-      const prev = prevShouldShowLoaderRef.current;
-      prevShouldShowLoaderRef.current = shouldShowLoader;
-
-      if (shouldShowLoader) {
-         if (loaderFadingOut) setLoaderFadingOut(false);
-         return;
-      }
-
-      if (!prev) return;
-      setLoaderFadingOut(true);
-      const t = window.setTimeout(() => setLoaderFadingOut(false), 220);
-      return () => window.clearTimeout(t);
-   }, [loaderFadingOut, shouldShowLoader]);
-
    if (shouldShowLoader || loaderFadingOut) {
       return (
          <div
@@ -312,31 +133,7 @@ function PanelShellInner() {
                   />
 
                   <section ref={contentRef} className="content relative min-h-0 flex-1 overflow-x-visible overflow-y-hidden">
-                     {displayTab === "panel" && (
-                        <div key="panel" className="wc-tab-switch h-full w-full">
-                           <PanelScreen filter={victimsFilter} />
-                        </div>
-                     )}
-                     {displayTab === "builder" && (
-                        <div key="builder" className="wc-tab-switch h-full w-full">
-                           <BuilderScreen />
-                        </div>
-                     )}
-                     {displayTab === "shop" && (
-                        <div key="shop" className="wc-tab-switch h-full w-full">
-                           <ShopScreen />
-                        </div>
-                     )}
-                     {displayTab === "community" && (
-                        <div key="community" className="wc-tab-switch h-full w-full">
-                           <CommunityScreen />
-                        </div>
-                     )}
-                     {displayTab === "settings" && (
-                        <div key="settings" className="wc-tab-switch h-full w-full">
-                           <SettingsScreen tab={settingsTab} />
-                        </div>
-                     )}
+                     <PanelDynamicScreens displayTab={displayTab} filter={victimsFilter} settingsTab={settingsTab} />
                   </section>
                </main>
             </div>

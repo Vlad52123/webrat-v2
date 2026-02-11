@@ -1,5 +1,3 @@
-"use client";
-
 import type { BgMode } from "../../background";
 import type { SettingsState } from "../../provider";
 
@@ -10,10 +8,8 @@ export function BackgroundControls(props: {
    setBgVideoFromFile: (file: File) => Promise<void>;
    setBgColor: (color: string) => void;
    setLineColor: (color: string) => void;
-   setSoundVolume: (v: number) => void;
-   playSoundPreview: (v: number) => void;
 }) {
-   const { state, setBgMode, setBgImageFromFile, setBgVideoFromFile, setBgColor, setLineColor, setSoundVolume, playSoundPreview } = props;
+   const { state, setBgMode, setBgImageFromFile, setBgVideoFromFile, setBgColor, setLineColor } = props;
 
    return (
       <div className="p-[14px] rounded-[14px] border border-white/[0.12] shadow-[0_18px_54px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.06)] bg-[radial-gradient(520px_180px_at_15%_0%,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0)_62%),linear-gradient(180deg,rgba(255,255,255,0.06)_0%,rgba(255,255,255,0.03)_100%)]">
@@ -190,33 +186,6 @@ export function BackgroundControls(props: {
                   onChange={(e) => setLineColor(e.target.value)}
                />
             </div>
-         </div>
-
-         <div className="my-[10px] flex items-center justify-between gap-3 rounded-[12px] border border-white/[0.12] bg-white/[0.03] p-[10px]">
-            <div className="text-[14px] font-semibold text-white">Sound</div>
-            <input
-               id="settingsSoundRange"
-               type="range"
-               min={0}
-               max={100}
-               step={12.5}
-               value={Math.round((state.soundVolume || 0) * 100)}
-               className={
-                  "w-[160px] h-[6px] rounded-full outline-none appearance-none " +
-                  "bg-[linear-gradient(90deg,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0.20)_40%,rgba(255,255,255,0.35)_100%)] " +
-                  "[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-[18px] [&::-webkit-slider-thumb]:h-[18px] [&::-webkit-slider-thumb]:rounded-full " +
-                  "[&::-webkit-slider-thumb]:bg-[#f2f2f2] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-black/70 [&::-webkit-slider-thumb]:mt-[-6px] " +
-                  "[&::-moz-range-thumb]:w-[18px] [&::-moz-range-thumb]:h-[18px] [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#f2f2f2] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-black/70 " +
-                  "[&::-moz-range-track]:h-[6px] [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-[linear-gradient(90deg,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0.20)_40%,rgba(255,255,255,0.35)_100%)]"
-               }
-               onChange={(e) => {
-                  const n = Number(e.target.value || "0");
-                  const clamped = Math.max(0, Math.min(100, Number.isFinite(n) ? n : 0));
-                  const v = clamped / 100;
-                  setSoundVolume(v);
-                  playSoundPreview(v);
-               }}
-            />
          </div>
       </div>
    );
