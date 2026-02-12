@@ -5,10 +5,10 @@ import { memo } from "react";
 import type { CommunityItem } from "../types";
 import { CommunityItemDetails } from "./community-item-details";
 
-const keyIcons: Record<string, string> = {
-   information: "ℹ",
-   rules: "📋",
-   updates: "🔄",
+const keyIcons: Record<string, string | null> = {
+   information: null,
+   rules: "/icons/rules.svg",
+   updates: "/icons/updates.svg",
 };
 
 export const CommunityItemCard = memo(function CommunityItemCard(props: {
@@ -20,7 +20,13 @@ export const CommunityItemCard = memo(function CommunityItemCard(props: {
 }) {
    const { item, isOpen, messageCount, onToggle } = props;
 
-   const icon = keyIcons[item.key] || "💬";
+   const iconSrc = keyIcons[item.key];
+
+   const iconContent = iconSrc ? (
+      <img src={iconSrc} alt="" draggable={false} className="h-[22px] w-[22px] opacity-70 invert" />
+   ) : (
+      <span className="text-[18px]">ℹ</span>
+   );
 
    return (
       <div
@@ -35,7 +41,7 @@ export const CommunityItemCard = memo(function CommunityItemCard(props: {
       >
          <div className="flex items-center gap-[14px] px-[20px] py-[16px]">
             <div className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[10px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] text-[20px]">
-               {icon}
+               {iconContent}
             </div>
 
             <div className="min-w-0 flex-1">
