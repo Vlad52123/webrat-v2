@@ -22,7 +22,7 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
    const [isOpenClass, setIsOpenClass] = useState<boolean>(false);
    const formRef = useRef<HTMLDivElement | null>(null);
 
-   const { startBuild } = useBuilderBuildFlow({
+   const { startBuild, cancelBuild } = useBuilderBuildFlow({
       iconBase64,
       setIconBase64,
       delay,
@@ -180,11 +180,20 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
                hidden
             >
                <div className="buildProgressInner grid h-[210px] w-[min(520px,90vw)] place-items-center rounded-[16px] border border-[rgba(255,255,255,0.14)] bg-[rgba(32,32,32,0.64)] shadow-[0_18px_40px_rgba(0,0,0,0.55),0_0_0_4px_rgba(255,255,255,0.05)] backdrop-blur-[10px]">
-                  <div
-                     id="buildProgressText"
-                     className="text-[18px] font-normal text-white"
-                  >
-                     Build generation
+                  <div className="grid place-items-center gap-[16px]">
+                     <div
+                        id="buildProgressText"
+                        className="text-[18px] font-normal text-white"
+                     >
+                        Build generation
+                     </div>
+                     <button
+                        type="button"
+                        onClick={cancelBuild}
+                        className="cursor-pointer rounded-[10px] border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.06)] px-[20px] py-[6px] text-[13px] font-medium text-[rgba(255,255,255,0.7)] transition-[background,border-color,color] duration-[140ms] hover:bg-[rgba(255,255,255,0.12)] hover:border-[rgba(255,255,255,0.22)] hover:text-white"
+                     >
+                        Cancel
+                     </button>
                   </div>
                </div>
             </div>
