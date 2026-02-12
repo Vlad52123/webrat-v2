@@ -22,6 +22,34 @@ function countVisibleToasts(): number {
    }
 }
 
+const TOAST_ICONS: Record<ToastType, string> = {
+   success: "✓",
+   error: "✕",
+   warning: "!",
+   info: "i",
+};
+
+const TOAST_ICON_BG: Record<ToastType, string> = {
+   success: "rgba(46,204,113,0.15)",
+   error: "rgba(255,75,75,0.15)",
+   warning: "rgba(241,196,15,0.15)",
+   info: "rgba(52,152,219,0.15)",
+};
+
+const TOAST_ICON_COLOR: Record<ToastType, string> = {
+   success: "rgb(78,233,122)",
+   error: "rgb(255,90,90)",
+   warning: "rgb(245,210,60)",
+   info: "rgb(100,180,255)",
+};
+
+const TOAST_BORDER: Record<ToastType, string> = {
+   success: "rgba(46,204,113,0.12)",
+   error: "rgba(255,75,75,0.14)",
+   warning: "rgba(241,196,15,0.12)",
+   info: "rgba(52,152,219,0.12)",
+};
+
 function WcToastView(props: {
    id: string | number;
    type: ToastType;
@@ -29,26 +57,11 @@ function WcToastView(props: {
    message: string;
    ttlMs: number;
 }) {
-   const { id, type, title, message, ttlMs } = props;
+   const { id, type, message, ttlMs } = props;
 
    const [hiding, setHiding] = useState(false);
 
-   const accent = useMemo(() => {
-      if (type === "success") return "#2ecc71";
-      if (type === "error") return "#ff4b4b";
-      if (type === "warning") return "#f1c40f";
-      return "#3498db";
-   }, [type]);
-
-   const borderBottomColor = useMemo(() => {
-      if (type === "success") return "rgba(46, 204, 113, 0.4)";
-      if (type === "error") return "rgba(255, 75, 75, 0.45)";
-      if (type === "warning") return "rgba(241, 196, 15, 0.45)";
-      return "rgba(52, 152, 219, 0.45)";
-   }, [type]);
-
    useEffect(() => {
-      const exitMs = 320;
       const visibleMs = Number.isFinite(ttlMs) ? ttlMs : 4200;
       const t = window.setTimeout(() => setHiding(true), Math.max(0, visibleMs));
       return () => window.clearTimeout(t);
@@ -69,7 +82,7 @@ function WcToastView(props: {
    return createElement(
       "div",
       {
-         className: "wc-toast-shell pointer-events-auto",
+         className: "wc-toast-shell pointer-events-auto cursor-pointer",
          onClick: () => {
             try {
                setHiding(true);
@@ -81,46 +94,48 @@ function WcToastView(props: {
          "div",
          {
             className:
-               "wc-toast toast--show relative w-[260px] overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.10)] bg-[rgba(18,18,20,0.92)] px-[12px] py-[8px] text-[12px] text-[rgba(255,255,255,0.90)] shadow-[0_8px_24px_rgba(0,0,0,0.5)] backdrop-blur-[8px]" +
+               "wc-toast toast--show flex items-center gap-[10px] w-[280px] overflow-hidden rounded-[12px] border bg-[rgba(16,16,20,0.94)] px-[12px] py-[10px] shadow-[0_8px_28px_rgba(0,0,0,0.55),0_1px_0_rgba(255,255,255,0.04)_inset] backdrop-blur-[12px]" +
                (hiding ? " toast--hide" : ""),
-            style: ({ "--wc-toast-ttl": `${ttlMs}ms` } as unknown as CSSProperties),
+            style: ({
+               "--wc-toast-ttl": `${ttlMs}ms`,
+               borderColor: TOAST_BORDER[type],
+            } as unknown as CSSProperties),
          },
-         createElement("div", {
-            className: "absolute left-0 top-0 bottom-0 w-[3px]",
-            style: { background: accent },
-            "aria-hidden": "true",
-         }),
+         // icon circle
          createElement(
             "div",
-            { className: "relative" },
+            {
+               className: "flex-shrink-0 grid place-items-center w-[28px] h-[28px] rounded-[8px] text-[13px] font-black",
+               style: {
+                  background: TOAST_ICON_BG[type],
+                  color: TOAST_ICON_COLOR[type],
+               },
+            },
+            TOAST_ICONS[type],
+         ),
+         // text content
+         createElement(
+            "div",
+            { className: "min-w-0 flex-1" },
             createElement(
                "div",
                {
-                  className: "grid gap-0",
+                  className: "text-[12px] font-semibold text-[rgba(255,255,255,0.88)] leading-[1.35] overflow-hidden",
+                  style: {
+                     display: "-webkit-box",
+                     WebkitLineClamp: 2,
+                     WebkitBoxOrient: "vertical" as const,
+                  },
                },
-               createElement(
-                  "div",
-                  { className: "min-w-0" },
-                  createElement(
-                     "div",
-                     {
-                        className:
-                           "w-full border-b pb-[3px] pl-[6px] text-left text-[11px] font-bold uppercase tracking-[0.8px] text-[rgba(255,255,255,0.50)] whitespace-nowrap overflow-hidden text-ellipsis",
-                        style: { borderBottomColor },
-                     },
-                     String(title || ""),
-                  ),
-                  createElement(
-                     "div",
-                     {
-                        className:
-                           "w-full mt-[3px] pl-[6px] text-left text-[12px] font-medium text-[rgba(255,255,255,0.85)] leading-[1.3] max-h-[calc(1.3em*2)] overflow-hidden",
-                     },
-                     message,
-                  ),
-               ),
+               message,
             ),
          ),
+         // progress bar at bottom
+         createElement("div", {
+            className: "wc-toast-progress absolute left-0 bottom-0 h-[2px] w-full opacity-40",
+            style: { background: TOAST_ICON_COLOR[type] },
+            "aria-hidden": "true",
+         }),
       ),
    );
 }
