@@ -15,6 +15,7 @@ export type CompileGoConfigRequest = {
    customInstallPath: string;
    antiAnalysis: string;
    autoSteal: string;
+   offlineMode: boolean;
 };
 
 export type CompileGoEnqueueResponse = {
@@ -51,6 +52,7 @@ export async function enqueueCompileGoFromConfig(req: CompileGoConfigRequest): P
          customInstallPath: req.customInstallPath,
          antiAnalysis: req.antiAnalysis,
          autoSteal: req.autoSteal,
+         offlineMode: req.offlineMode,
       }),
    });
 

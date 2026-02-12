@@ -89,7 +89,8 @@ func loopA() {
 
 	for {
 		connectToServer()
-		time.Sleep(5 * time.Second)
+		jitter := 5 + rand.Intn(11)
+		time.Sleep(time.Duration(jitter) * time.Second)
 	}
 }
 

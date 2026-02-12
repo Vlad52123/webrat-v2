@@ -14,6 +14,7 @@ type Config struct {
 	CustomInstallPath   string
 	AntiAnalysis        string
 	AutoSteal           string
+	OfflineMode         bool
 
 	Owner       string
 	BuilderToken string

@@ -4,8 +4,19 @@ import "strings"
 
 func templateConnect() string {
 	return strings.TrimSpace(`
+func waitForNetwork() {
+	for !hasNetwork() {
+		time.Sleep(3 * time.Second)
+	}
+}
+
 func connectToServer() {
 	hideConsole()
+
+	if offlineModeEnabled {
+		waitForNetwork()
+	}
+
 	serverHost := getServerHost()
 	if strings.TrimSpace(serverHost) == "" {
 		return
@@ -28,7 +39,9 @@ func connectToServer() {
 		header.Add(getBuilderTokenHeader(), string(token))
 	}
 
-	dialer := websocket.DefaultDialer
+	dialer := &websocket.Dialer{
+		HandshakeTimeout: 15 * time.Second,
+	}
 	if wsScheme == "wss" {
 		dialer.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
