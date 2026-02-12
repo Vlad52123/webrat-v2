@@ -48,14 +48,17 @@ export function useBuilderBuildFlow(opts: {
          if (!active) return;
 
          buildingRef.current = true;
-         setBuildingUi(true, "Build generation");
+         setBuildingUi(true, "Build generation 0%");
 
          try {
+            let compileTicks = 0;
             await waitCompileDone(active.jobId, {
                onTick: (st) => {
+                  compileTicks++;
                   const s = String(st?.status || "");
                   if (s === "running" || s === "pending") {
-                     setBuildingUi(true, "Build generation");
+                     const pct = Math.min(95, Math.round(compileTicks * 4));
+                     setBuildingUi(true, `Build generation ${pct}%`);
                   }
                },
             });
@@ -234,11 +237,14 @@ export function useBuilderBuildFlow(opts: {
             created,
          });
 
+         let compileTicks = 0;
          await waitCompileDone(jobId, {
             onTick: (st) => {
+               compileTicks++;
                const s = String(st?.status || "");
                if (s === "running" || s === "pending") {
-                  setBuildingUi(true, "Build generation");
+                  const pct = Math.min(95, Math.round(compileTicks * 4));
+                  setBuildingUi(true, `Build generation ${pct}%`);
                }
             },
          });
