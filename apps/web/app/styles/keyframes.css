@@ -1,0 +1,123 @@
+/* ── All @keyframes used by the app ────────────────────────── */
+
+@keyframes buildCardIn {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes wcTabIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes wcCommunityLogoShake {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+
+    12% {
+        transform: translate(-2px, 1px) rotate(-4deg);
+    }
+
+    24% {
+        transform: translate(2px, -1px) rotate(4deg);
+    }
+
+    36% {
+        transform: translate(-2px, -1px) rotate(-3deg);
+    }
+
+    48% {
+        transform: translate(1px, 2px) rotate(3deg);
+    }
+
+    60% {
+        transform: translate(-1px, 2px) rotate(-4deg);
+    }
+
+    72% {
+        transform: translate(2px, 1px) rotate(4deg);
+    }
+
+    84% {
+        transform: translate(-2px, 0px) rotate(-3deg);
+    }
+
+    100% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+}
+
+@keyframes wcSnowFall {
+    0% {
+        transform: translate3d(0, -80px, 0);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translate3d(var(--rx), calc(100vh + 160px), 0);
+        opacity: 1;
+    }
+}
+
+@keyframes wcSnowSway {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    50% {
+        transform: translate3d(var(--rx), 0, 0);
+    }
+
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes toast-in {
+    from {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes toast-out {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+}
+
+@keyframes toast-progress {
+    from {
+        transform: scaleX(1);
+    }
+
+    to {
+        transform: scaleX(0);
+    }
+}

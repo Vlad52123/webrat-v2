@@ -1,24 +1,21 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-import { login } from "../api";
 import { loginSchema, type LoginValues } from "../schemas";
 import { showToast } from "@/features/panel/toast";
 import { SliderCaptcha, type SliderCaptchaHandle } from "./slider-captcha";
 import { useInputsErrorReset } from "./login-form/use-inputs-error-reset";
 import { useSubmitCooldown } from "./login-form/use-submit-cooldown";
 import { useTurnstile as useTurnstileHook } from "./login-form/use-turnstile";
+import { useLoginMutation } from "./login-form/use-login-mutation";
 
 export function LoginForm() {
-   const router = useRouter();
    const captchaRef = useRef<SliderCaptchaHandle | null>(null);
    const [useTurnstile, setUseTurnstile] = useState(false);
    const [captchaReady, setCaptchaReady] = useState(false);
@@ -73,88 +70,28 @@ export function LoginForm() {
       passwordValue,
    });
 
-   const mutation = useMutation({
-      mutationFn: (values: LoginValues) => login(values, useTurnstile ? turnstileToken : ""),
-      onSuccess: (_, values) => {
-         setInputsError(false);
-         clearSubmitCooldown();
-         try {
-            const loginKey = String(values?.login || "")
-               .trim()
-               .toLowerCase()
-               .replace(/[^A-Za-z0-9_-]/g, "")
-               .slice(0, 32);
-            if (loginKey) localStorage.setItem("webrat_login", loginKey);
-         } catch {
-         }
-         try {
-            localStorage.removeItem("webrat_subscription_cache");
-            const loginKey = String(values?.login || "")
-               .trim()
-               .toLowerCase()
-               .replace(/[^A-Za-z0-9_-]/g, "")
-               .slice(0, 32);
-            if (loginKey) {
-               localStorage.removeItem(`webrat_subscription_cache:${loginKey}`);
-            }
-         } catch {
-         }
-         try {
-            localStorage.setItem("webrat_post_auth", "1");
-         } catch {
-         }
-         router.push("/panel/#shop");
-      },
-      onError: (err) => {
-         const code = err instanceof Error ? err.message : "login_failed";
-
-         if (err && typeof err === "object" && "status" in err && (err as { status?: unknown }).status === 429) {
-            const ra = (err as { retryAfterSeconds?: unknown }).retryAfterSeconds;
-            const secs = typeof ra === "number" && Number.isFinite(ra) && ra > 0 ? Math.min(60 * 60, ra) : 15 * 60;
-            startCooldownForSeconds(secs);
-            return;
-         }
-
-         if (code === "invalid_credentials" || code === "HTTP_401" || code === "HTTP_400") {
-            showToast("error", "Invalid login or password");
-            setInputsError(true);
-            return;
-         }
-
-         if (code === "security_check_failed" || code === "HTTP_403") {
-            showToast("error", "Security check failed. Refresh the page (Ctrl+F5) and try again.");
-            setInputsError(true);
-            captchaRef.current?.refresh();
-            setCaptchaReady(false);
-            return;
-         }
-
-         if (code === "HTTP_429") {
-            startCooldownForSeconds(15 * 60);
-            captchaRef.current?.refresh();
-            setCaptchaReady(false);
-            return;
-         }
-
-         if (code === "TURNSTILE_FAILED") {
-            showToast("error", "Security check failed");
-            setInputsError(true);
-            setTurnstileToken("");
-            setCaptchaReady(false);
-            return;
-         }
-
-         showToast("error", "Login failed");
-         setInputsError(true);
-         captchaRef.current?.refresh();
-         setCaptchaReady(false);
-      },
+   const mutation = useLoginMutation({
+      captchaRef,
+      setCaptchaReady,
+      setInputsError,
+      clearSubmitCooldown,
+      startCooldownForSeconds,
+      setTurnstileToken,
+      useTurnstile,
+      turnstileToken,
    });
 
    const submitEnabled = useMemo(() => {
       if (isCooldownActive()) return false;
       return credsOk && captchaReady && !mutation.isPending;
    }, [captchaReady, credsOk, mutation.isPending, cooldownTick]);
+
+   const inputClassName = [
+      "h-[38px] rounded-xl border border-[rgba(214,154,255,0.32)] bg-[linear-gradient(180deg,rgba(255,255,255,0.06)_0%,rgba(0,0,0,0.12)_100%)] px-[10px] py-0 text-center text-[16px] leading-[38px] md:text-[16px] md:leading-[38px] text-white placeholder:text-white/60 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_14px_30px_rgba(0,0,0,0.22)] backdrop-blur-[10px] transition-[border-color,box-shadow,background,transform] duration-150 focus-visible:outline-none focus-visible:border-[rgba(235,200,255,0.62)] focus-visible:shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset,0_0_0_3px_rgba(186,85,211,0.22),0_18px_40px_rgba(117,61,255,0.14)]",
+      inputsError
+         ? "border-[rgba(255,70,70,1)] shadow-[0_0_0_1px_rgba(255,255,255,0.05)_inset,0_0_0_3px_rgba(255,70,70,0.18),0_0_18px_rgba(255,70,70,0.18)]"
+         : "",
+   ].join(" ");
 
    return (
       <div className="relative w-full grid justify-items-center">
@@ -166,7 +103,6 @@ export function LoginForm() {
                   showCooldownNoticeNow();
                   return;
                }
-
                if (!captchaReady) {
                   showToast("warning", "Complete the captcha first");
                   setInputsError(true);
@@ -192,15 +128,9 @@ export function LoginForm() {
                   title="login: 5-12 characters (letters, digits, _ and -)"
                   onCopy={(e) => e.preventDefault()}
                   onCut={(e) => e.preventDefault()}
-                  className={[
-                     "h-[38px] rounded-xl border border-[rgba(214,154,255,0.32)] bg-[linear-gradient(180deg,rgba(255,255,255,0.06)_0%,rgba(0,0,0,0.12)_100%)] px-[10px] py-0 text-center text-[16px] leading-[38px] md:text-[16px] md:leading-[38px] text-white placeholder:text-white/60 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_14px_30px_rgba(0,0,0,0.22)] backdrop-blur-[10px] transition-[border-color,box-shadow,background,transform] duration-150 focus-visible:outline-none focus-visible:border-[rgba(235,200,255,0.62)] focus-visible:shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset,0_0_0_3px_rgba(186,85,211,0.22),0_18px_40px_rgba(117,61,255,0.14)]",
-                     inputsError
-                        ? "border-[rgba(255,70,70,1)] shadow-[0_0_0_1px_rgba(255,255,255,0.05)_inset,0_0_0_3px_rgba(255,70,70,0.18),0_0_18px_rgba(255,70,70,0.18)]"
-                        : "",
-                  ].join(" ")}
+                  className={inputClassName}
                   {...form.register("login")}
                />
-
                <Input
                   id="password"
                   type="password"
@@ -212,12 +142,7 @@ export function LoginForm() {
                   title="password: 6-24 characters (letters, digits, _ and -)"
                   onCopy={(e) => e.preventDefault()}
                   onCut={(e) => e.preventDefault()}
-                  className={[
-                     "h-[38px] rounded-xl border border-[rgba(214,154,255,0.32)] bg-[linear-gradient(180deg,rgba(255,255,255,0.06)_0%,rgba(0,0,0,0.12)_100%)] px-[10px] py-0 text-center text-[16px] leading-[38px] md:text-[16px] md:leading-[38px] text-white placeholder:text-white/60 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_14px_30px_rgba(0,0,0,0.22)] backdrop-blur-[10px] transition-[border-color,box-shadow,background,transform] duration-150 focus-visible:outline-none focus-visible:border-[rgba(235,200,255,0.62)] focus-visible:shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset,0_0_0_3px_rgba(186,85,211,0.22),0_18px_40px_rgba(117,61,255,0.14)]",
-                     inputsError
-                        ? "border-[rgba(255,70,70,1)] shadow-[0_0_0_1px_rgba(255,255,255,0.05)_inset,0_0_0_3px_rgba(255,70,70,0.18),0_0_18px_rgba(255,70,70,0.18)]"
-                        : "",
-                  ].join(" ")}
+                  className={inputClassName}
                   {...form.register("password")}
                />
             </div>

