@@ -45,8 +45,9 @@ export function proxy(req: NextRequest) {
    if (pathname.startsWith("/app") || pathname.startsWith("/panel")) {
       if (!sid) {
          const url = req.nextUrl.clone();
-         url.pathname = "/login";
-         return NextResponse.redirect(url);
+         url.pathname = "/login/";
+         url.hash = "";
+         return NextResponse.redirect(url, 302);
       }
    }
 

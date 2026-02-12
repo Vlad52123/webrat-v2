@@ -9,7 +9,7 @@ export default async function Layout({
    const cookieStore = await cookies();
    const sid = cookieStore.get("webrat_session")?.value;
    if (!sid) {
-      redirect("/login");
+      redirect("/login/");
    }
    return children;
 }
