@@ -118,8 +118,8 @@ export function BuilderNiceSelect(props: {
             type="button"
             className={
                buttonClassName ??
-               "w-full h-[32px] px-[10px] pr-[32px] rounded-[12px] border border-white/[0.12] bg-white/[0.03] text-[13px] font-semibold text-white/[0.92] cursor-pointer text-left whitespace-nowrap overflow-hidden text-ellipsis transition-[border-color,background,transform] " +
-               (open ? "border-white/[0.22] bg-white/[0.05]" : "hover:bg-white/[0.045] hover:border-white/[0.18]")
+               "w-full h-[34px] px-[12px] pr-[32px] rounded-[10px] border border-white/[0.10] bg-white/[0.04] text-[13px] font-medium text-white/[0.92] cursor-pointer text-left whitespace-nowrap overflow-hidden text-ellipsis transition-[border-color,background,box-shadow] duration-[160ms] " +
+               (open ? "border-white/[0.22] bg-white/[0.06] shadow-[0_0_0_3px_rgba(186,85,211,0.08)]" : "hover:bg-white/[0.06] hover:border-white/[0.18]")
             }
             onClick={() => setOpen((v) => !v)}
             aria-haspopup="listbox"
@@ -131,7 +131,7 @@ export function BuilderNiceSelect(props: {
                   src="/icons/arrow.svg"
                   alt="v"
                   draggable={false}
-                  className={"h-[10px] w-[10px] invert opacity-85 transition-transform " + (open ? "rotate-180" : "")}
+                  className={"h-[10px] w-[10px] invert opacity-60 transition-transform duration-[160ms] " + (open ? "rotate-180" : "")}
                />
             </span>
          </button>

