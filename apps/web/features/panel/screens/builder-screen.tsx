@@ -52,37 +52,42 @@ export function BuilderScreen() {
 
             <BuildsList />
 
-            <div id="buildModal" className="buildModal fixed inset-0 z-[999] grid place-items-center bg-[rgba(0,0,0,0.65)]" hidden>
+            <div id="buildModal" className="fixed inset-0 z-[2000] grid place-items-center bg-[rgba(0,0,0,0.62)] backdrop-blur-[10px]" hidden>
                <div
-                  className="buildModalInner grid w-[min(760px,92vw)] grid-rows-[38px_1fr] rounded-[16px] border border-[rgba(255,255,255,0.18)] bg-[rgba(32,32,32,0.64)] shadow-[0_18px_40px_rgba(0,0,0,0.55),0_0_0_4px_rgba(255,255,255,0.05)] backdrop-blur-[10px]"
+                  className="grid w-[360px] max-w-[calc(100vw-40px)] overflow-hidden rounded-[16px] border border-[rgba(255,255,255,0.18)] bg-[rgba(18,18,18,0.92)] shadow-[0_24px_60px_rgba(0,0,0,0.75)] backdrop-blur-[8px]"
                   role="dialog"
                   aria-modal="true"
                   aria-label="Build saved"
                >
-                  <div className="buildModalTop flex items-center justify-between px-[12px]">
-                     <div className="buildModalTopTitle text-[13px] font-bold text-[rgba(255,255,255,0.92)]">build ready</div>
+                  <div className="flex items-center justify-between px-[14px] py-[12px] border-b border-[rgba(255,255,255,0.2)]">
+                     <div className="text-[15px] font-bold text-white">build ready</div>
                      <button
                         id="buildModalClose"
-                        className="buildModalClose grid h-[26px] w-[26px] place-items-center rounded-[10px] border border-[rgba(255,255,255,0.14)] bg-[rgba(20,20,20,0.35)] text-[18px] font-bold leading-none text-[rgba(255,255,255,0.92)]"
+                        className="grid h-[30px] w-[30px] cursor-pointer place-items-center rounded-[10px] border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.06)] text-[18px] leading-none text-[rgba(255,255,255,0.95)] transition-[background,border-color,transform] duration-[140ms] hover:bg-[rgba(255,255,255,0.1)] hover:border-[rgba(255,255,255,0.22)] active:translate-y-[1px]"
                         type="button"
                         aria-label="Close"
                      >
                         ×
                      </button>
                   </div>
-                  <div className="buildModalBody grid place-items-center gap-[10px] p-[18px]">
-                     <div className="buildModalTitle text-[18px] font-black text-[rgba(255,255,255,0.92)]">BUILD SAVED</div>
-                     <div className="buildModalSub text-[12px] font-bold text-[rgba(255,255,255,0.72)]">ARCHIVE PASSWORD :</div>
-                     <div id="buildModalPass" className="buildModalPass rounded-[12px] border border-[rgba(255,255,255,0.14)] bg-[rgba(20,20,20,0.35)] px-[16px] py-[10px] font-mono text-[14px] font-black text-[rgba(255,255,255,0.92)]">
+                  <div className="grid gap-[12px] p-[18px]">
+                     <div className="text-center text-[18px] font-black text-white">BUILD SAVED</div>
+                     <div className="text-center text-[13px] text-[rgba(255,255,255,0.9)]">ARCHIVE PASSWORD :</div>
+                     <div
+                        id="buildModalPass"
+                        className="h-[38px] grid place-items-center rounded-[12px] border border-[rgba(255,255,255,0.14)] bg-[rgba(0,0,0,0.28)] font-mono text-[14px] text-white text-center select-all"
+                     >
                         ----
                      </div>
-                     <button
-                        id="buildModalOk"
-                        className="buildModalOk mt-[4px] h-[34px] rounded-[12px] border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.06)] px-[18px] text-[12px] font-extrabold text-[rgba(255,255,255,0.92)]"
-                        type="button"
-                     >
-                        OK
-                     </button>
+                     <div className="mt-[8px] flex justify-center">
+                        <button
+                           id="buildModalOk"
+                           className="min-w-[150px] cursor-pointer rounded-[12px] border border-[rgba(255,255,255,0.18)] border-b-[4px] border-b-[var(--line)] bg-[rgba(255,255,255,0.1)] px-[22px] py-[10px] text-[14px] font-semibold text-white transition-[background,border-color,transform] duration-[140ms] hover:bg-[rgba(255,255,255,0.14)] hover:border-[rgba(255,255,255,0.28)] active:translate-y-[1px]"
+                           type="button"
+                        >
+                           OK
+                        </button>
+                     </div>
                   </div>
                </div>
             </div>

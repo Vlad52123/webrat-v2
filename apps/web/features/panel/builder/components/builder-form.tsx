@@ -180,19 +180,11 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
                hidden
             >
                <div className="buildProgressInner grid h-[210px] w-[min(520px,90vw)] place-items-center rounded-[16px] border border-[rgba(255,255,255,0.14)] bg-[rgba(32,32,32,0.64)] shadow-[0_18px_40px_rgba(0,0,0,0.55),0_0_0_4px_rgba(255,255,255,0.05)] backdrop-blur-[10px]">
-                  <div className="grid place-items-center gap-[6px]">
-                     <div
-                        id="buildProgressText"
-                        className="buildProgressText text-[14px] font-semibold tracking-wide uppercase text-[rgba(255,255,255,0.55)]"
-                     >
-                        Building
-                     </div>
-                     <div
-                        id="buildProgressPercent"
-                        className="text-[48px] font-bold leading-none text-white tabular-nums"
-                     >
-                        0%
-                     </div>
+                  <div
+                     id="buildProgressText"
+                     className="text-[18px] font-normal text-white"
+                  >
+                     Build generation
                   </div>
                </div>
             </div>

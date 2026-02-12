@@ -5,6 +5,14 @@
 @import "./styles/table.css";
 @import "./styles/effects.css";
 
+@font-face {
+   font-family: "Outfit";
+   src: url("/fonts/Outfit-Regular.woff2") format("woff2");
+   font-weight: 400;
+   font-style: normal;
+   font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -57,7 +65,7 @@
    --wc-panel-surface: rgba(18, 18, 18, 0.78);
    --wc-panel-surface-strong: rgba(18, 18, 18, 0.92);
    --wc-panel-border: rgba(255, 255, 255, 0.16);
-   --font-geist-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
+   --font-geist-sans: "Outfit", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
    --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
    --background: oklch(1 0 0);
    --foreground: oklch(0.129 0.042 264.695);

@@ -19,7 +19,7 @@ import {
    saveActiveBuild,
    saveBuildsHistory,
 } from "./build-flow/storage";
-import { resetBuilderDefaults, setBuildingUi, setBuildProgress } from "./build-flow/ui";
+import { resetBuilderDefaults, setBuildingUi } from "./build-flow/ui";
 
 export function useBuilderBuildFlow(opts: {
    iconBase64: string;
@@ -48,31 +48,24 @@ export function useBuilderBuildFlow(opts: {
          if (!active) return;
 
          buildingRef.current = true;
-         setBuildingUi(true, "Building");
+         setBuildingUi(true, "Build generation");
 
          try {
-            let compileTicks = 0;
             await waitCompileDone(active.jobId, {
                onTick: (st) => {
-                  compileTicks++;
                   const s = String(st?.status || "");
                   if (s === "running" || s === "pending") {
-                     setBuildingUi(true, "Compiling");
-                     const pct = Math.min(50, Math.round(compileTicks * 4));
-                     setBuildProgress(pct);
+                     setBuildingUi(true, "Build generation");
                   }
                },
             });
 
             const shouldFinalize = markJobFinalized(login, active.jobId);
             if (shouldFinalize) {
-               setBuildingUi(true, "Downloading");
-               setBuildProgress(50);
+               setBuildingUi(true, "Downloading build: 0%");
                const { blob, filename } = await downloadCompileResult(active.jobId, active.name, (pct) => {
-                  setBuildProgress(50 + Math.round(pct * 0.5));
+                  setBuildingUi(true, `Downloading build: ${Math.round(pct)}%`);
                });
-               setBuildingUi(true, "Build complete!");
-               setBuildProgress(100);
                downloadBlob(blob, filename);
             }
 
@@ -241,27 +234,19 @@ export function useBuilderBuildFlow(opts: {
             created,
          });
 
-         let compileTicks = 0;
          await waitCompileDone(jobId, {
             onTick: (st) => {
-               compileTicks++;
                const s = String(st?.status || "");
                if (s === "running" || s === "pending") {
-                  setBuildingUi(true, "Compiling");
-                  const pct = Math.min(50, Math.round(compileTicks * 4));
-                  setBuildProgress(pct);
+                  setBuildingUi(true, "Build generation");
                }
             },
          });
 
-         setBuildingUi(true, "Downloading");
-         setBuildProgress(50);
+         setBuildingUi(true, "Downloading build: 0%");
          const { blob, filename } = await downloadCompileResult(jobId, buildName, (pct) => {
-            setBuildProgress(50 + Math.round(pct * 0.5));
+            setBuildingUi(true, `Downloading build: ${Math.round(pct)}%`);
          });
-
-         setBuildingUi(true, "Build complete!");
-         setBuildProgress(100);
 
          downloadBlob(blob, filename);
          const buildEntry: BuildHistoryItem = { name: buildName, id: buildId, version: "0.22.2", created, victims: 0 };
