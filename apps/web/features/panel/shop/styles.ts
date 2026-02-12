@@ -1,55 +1,49 @@
 export const shopClasses = {
-   page: "flex h-full w-full flex-col items-start justify-start gap-8 overflow-y-auto pb-12 pt-6 pl-8 pr-8",
-
-   /* top subscription grid */
-   grid: "grid w-full gap-6 [grid-template-columns:1fr_280px] max-[900px]:[grid-template-columns:1fr]",
+   page: "flex h-full w-full flex-col items-start justify-start pt-[16px] pl-[32px]",
+   grid: "mt-[12px] grid gap-[26px] [grid-template-columns:auto_auto]",
 
    cardBase:
-      "relative overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-6 shadow-[0_24px_48px_rgba(0,0,0,0.45)] backdrop-blur-xl",
-   cardKey: "flex flex-col items-stretch gap-4",
-   cardStatus: "flex flex-col items-center justify-center gap-2",
-   cardTitle: "text-base font-semibold tracking-tight text-white/90",
+      "min-h-[200px] overflow-hidden rounded-[16px] border border-white/[0.14] bg-[rgba(18,18,18,0.66)] p-[18px] text-center shadow-[0_18px_44px_rgba(0,0,0,0.6),0_0_0_4px_rgba(255,255,255,0.05)] backdrop-blur-[8px]",
+   cardKey: "min-w-[360px] flex flex-col items-stretch",
+   cardStatus: "min-w-[240px] flex flex-col items-center",
+   cardTitle: "mb-[4px] text-[17px] font-[700] text-white",
 
    inputRow: "w-full",
-   input:
-      "w-full rounded-xl border border-white/[0.10] bg-white/[0.04] px-4 py-3 text-center text-sm text-white outline-none transition-all placeholder:text-white/30 focus:border-violet-500/50 focus:bg-white/[0.06] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)]",
+   input: "w-full rounded-[12px] border border-white/[0.14] bg-[rgba(0,0,0,0.28)] px-[12px] py-[10px] text-center text-[15px] text-white outline-none placeholder:text-[rgba(200,200,200,0.7)] focus:border-white/[0.28]",
 
    activateBtn:
-      "mt-1 w-full cursor-pointer rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-600/20 transition-all hover:shadow-violet-600/40 hover:brightness-110 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed",
+      "mt-[6px] min-w-[150px] cursor-pointer rounded-[12px] border border-white/[0.18] border-b-[4px] bg-white/[0.06] px-[22px] py-[10px] text-[14px] font-semibold text-white transition-[background,border-color,transform] hover:bg-white/[0.10] hover:border-white/[0.26] active:translate-y-[1px]",
 
    statusTitle:
-      "text-2xl font-black tracking-wide",
-   statusText: "text-sm font-medium text-white/40",
-   statusUntil: "text-lg font-bold text-white/80",
+      "mb-[10px] text-center text-[18px] font-[800] [text-shadow:0_1px_0_rgba(0,0,0,0.65),0_0_6px_rgba(0,0,0,0.55)]",
+   statusText: "mb-[8px] text-center text-[15px] font-[600] text-[rgba(200,200,200,0.9)]",
+   statusUntil: "mt-[6px] text-center text-[16px] font-[700] text-[rgba(220,220,220,0.96)]",
 
-   /* section headers */
-   sectionTitle: "relative w-full text-left text-lg font-bold tracking-tight text-white/90",
+   sectionTitle: "relative mt-[30px] mb-[14px] w-full text-left text-[18px] font-[800] tracking-[0.02em] text-white/[0.96]",
    sectionTitleLine:
-      "pointer-events-none absolute left-[-32px] bottom-[-8px] h-px w-[calc(100%+64px)] bg-gradient-to-r from-transparent via-white/[0.12] to-transparent",
+      "pointer-events-none absolute left-[-32px] bottom-[-8px] h-[2px] w-[calc(100%+64px)] opacity-95 [filter:drop-shadow(0_0_10px_rgba(0,0,0,0.85))]",
 
-   /* product cards */
    productsGrid:
-      "grid w-full gap-5 [grid-template-columns:repeat(3,1fr)] max-[1100px]:[grid-template-columns:repeat(2,1fr)] max-[700px]:[grid-template-columns:1fr]",
+      "grid w-full justify-start justify-items-stretch gap-[22px] [grid-template-columns:repeat(3,minmax(240px,280px))] max-[1200px]:[grid-template-columns:repeat(2,minmax(220px,260px))] max-[880px]:[grid-template-columns:minmax(220px,1fr)]",
 
    productCard:
-      "group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-br from-white/[0.05] via-transparent to-white/[0.02] p-6 transition-all duration-200 hover:border-violet-500/30 hover:shadow-[0_20px_40px_rgba(0,0,0,0.5),0_0_20px_rgba(139,92,246,0.08)] hover:translate-y-[-2px]",
-   productVip: "mb-1 text-xs font-black uppercase tracking-[0.15em] text-violet-400",
-   productPeriod: "mb-1 text-lg font-bold text-white",
-   productSubtitle: "mb-4 text-xs text-white/35",
-   productPrice: "text-2xl font-black text-emerald-400",
+      "min-h-[170px] rounded-[18px] border border-white/[0.16] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),rgba(15,15,15,0.84))] px-[18px] py-[14px] text-center shadow-[0_20px_48px_rgba(0,0,0,0.8),0_0_0_4px_rgba(255,255,255,0.10)] backdrop-blur-[10px] transition-[transform,box-shadow,border-color,background] duration-[140ms] hover:translate-y-[-3px] hover:scale-[1.02] hover:border-white/[0.32] hover:bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),rgba(15,15,15,0.90))] hover:shadow-[0_24px_56px_rgba(0,0,0,0.85),0_0_0_5px_rgba(255,255,255,0.16)]",
+   productVip: "my-[2px] mb-[6px] text-[16px] font-black tracking-[0.02em] text-[#ff3b3b]",
+   productPeriod: "mb-[6px] text-[15px] font-extrabold text-white",
+   productSubtitle: "mb-[14px] text-[13px] text-[rgba(230,230,230,0.9)]",
+   productPrice: "mt-[6px] text-[18px] font-extrabold text-[#4ee97a]",
 
-   /* reseller section */
-   resellerSection: "w-full",
-   resellerSeparator: "my-6 h-px w-full bg-gradient-to-r from-transparent via-white/[0.10] to-transparent",
-   resellerWarning: "mb-4 text-center text-xs font-bold uppercase tracking-wider text-red-400/80",
-   resellerHeader: "mb-5 text-center text-base font-bold text-white/80",
-   resellerGrid: "flex flex-wrap justify-center gap-6 pb-6",
+   resellerSection: "w-full ml-[-32px] overflow-x-hidden",
+   resellerSeparator: "my-[26px] mb-[12px] h-[3px] w-full shadow-[0_0_10px_rgba(0,0,0,0.75)]",
+   resellerWarning: "mb-[6px] text-center text-[15px] font-extrabold uppercase text-[#ff4a4a]",
+   resellerHeader: "mb-[16px] text-center text-[17px] font-bold text-white",
+   resellerGrid: "flex flex-wrap justify-center gap-[40px] pb-[24px]",
    resellerCard:
-      "w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.05] to-white/[0.02] p-5 backdrop-blur-xl",
-   resellerTitle: "mb-3 text-center text-base font-bold text-white/90",
-   resellerLine: "mx-[-4px] mb-4 h-px bg-gradient-to-r from-transparent via-white/[0.10] to-transparent",
+      "min-w-[360px] max-w-[420px] overflow-hidden rounded-[16px] border border-white/[0.14] bg-[rgba(18,18,18,0.66)] px-[16px] py-[14px] shadow-[0_18px_44px_rgba(0,0,0,0.6),0_0_0_4px_rgba(255,255,255,0.05)] backdrop-blur-[8px]",
+   resellerTitle: "mb-[4px] text-center text-[16px] font-bold text-white",
+   resellerLine: "mx-[-4px] mt-[4px] mb-[10px] h-[2px] shadow-[0_0_10px_rgba(0,0,0,0.75)]",
    resellerRow:
-      "mb-3 flex items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3 text-sm",
+      "mb-[8px] flex items-center justify-between gap-3 rounded-[12px] border border-white/[0.10] bg-[rgba(0,0,0,0.28)] px-[10px] py-[8px] text-[13px]",
    resellerBtn:
-      "mt-3 w-full cursor-pointer rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-600/20 transition-all hover:shadow-violet-600/40 hover:brightness-110 active:scale-[0.98]",
+      "mt-auto w-full cursor-pointer rounded-[12px] border border-white/[0.18] border-b-[4px] bg-white/[0.06] px-[12px] py-[10px] text-[13px] font-semibold text-white transition-[background,border-color,transform] hover:bg-white/[0.10] hover:border-white/[0.26] active:translate-y-[1px]",
 } as const;
