@@ -144,7 +144,7 @@ func (s *Server) handleCompileGoConfig(w http.ResponseWriter, r *http.Request) {
 	}
 
 	scheme := "ws"
-	if r.TLS != nil {
+	if r.TLS != nil || strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https") {
 		scheme = "wss"
 	}
 
