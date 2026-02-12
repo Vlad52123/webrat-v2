@@ -7,7 +7,7 @@ export function ShopSectionTitle(props: { children: ReactNode }) {
    return (
       <div className={shopClasses.sectionTitle}>
          {children}
-         <span className={shopClasses.sectionTitleLine} style={{ background: "var(--line)" }} />
+         <span className={shopClasses.sectionTitleLine} />
       </div>
    );
 }
