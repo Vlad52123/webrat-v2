@@ -15,14 +15,14 @@ export function ShopSubscriptionGrid(props: {
    return (
       <div className={shopClasses.grid}>
          <div className={[shopClasses.cardBase, shopClasses.cardKey].join(" ")}>
-            <div className={shopClasses.cardTitle}>Key activation.</div>
+            <div className={shopClasses.cardTitle}>Activate your key</div>
 
-            <div className={shopClasses.inputRow} style={{ margin: "16px 0 14px" }}>
+            <div className={shopClasses.inputRow}>
                <input
                   id="shopKeyInput"
                   className={shopClasses.input}
                   type="text"
-                  placeholder="key"
+                  placeholder="Enter your license key"
                   autoComplete="off"
                   name="shop-key-input"
                   value={keyValue}
@@ -31,29 +31,26 @@ export function ShopSubscriptionGrid(props: {
                />
             </div>
 
-            <div className="flex w-full justify-center">
-               <button
-                  id="shopActivateBtn"
-                  className={shopClasses.activateBtn}
-                  style={{ borderBottomColor: "var(--line)" }}
-                  type="button"
-                  disabled={isLoading}
-                  onClick={onActivate}
-               >
-                  Activate
-               </button>
-            </div>
+            <button
+               id="shopActivateBtn"
+               className={shopClasses.activateBtn}
+               type="button"
+               disabled={isLoading}
+               onClick={onActivate}
+            >
+               {isLoading ? "Activating..." : "Activate Key"}
+            </button>
          </div>
 
          <div className={[shopClasses.cardBase, shopClasses.cardStatus].join(" ")}>
-            <div className={shopClasses.cardTitle}>Subscription status.</div>
+            <div className={shopClasses.statusText}>Status</div>
             <div
                id="shopStatusTitle"
-               className={[shopClasses.statusTitle, isVip ? "text-[#ff3b3b]" : "text-white"].join(" ")}
+               className={[shopClasses.statusTitle, isVip ? "text-emerald-400" : "text-white/30"].join(" ")}
             >
                {statusTitle}
             </div>
-            <div className={shopClasses.statusText}>Subscription until</div>
+            <div className={shopClasses.statusText}>Active until</div>
             <div id="shopStatusUntil" className={shopClasses.statusUntil}>
                {until}
             </div>

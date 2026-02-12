@@ -3,30 +3,29 @@ import { shopClasses } from "../styles";
 export function ShopResellerSection() {
    return (
       <div className={shopClasses.resellerSection}>
-         <div className={shopClasses.resellerSeparator} style={{ background: "var(--line)" }} />
+         <div className={shopClasses.resellerSeparator} />
          <div className={shopClasses.resellerWarning}>
-            DON&apos;T BUY FROM USERS OUTSIDE OF THE OFFICIAL RESELLER LIST, YOU WILL BE SCAMMED.
+            ⚠ Only buy from official resellers listed below
          </div>
-         <div className={shopClasses.resellerHeader}>Official Reseller Contacts</div>
+         <div className={shopClasses.resellerHeader}>Official Resellers</div>
 
          <div className={shopClasses.resellerGrid}>
             <div className={shopClasses.resellerCard}>
                <div className={shopClasses.resellerTitle}>WebCrystalbot</div>
-               <div className={shopClasses.resellerLine} style={{ background: "var(--line)" }} />
+               <div className={shopClasses.resellerLine} />
 
                <div className={shopClasses.resellerRow}>
-                  <span className="font-semibold text-white">Contacts:</span>
-                  <span className="text-[rgba(220,220,220,0.96)]">Telegram: @WebCrystalbot</span>
+                  <span className="font-medium text-white/60">Contact</span>
+                  <span className="font-semibold text-white/90">@WebCrystalbot</span>
                </div>
 
                <div className={shopClasses.resellerRow}>
-                  <span className="font-semibold text-white">Payment:</span>
-                  <span className="text-[rgba(220,220,220,0.96)]">Crypto</span>
+                  <span className="font-medium text-white/60">Payment</span>
+                  <span className="font-semibold text-white/90">Crypto</span>
                </div>
 
                <button
                   className={shopClasses.resellerBtn}
-                  style={{ borderBottomColor: "var(--line)" }}
                   type="button"
                   onClick={() => {
                      try {
@@ -35,7 +34,7 @@ export function ShopResellerSection() {
                      }
                   }}
                >
-                  Open telegram
+                  Open Telegram
                </button>
             </div>
          </div>
