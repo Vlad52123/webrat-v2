@@ -15,13 +15,14 @@ import (
 )
 
 type Server struct {
-	db   *storage.DB
-	auth *auth.Service
-	wsHub *ws.Hub
+	db       *storage.DB
+	auth     *auth.Service
+	wsHub    *ws.Hub
+	loginLim *loginLimiter
 }
 
 func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
-	s := &Server{db: db, auth: auth.New(db), wsHub: hub}
+	s := &Server{db: db, auth: auth.New(db), wsHub: hub, loginLim: newLoginLimiter()}
 
 	envTrue := func(key string) bool {
 		v := strings.ToLower(strings.TrimSpace(os.Getenv(key)))

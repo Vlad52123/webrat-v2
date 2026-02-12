@@ -49,6 +49,11 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if s.loginLim.isLocked(login) {
+		s.writeJSON(w, http.StatusTooManyRequests, map[string]string{"error": "account_locked"})
+		return
+	}
+
 	if cfToken == "" {
 		if c, err := r.Cookie("webrat_captcha"); err != nil || c == nil || strings.TrimSpace(c.Value) != "1" {
 			s.writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "security_check_failed"})
@@ -69,10 +74,13 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		if err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)); err != nil {
+			s.loginLim.recordFail(login)
 			s.writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "invalid_credentials"})
 			return
 		}
 	}
+
+	s.loginLim.clearLogin(login)
 
 	if err := s.auth.SetSession(w, r, login); err != nil {
 		http.Error(w, "session error", http.StatusInternalServerError)
