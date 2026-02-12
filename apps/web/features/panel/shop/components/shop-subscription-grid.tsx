@@ -15,14 +15,14 @@ export function ShopSubscriptionGrid(props: {
    return (
       <div className={shopClasses.grid}>
          <div className={[shopClasses.cardBase, shopClasses.cardKey].join(" ")}>
-            <div className={shopClasses.cardTitle}>Key Activation</div>
+            <div className={shopClasses.cardTitle}>Key activation.</div>
 
-            <div className={shopClasses.inputRow} style={{ margin: "14px 0 10px" }}>
+            <div className={shopClasses.inputRow} style={{ margin: "16px 0 14px" }}>
                <input
                   id="shopKeyInput"
                   className={shopClasses.input}
                   type="text"
-                  placeholder="Enter your key"
+                  placeholder="key"
                   autoComplete="off"
                   name="shop-key-input"
                   value={keyValue}
@@ -35,6 +35,7 @@ export function ShopSubscriptionGrid(props: {
                <button
                   id="shopActivateBtn"
                   className={shopClasses.activateBtn}
+                  style={{ borderBottomColor: "var(--line)" }}
                   type="button"
                   disabled={isLoading}
                   onClick={onActivate}
@@ -45,14 +46,14 @@ export function ShopSubscriptionGrid(props: {
          </div>
 
          <div className={[shopClasses.cardBase, shopClasses.cardStatus].join(" ")}>
-            <div className={shopClasses.cardTitle}>Subscription</div>
+            <div className={shopClasses.cardTitle}>Subscription status.</div>
             <div
                id="shopStatusTitle"
-               className={[shopClasses.statusTitle, isVip ? "text-[rgba(255,75,75,0.90)]" : "text-[rgba(255,255,255,0.50)]"].join(" ")}
+               className={[shopClasses.statusTitle, isVip ? "text-[#ff3b3b]" : "text-white"].join(" ")}
             >
                {statusTitle}
             </div>
-            <div className={shopClasses.statusText}>Active until</div>
+            <div className={shopClasses.statusText}>Subscription until</div>
             <div id="shopStatusUntil" className={shopClasses.statusUntil}>
                {until}
             </div>
