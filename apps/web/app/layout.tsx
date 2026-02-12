@@ -3,7 +3,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-   title: "WebCrystal — Cloud Analytics & Monitoring",
+   title: "WebCrystal",
    description: "Monitor, analyze and optimize your web infrastructure in real-time. Powerful dashboards, instant alerts and deep insights for modern teams.",
    icons: {
       icon: "/logo/main_logo.ico",

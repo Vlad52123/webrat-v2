@@ -118,7 +118,11 @@ export async function waitCompileDone(jobId: string, opts?: { timeoutMs?: number
    throw new Error("Compile timeout");
 }
 
-export async function downloadCompileResult(jobId: string, filenameHint?: string): Promise<{ blob: Blob; filename: string }> {
+export async function downloadCompileResult(
+   jobId: string,
+   filenameHint?: string,
+   onProgress?: (percent: number) => void,
+): Promise<{ blob: Blob; filename: string }> {
    const safeId = String(jobId || "").trim();
    if (!safeId) throw new Error("Missing job id");
 
@@ -133,7 +137,30 @@ export async function downloadCompileResult(jobId: string, filenameHint?: string
       throw new Error(errText || `Compile download failed (${dlResp.status})`);
    }
 
-   const blob = await dlResp.blob();
+   let blob: Blob;
+
+   const contentLength = parseInt(dlResp.headers.get("Content-Length") || "0", 10);
+   if (onProgress && dlResp.body && contentLength > 0) {
+      const reader = dlResp.body.getReader();
+      const chunks: Uint8Array[] = [];
+      let received = 0;
+
+      onProgress(0);
+
+      while (true) {
+         const { done, value } = await reader.read();
+         if (done) break;
+         chunks.push(value);
+         received += value.length;
+         const pct = Math.min(100, Math.round((received / contentLength) * 100));
+         onProgress(pct);
+      }
+
+      blob = new Blob(chunks as unknown as BlobPart[]);
+      onProgress(100);
+   } else {
+      blob = await dlResp.blob();
+   }
 
    let filename = (String(filenameHint || "").trim() || "build") + ".zip";
    try {
