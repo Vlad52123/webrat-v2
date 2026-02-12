@@ -52,7 +52,13 @@ export function BuilderScreen() {
 
             <BuildsList />
 
-            <div id="buildModal" className="fixed inset-0 z-[2000] grid place-items-center bg-[rgba(0,0,0,0.62)] backdrop-blur-[10px]" hidden>
+            <div id="buildModal" className="fixed inset-0 z-[2000] grid place-items-center bg-[rgba(0,0,0,0.62)] backdrop-blur-[10px]" hidden
+               onMouseDown={(e) => {
+                  if (e.target === e.currentTarget) {
+                     (e.currentTarget as HTMLDivElement).hidden = true;
+                  }
+               }}
+            >
                <div
                   className="grid w-[360px] max-w-[calc(100vw-40px)] overflow-hidden rounded-[16px] border border-[rgba(255,255,255,0.18)] bg-[rgba(18,18,18,0.92)] shadow-[0_24px_60px_rgba(0,0,0,0.75)] backdrop-blur-[8px]"
                   role="dialog"
@@ -66,6 +72,10 @@ export function BuilderScreen() {
                         className="grid h-[30px] w-[30px] cursor-pointer place-items-center rounded-[10px] border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.06)] text-[18px] leading-none text-[rgba(255,255,255,0.95)] transition-[background,border-color,transform] duration-[140ms] hover:bg-[rgba(255,255,255,0.1)] hover:border-[rgba(255,255,255,0.22)] active:translate-y-[1px]"
                         type="button"
                         aria-label="Close"
+                        onClick={() => {
+                           const m = document.getElementById("buildModal");
+                           if (m) (m as HTMLDivElement).hidden = true;
+                        }}
                      >
                         ×
                      </button>
@@ -84,6 +94,10 @@ export function BuilderScreen() {
                            id="buildModalOk"
                            className="min-w-[150px] cursor-pointer rounded-[12px] border border-[rgba(255,255,255,0.18)] border-b-[4px] border-b-[var(--line)] bg-[rgba(255,255,255,0.1)] px-[22px] py-[10px] text-[14px] font-semibold text-white transition-[background,border-color,transform] duration-[140ms] hover:bg-[rgba(255,255,255,0.14)] hover:border-[rgba(255,255,255,0.28)] active:translate-y-[1px]"
                            type="button"
+                           onClick={() => {
+                              const m = document.getElementById("buildModal");
+                              if (m) (m as HTMLDivElement).hidden = true;
+                           }}
                         >
                            OK
                         </button>
