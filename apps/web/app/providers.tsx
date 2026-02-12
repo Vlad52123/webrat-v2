@@ -22,8 +22,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
             expand
             visibleToasts={6}
             closeButton={false}
-            offset={{ bottom: 6, right: 6 }}
-            mobileOffset={{ bottom: 6, right: 6 }}
+            gap={6}
+            offset={{ bottom: 4, right: 4 }}
+            mobileOffset={{ bottom: 4, right: 4 }}
          />
          {children}
       </QueryClientProvider>

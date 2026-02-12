@@ -81,12 +81,12 @@ function WcToastView(props: {
          "div",
          {
             className:
-               "wc-toast toast--show relative w-[280px] overflow-hidden rounded-[12px] border border-white/[0.16] bg-[rgba(18,18,18,0.86)] px-[14px] py-[10px] text-[13px] text-white/[0.96] shadow-[0_12px_28px_rgba(0,0,0,0.55)] backdrop-blur-[6px]" +
+               "wc-toast toast--show relative w-[260px] overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.10)] bg-[rgba(18,18,20,0.92)] px-[12px] py-[8px] text-[12px] text-[rgba(255,255,255,0.90)] shadow-[0_8px_24px_rgba(0,0,0,0.5)] backdrop-blur-[8px]" +
                (hiding ? " toast--hide" : ""),
             style: ({ "--wc-toast-ttl": `${ttlMs}ms` } as unknown as CSSProperties),
          },
          createElement("div", {
-            className: "absolute left-0 top-0 bottom-0 w-[4px] opacity-95",
+            className: "absolute left-0 top-0 bottom-0 w-[3px]",
             style: { background: accent },
             "aria-hidden": "true",
          }),
@@ -105,7 +105,7 @@ function WcToastView(props: {
                      "div",
                      {
                         className:
-                           "w-full border-b pb-[4px] pl-[8px] text-left text-[14px] font-extrabold uppercase tracking-[0.06em] text-white whitespace-nowrap overflow-hidden text-ellipsis",
+                           "w-full border-b pb-[3px] pl-[6px] text-left text-[11px] font-bold uppercase tracking-[0.8px] text-[rgba(255,255,255,0.50)] whitespace-nowrap overflow-hidden text-ellipsis",
                         style: { borderBottomColor },
                      },
                      String(title || ""),
@@ -114,7 +114,7 @@ function WcToastView(props: {
                      "div",
                      {
                         className:
-                           "w-full mt-[4px] pl-[8px] text-left text-[14px] text-white/[0.92] leading-[1.25] max-h-[calc(1.25em*2)] overflow-hidden",
+                           "w-full mt-[3px] pl-[6px] text-left text-[12px] font-medium text-[rgba(255,255,255,0.85)] leading-[1.3] max-h-[calc(1.3em*2)] overflow-hidden",
                      },
                      message,
                   ),
