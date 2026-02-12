@@ -222,12 +222,11 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
             <div className="builderFooter grid justify-items-center gap-[12px]">
                <button
                   id="createBtn"
-                  className="group relative w-[200px] cursor-pointer appearance-none overflow-hidden rounded-[14px] border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.05)] px-[24px] py-[11px] text-center text-[15px] font-extrabold tracking-[0.3px] text-[rgba(255,255,255,0.94)] transition-all duration-[180ms] hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.20)] hover:shadow-[0_0_24px_rgba(186,85,211,0.15),0_0_0_1px_rgba(186,85,211,0.1)] active:translate-y-[1px] [border-bottom:3px_solid_var(--line)]"
+                  className="w-[200px] cursor-pointer appearance-none rounded-[14px] border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.05)] px-[24px] py-[11px] text-center text-[15px] font-extrabold tracking-[0.3px] text-[rgba(255,255,255,0.94)] transition-all duration-[180ms] hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.20)] active:translate-y-[1px] [border-bottom:3px_solid_var(--line)]"
                   type="button"
                   onClick={onCreate}
                >
-                  <span className="relative z-10">Create</span>
-                  <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-[rgba(186,85,211,0.06)] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  Create
                </button>
             </div>
          </div>
