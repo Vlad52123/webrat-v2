@@ -48,3 +48,8 @@ func xorWithKey(s, key string) string {
 	}
 	return strings.Join(parts, ", ")
 }
+
+func xorListWithKey(items []string, key string) string {
+	joined := strings.Join(items, "\x00")
+	return xorWithKey(joined, key)
+}
