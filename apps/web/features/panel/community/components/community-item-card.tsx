@@ -15,7 +15,6 @@ export const CommunityItemCard = memo(function CommunityItemCard(props: {
    item: CommunityItem;
    isOpen: boolean;
    messageCount: number;
-   enterShake: boolean;
    onToggle: (key: string) => void;
 }) {
    const { item, isOpen, messageCount, onToggle } = props;

@@ -6,7 +6,7 @@ import { BuilderForm } from "../builder/components/builder-form";
 import { BuilderToggle } from "../builder/components/builder-toggle";
 import { BuildsList } from "../builder/components/builds/builds-list";
 import { makeMutex } from "../builder/utils/make-mutex";
-import { installBuildModalHandlers } from "../builder/utils/build-modal";
+
 
 export function BuilderScreen() {
    const [open, setOpen] = useState(false);
@@ -14,10 +14,6 @@ export function BuilderScreen() {
    const [hasCustomBg, setHasCustomBg] = useState(false);
 
    useEffect(() => {
-      try {
-         installBuildModalHandlers();
-      } catch {
-      }
 
       const sync = () => {
          try {

@@ -25,7 +25,6 @@ export function CommunityScreen() {
                      item={it}
                      isOpen={openKey === it.key}
                      messageCount={communityMessageCounts.get(it.key) ?? 0}
-                     enterShake={true}
                      onToggle={onToggle}
                   />
                ))}

@@ -66,11 +66,6 @@ body.hasCustomBg .content::after {
     -webkit-touch-callout: none;
 }
 
-.wc-community-logo-shake {
-    animation: wcCommunityLogoShake 120ms linear infinite;
-    will-change: transform;
-}
-
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
