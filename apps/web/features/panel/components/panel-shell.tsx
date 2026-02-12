@@ -101,19 +101,24 @@ function PanelShellInner() {
       return (
          <div
             className={
-               "grid h-[100dvh] overflow-hidden place-items-center text-white/80 transition-opacity duration-200 " +
+               "grid h-[100dvh] overflow-hidden place-items-center transition-opacity duration-200 " +
                (shouldShowLoader && !loaderFadingOut ? "opacity-100" : "opacity-0")
             }
             style={{ background: "var(--wc-panel-bg)" }}
          >
-            <div className="grid place-items-center">
-               <img
-                  src="/icons/loading.svg"
-                  alt="loading"
-                  draggable={false}
-                  className="h-[44px] w-[44px] animate-spin invert brightness-200"
-               />
-               <span className="sr-only">Checking subscription</span>
+            <div className="grid place-items-center gap-[16px]">
+               <div className="relative grid h-[64px] w-[64px] place-items-center">
+                  <div className="absolute inset-0 rounded-full border-[2px] border-[rgba(255,255,255,0.06)]" />
+                  <div className="absolute inset-0 rounded-full border-[2px] border-transparent border-t-[rgba(255,255,255,0.35)] animate-spin" />
+                  <img
+                     src="/logo/main_logo.ico"
+                     alt=""
+                     draggable={false}
+                     className="h-[28px] w-[28px] rounded-[6px] opacity-60"
+                     style={{ animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite" }}
+                  />
+               </div>
+               <span className="text-[11px] font-bold uppercase tracking-[1.6px] text-[rgba(255,255,255,0.25)]">Loading</span>
             </div>
          </div>
       );

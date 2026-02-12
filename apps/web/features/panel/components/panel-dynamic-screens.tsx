@@ -6,15 +6,20 @@ import type { SettingsTabKey } from "../state/settings-tab";
 
 function PanelScreenFallback(props: { label: string }) {
     return (
-        <div className="grid h-full w-full place-items-center text-white/70">
-            <div className="grid place-items-center gap-2">
-                <img
-                    src="/icons/loading.svg"
-                    alt="loading"
-                    draggable={false}
-                    className="h-[28px] w-[28px] animate-spin invert brightness-200"
-                />
-                <span className="text-[12px] font-semibold tracking-[0.01em]">{props.label}</span>
+        <div className="grid h-full w-full place-items-center">
+            <div className="grid place-items-center gap-[12px]">
+                <div className="relative grid h-[48px] w-[48px] place-items-center">
+                    <div className="absolute inset-0 rounded-full border-[2px] border-[rgba(255,255,255,0.06)]" />
+                    <div className="absolute inset-0 rounded-full border-[2px] border-transparent border-t-[rgba(255,255,255,0.30)] animate-spin" />
+                    <img
+                        src="/logo/main_logo.ico"
+                        alt=""
+                        draggable={false}
+                        className="h-[20px] w-[20px] rounded-[4px] opacity-50"
+                        style={{ animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite" }}
+                    />
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-[1.4px] text-[rgba(255,255,255,0.22)]">{props.label}</span>
             </div>
         </div>
     );
