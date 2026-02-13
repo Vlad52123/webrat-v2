@@ -2,6 +2,7 @@ package ws
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 	"sync"
@@ -93,8 +94,10 @@ func NewHub(db *storage.DB) (*Hub, error) {
 
 func (h *Hub) HandleHTTP(w http.ResponseWriter, r *http.Request) {
 	ip := getClientIP(r)
+	log.Printf("[ws] new connection ip=%s ua=%s", ip, r.UserAgent())
 	ok := h.lim.allowUpgrade(ip)
 	if !ok {
+		log.Printf("[ws] rate limited ip=%s", ip)
 		w.WriteHeader(http.StatusTooManyRequests)
 		return
 	}
@@ -107,9 +110,13 @@ func (h *Hub) HandleHTTP(w http.ResponseWriter, r *http.Request) {
 
 	ownerLogin := ""
 	token := strings.TrimSpace(r.Header.Get("X-Builder-Token"))
+	log.Printf("[ws] token=%q panelLogin=%q ip=%s", token, panelLogin, ip)
 	if token != "" && h.db != nil {
 		if login, ok, err := h.db.GetLoginByBuilderToken(token); err == nil && ok {
 			ownerLogin = strings.ToLower(strings.TrimSpace(login))
+			log.Printf("[ws] token resolved owner=%s ip=%s", ownerLogin, ip)
+		} else {
+			log.Printf("[ws] token lookup failed ok=%v err=%v ip=%s", ok, err, ip)
 		}
 	}
 

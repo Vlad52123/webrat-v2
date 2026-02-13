@@ -2,6 +2,7 @@ package ws
 
 import (
 	"encoding/json"
+	"log"
 	"strings"
 	"time"
 
@@ -12,10 +13,13 @@ import (
 
 func (h *Hub) handleRegister(ws *websocket.Conn, payload map[string]any, ownerLogin, token, ip string) (victimID string) {
 	id := strFrom(payload["id"])
+	log.Printf("[ws:register] id=%q owner=%q token=%q ip=%s", id, ownerLogin, token, ip)
 	if id == "" {
+		log.Printf("[ws:register] rejected: empty id ip=%s", ip)
 		return ""
 	}
 	if strings.TrimSpace(token) == "" || strings.TrimSpace(ownerLogin) == "" {
+		log.Printf("[ws:register] rejected: empty token/owner ip=%s token=%q owner=%q", ip, token, ownerLogin)
 		_ = ws.Close()
 		return ""
 	}
