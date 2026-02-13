@@ -167,21 +167,22 @@ func (s *Server) handleSetEmail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	code := storage.GenerateEmailCode()
-	exp := time.Now().Add(10 * time.Minute)
+	exp := time.Now().Add(5 * time.Minute)
 	if err := s.db.SaveEmailVerification(login, email, code, exp); err != nil {
 		log.Printf("[email] save verification error: %v", err)
 		http.Error(w, "save error", http.StatusInternalServerError)
 		return
 	}
 
-	bodyText := "Your WebCrystal verification code: " + code + "\nCode is valid for 10 minutes. Please note that the code is 8 characters long."
-	if err := storage.SendEmail(email, "WebCrystal email verification", bodyText); err != nil {
+	if err := storage.SendVerificationEmail(email, code); err != nil {
 		log.Printf("[email] send error: %v (to=%s)", err, email)
 		http.Error(w, "mail error", http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	s.writeJSON(w, http.StatusOK, map[string]interface{}{
+		"expires_at": exp.UTC().Format(time.RFC3339),
+	})
 }
 
 func (s *Server) handleConfirmEmail(w http.ResponseWriter, r *http.Request) {
@@ -223,6 +224,53 @@ func (s *Server) handleConfirmEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := s.db.SetUserEmail(login, email); err != nil {
+		http.Error(w, "update error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (s *Server) handleDetachEmail(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	if !s.checkCSRF(w, r) {
+		s.writeJSON(w, http.StatusForbidden, map[string]string{"error": "security_check_failed"})
+		return
+	}
+
+	login := strings.ToLower(strings.TrimSpace(loginFromContext(r)))
+	if login == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var body struct {
+		Password string `json:"password"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, "bad json", http.StatusBadRequest)
+		return
+	}
+	pw := strings.TrimSpace(body.Password)
+	if pw == "" {
+		http.Error(w, "missing password", http.StatusBadRequest)
+		return
+	}
+
+	hash, exists, err := s.db.GetUserPassword(login)
+	if err != nil {
+		http.Error(w, "auth error", http.StatusInternalServerError)
+		return
+	}
+	if !exists || bcrypt.CompareHashAndPassword([]byte(hash), []byte(pw)) != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	if err := s.db.UnsetUserEmail(login); err != nil {
 		http.Error(w, "update error", http.StatusInternalServerError)
 		return
 	}

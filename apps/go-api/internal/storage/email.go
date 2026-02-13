@@ -6,7 +6,6 @@ import (
 	"crypto/subtle"
 	"database/sql"
 	"errors"
-	"log"
 	"net/smtp"
 	"os"
 	"strings"
@@ -20,7 +19,6 @@ func SendEmail(to, subject, body string) error {
 	pass := os.Getenv("SMTP_PASS")
 	from := os.Getenv("SMTP_FROM")
 
-	log.Printf("[smtp] host=%q port=%q user=%q passLen=%d from=%q", host, port, user, len(pass), from)
 	if host == "" || port == "" || user == "" || pass == "" {
 		return errors.New("SMTP is not configured")
 	}
@@ -36,12 +34,32 @@ func SendEmail(to, subject, body string) error {
 		baseURL = "https://webcrystal.sbs"
 	}
 
-	bodyHTML := "<html><body style=\"font-family: sans-serif; background:#111; color:#eee; padding:16px;\">" +
-		"<div style=\"text-align:center; margin-bottom:16px;\">" +
-		"<img src=\"" + baseURL + "/img/logo/register_logo.ico\" alt=\"WebCrystal\" style=\"width:96px;height:96px;image-rendering:pixelated;\"/>" +
-		"</div>" +
-		"<div style=\"text-align:center; font-size:16px; margin-bottom:12px;\">" + body + "</div>" +
-		"</body></html>"
+	bodyHTML := `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0a0a0e;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0e;padding:40px 0;">
+<tr><td align="center">
+<table width="460" cellpadding="0" cellspacing="0" style="background:linear-gradient(180deg,rgba(24,24,32,0.98),rgba(16,16,22,0.98));border:1px solid rgba(255,255,255,0.12);border-radius:20px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.06) inset;">
+<tr><td style="padding:32px 36px 20px;text-align:center;">
+<img src="` + baseURL + `/img/logo/register_logo.ico" alt="WebCrystal" width="72" height="72" style="image-rendering:pixelated;display:block;margin:0 auto 16px;" />
+<div style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:0.5px;margin-bottom:4px;">WebCrystal</div>
+<div style="font-size:12px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:2px;">Email Verification</div>
+</td></tr>
+<tr><td style="padding:0 36px;">
+<div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);"></div>
+</td></tr>
+<tr><td style="padding:24px 36px;text-align:center;">
+<div style="font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:20px;line-height:1.5;">` + body + `</div>
+</td></tr>
+<tr><td style="padding:0 36px 32px;text-align:center;">
+<div style="font-size:11px;color:rgba(255,255,255,0.25);line-height:1.4;">If you did not request this, please ignore this email.</div>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>`
 
 	msg := "From: " + from + "\r\n" +
 		"To: " + to + "\r\n" +
@@ -51,6 +69,21 @@ func SendEmail(to, subject, body string) error {
 		bodyHTML + "\r\n"
 
 	return smtp.SendMail(addr, auth, user, []string{to}, []byte(msg))
+}
+
+func SendVerificationEmail(to, code string) error {
+	codeHTML := ""
+	for _, ch := range code {
+		codeHTML += `<span style="display:inline-block;width:36px;height:44px;line-height:44px;text-align:center;font-size:22px;font-weight:700;font-family:'Courier New',monospace;color:#fff;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.16);border-radius:8px;margin:0 2px;letter-spacing:0;">` + string(ch) + `</span>`
+	}
+
+	body := `Your verification code:
+</div>
+<div style="margin:20px 0;text-align:center;line-height:50px;">` + codeHTML + `</div>
+<div style="font-size:13px;color:rgba(255,255,255,0.45);text-align:center;">
+Code is valid for <strong style="color:rgba(255,255,255,0.7);">5 minutes</strong>`
+
+	return SendEmail(to, "WebCrystal — Verification Code", body)
 }
 
 func GenerateEmailCode() string {
@@ -144,4 +177,20 @@ func (d *DB) SetUserEmail(login, email string) error {
 		return err
 	}
 	return tx.Commit()
+}
+
+func (d *DB) UnsetUserEmail(login string) error {
+	login = strings.TrimSpace(login)
+	if login == "" {
+		return errors.New("missing login")
+	}
+	if d == nil || d.sql == nil {
+		return errors.New("db is nil")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := d.sql.ExecContext(ctx, `UPDATE users SET email = '', email_verified = FALSE WHERE login = $1`, login)
+	return err
 }

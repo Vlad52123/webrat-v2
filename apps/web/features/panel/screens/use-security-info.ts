@@ -106,6 +106,7 @@ export function useSecurityInfo() {
       securitySubLoading,
       securitySubDisplay,
       securityEmail,
+      setSecurityEmail,
       securityRegDate,
    };
 }

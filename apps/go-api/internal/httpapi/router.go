@@ -75,6 +75,7 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 		r.Post("/delete-account", s.requireAPIAuth(s.handleDeleteAccount))
 		r.Post("/set-email", s.requireAPIAuth(s.handleSetEmail))
 		r.Post("/confirm-email", s.requireAPIAuth(s.handleConfirmEmail))
+		r.Post("/detach-email", s.requireAPIAuth(s.handleDetachEmail))
 		r.Get("/account", s.requireAPIAuth(s.handleGetAccount))
 
 		r.Get("/subscription", s.requireAPIAuth(s.handleGetSubscription))

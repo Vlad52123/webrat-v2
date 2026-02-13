@@ -16,7 +16,7 @@ import { useWsMenuPosition } from "./use-ws-menu-position";
 import { logoutAndRedirect } from "./settings-actions/logout";
 import { deleteAccountAction } from "./settings-actions/delete-account";
 import { changePasswordAction } from "./settings-actions/change-password";
-import { setEmailConfirmAction } from "./settings-actions/email";
+import { setEmailConfirmAction, detachEmailAction, loadEmailPending, clearEmailPending } from "./settings-actions/email";
 
 export function SettingsScreen(props: { tab: SettingsTabKey }) {
    const { tab } = props;
@@ -34,7 +34,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
       reapply,
    } = usePanelSettings();
 
-   const { securityLogin, securitySubDisplay, securityEmail, securityRegDate } = useSecurityInfo();
+   const { securityLogin, securitySubDisplay, securityEmail, setSecurityEmail, securityRegDate } = useSecurityInfo();
    const [logoutOpen, setLogoutOpen] = useState(false);
    const [deleteOpen, setDeleteOpen] = useState(false);
    const [deletePwd, setDeletePwd] = useState("");
@@ -49,6 +49,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
    const [emailPasswordOrCode, setEmailPasswordOrCode] = useState("");
    const [emailStep, setEmailStep] = useState<"input" | "code">("input");
    const [pendingEmail, setPendingEmail] = useState("");
+   const [expiresAt, setExpiresAt] = useState(0);
 
    const wsSelectValue = useMemo(() => state.wsHost || "__default__", [state.wsHost]);
 
@@ -121,10 +122,20 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
                      setPasswordOpen(true);
                   }}
                   onOpenEmail={() => {
-                     setEmailStep("input");
-                     setPendingEmail("");
-                     setEmailNew("");
-                     setEmailPasswordOrCode("");
+                     const saved = loadEmailPending();
+                     if (saved) {
+                        setEmailNew(saved.email);
+                        setPendingEmail(saved.email);
+                        setExpiresAt(saved.expiresAt);
+                        setEmailStep("code");
+                        setEmailPasswordOrCode("");
+                     } else {
+                        setEmailStep("input");
+                        setPendingEmail("");
+                        setExpiresAt(0);
+                        setEmailNew("");
+                        setEmailPasswordOrCode("");
+                     }
                      setEmailOpen(true);
                   }}
                   onOpenLogout={() => setLogoutOpen(true)}
@@ -190,6 +201,8 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
             passwordOrCode={emailPasswordOrCode}
             setPasswordOrCode={setEmailPasswordOrCode}
             step={emailStep}
+            expiresAt={expiresAt}
+            currentEmail={securityEmail}
             onConfirm={() => {
                void setEmailConfirmAction({
                   emailNew,
@@ -198,9 +211,14 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
                   pendingEmail,
                   setPendingEmail,
                   setEmailStep,
-                  setEmailPasswordOrCode: setEmailPasswordOrCode,
+                  setEmailPasswordOrCode,
                   setEmailOpen,
+                  setExpiresAt,
+                  setSecurityEmail,
                });
+            }}
+            onDetach={(password) => {
+               void detachEmailAction(password, setSecurityEmail, () => setEmailOpen(false));
             }}
          />
       </div>
