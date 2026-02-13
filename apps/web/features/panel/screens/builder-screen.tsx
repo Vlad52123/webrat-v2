@@ -43,6 +43,9 @@ export function BuilderScreen() {
                   : "builderPage mx-auto mt-[20px] mb-[24px] w-full max-w-[1040px] px-[24px]"
             }
          >
+            <div className="mb-[20px] text-center">
+               <div className="text-[11px] font-bold uppercase tracking-[1.6px] text-[rgba(255,255,255,0.30)]">Builder</div>
+            </div>
             <BuilderToggle open={open} onToggle={() => setOpen((v) => !v)} />
             <BuilderForm open={open} mutex={mutex} />
 

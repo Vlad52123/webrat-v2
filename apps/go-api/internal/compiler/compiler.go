@@ -85,7 +85,7 @@ func sanitizeFileName(name string) string {
 	if name == "" {
 		return "build"
 	}
-	re := regexp.MustCompile(`[^a-zA-Z0-9_-]+`)
+	re := regexp.MustCompile(`[^\p{L}\p{N}_-]+`)
 	clean := re.ReplaceAllString(name, "_")
 	if len(clean) == 0 {
 		return "build"

@@ -44,10 +44,10 @@ const TOAST_ICON_COLOR: Record<ToastType, string> = {
 };
 
 const TOAST_BORDER: Record<ToastType, string> = {
-   success: "rgba(46,204,113,0.12)",
-   error: "rgba(255,75,75,0.14)",
-   warning: "rgba(241,196,15,0.12)",
-   info: "rgba(52,152,219,0.12)",
+   success: "rgba(46,204,113,0.22)",
+   error: "rgba(255,75,75,0.24)",
+   warning: "rgba(241,196,15,0.22)",
+   info: "rgba(52,152,219,0.22)",
 };
 
 function WcToastView(props: {
@@ -94,7 +94,7 @@ function WcToastView(props: {
          "div",
          {
             className:
-               "wc-toast toast--show flex items-center gap-[10px] w-[280px] overflow-hidden rounded-[12px] border bg-[rgba(16,16,20,0.94)] px-[12px] py-[10px] shadow-[0_8px_28px_rgba(0,0,0,0.55),0_1px_0_rgba(255,255,255,0.04)_inset] backdrop-blur-[12px]" +
+               "wc-toast toast--show flex items-center gap-[10px] w-[280px] overflow-hidden rounded-[14px] border bg-[rgba(18,18,24,0.55)] px-[12px] py-[10px] shadow-[0_8px_32px_rgba(0,0,0,0.45),0_1px_0_rgba(255,255,255,0.08)_inset,inset_0_0_20px_rgba(255,255,255,0.03)] backdrop-blur-[20px] backdrop-saturate-[1.6]" +
                (hiding ? " toast--hide" : ""),
             style: ({
                "--wc-toast-ttl": `${ttlMs}ms`,

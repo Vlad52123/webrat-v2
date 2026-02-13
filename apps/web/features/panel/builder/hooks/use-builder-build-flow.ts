@@ -88,12 +88,12 @@ export function useBuilderBuildFlow(opts: {
          showToastSafe("warning", "Enter exe name!");
          return;
       }
-      if (rawName.length > 25) {
-         if (buildNameEl) buildNameEl.value = rawName.slice(0, 25);
+      if (rawName.length > 255) {
+         if (buildNameEl) buildNameEl.value = rawName.slice(0, 255);
          return;
       }
-      if (!/^[A-Za-z0-9_-]+$/.test(rawName)) {
-         showToastSafe("warning", "Use only English letters for exe name!");
+      if (!/^[A-Za-zА-Яа-яЁё0-9_-]+$/.test(rawName)) {
+         showToastSafe("warning", "Use only letters, numbers, - and _ for exe name!");
          return;
       }
 

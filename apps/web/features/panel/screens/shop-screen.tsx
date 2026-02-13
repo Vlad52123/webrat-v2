@@ -151,6 +151,9 @@ export function ShopScreen() {
    return (
       <div id="shopView" className="h-full overflow-x-hidden overflow-y-auto">
          <div className={shopClasses.page}>
+            <div className="mb-[20px] text-center">
+               <div className="text-[11px] font-bold uppercase tracking-[1.6px] text-[rgba(255,255,255,0.30)]">Shop</div>
+            </div>
             <ShopSubscriptionGrid
                keyValue={key}
                onKeyChange={setKey}

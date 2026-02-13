@@ -66,7 +66,7 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
                   <div className="text-[11px] font-bold uppercase tracking-[1.2px] text-[rgba(255,255,255,0.35)] mb-[2px]">General</div>
 
                   <BuilderField label="Name">
-                     <BuilderTextInput id="buildName" placeholder="Build name" autoComplete="off" maxLength={25} />
+                     <BuilderTextInput id="buildName" placeholder="Build name" autoComplete="off" maxLength={255} />
                   </BuilderField>
 
                   <BuilderField label="Mutex">

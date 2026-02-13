@@ -22,7 +22,7 @@ export const CommunityItemCard = memo(function CommunityItemCard(props: {
    const iconSrc = keyIcons[item.key];
 
    const iconContent = iconSrc ? (
-      <img src={iconSrc} alt="" draggable={false} className="h-[22px] w-[22px] opacity-70 invert" />
+      <img src={iconSrc} alt="" draggable={false} className="h-[22px] w-[22px] select-none pointer-events-none opacity-70 invert" />
    ) : (
       <span className="text-[18px]">ℹ</span>
    );

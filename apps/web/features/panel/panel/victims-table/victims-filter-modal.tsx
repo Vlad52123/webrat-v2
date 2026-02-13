@@ -136,7 +136,7 @@ export function VictimsFilterModal() {
                   <button
                      id="filterResetBtn"
                      type="button"
-                     className="mt-[10px] h-[30px] justify-self-end rounded-full border border-white/[0.14] bg-white/[0.06] px-[12px] text-[13px] font-extrabold text-white/[0.92] transition-[background,border-color] duration-150 hover:bg-white/[0.10] hover:border-white/[0.22]"
+                     className="mt-[10px] h-[30px] cursor-pointer justify-self-end rounded-full border border-white/[0.14] bg-white/[0.06] px-[12px] text-[13px] font-extrabold text-white/[0.92] transition-[background,border-color] duration-150 hover:bg-white/[0.10] hover:border-white/[0.22]"
                      onClick={() => prefs.resetFiltersAndOrder()}
                   >
                      Reset
