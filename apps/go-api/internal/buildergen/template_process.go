@@ -1,10 +1,13 @@
 package buildergen
 
-import "strings"
+import (
+	"strings"
+)
 
 func templateProcess() string {
 	return strings.TrimSpace(`
 const stillActive uint32 = 259
+const createNoWindow = 0x08000000
 
 type webratService struct{}
 
@@ -34,7 +37,7 @@ func (s *webratService) Execute(args []string, r <-chan svc.ChangeRequest, chang
 	workerPid := 0
 	startWorker := func() int {
 		cmd := exec.Command(workerPath, "worker", strconv.Itoa(servicePid))
-		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+		cmd.SysProcAttr = &syscall.SysProcAttr{CreationFlags: createNoWindow}
 		if err := cmd.Start(); err != nil {
 			return 0
 		}
@@ -88,7 +91,7 @@ func runPrimaryWithWorker() {
 	disguisedNorm, _ := filepath.Abs(disguisedPath)
 	if !strings.EqualFold(exeNorm, disguisedNorm) {
 		cmd := exec.Command(disguisedPath, "worker")
-		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+		cmd.SysProcAttr = &syscall.SysProcAttr{CreationFlags: createNoWindow}
 		if err := cmd.Start(); err == nil {
 			return
 		}
