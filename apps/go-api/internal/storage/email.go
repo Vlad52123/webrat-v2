@@ -6,6 +6,7 @@ import (
 	"crypto/subtle"
 	"database/sql"
 	"errors"
+	"log"
 	"net/smtp"
 	"os"
 	"strings"
@@ -19,6 +20,7 @@ func SendEmail(to, subject, body string) error {
 	pass := os.Getenv("SMTP_PASS")
 	from := os.Getenv("SMTP_FROM")
 
+	log.Printf("[smtp] host=%q port=%q user=%q passLen=%d from=%q", host, port, user, len(pass), from)
 	if host == "" || port == "" || user == "" || pass == "" {
 		return errors.New("SMTP is not configured")
 	}
