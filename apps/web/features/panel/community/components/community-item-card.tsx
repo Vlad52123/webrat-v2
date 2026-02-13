@@ -6,7 +6,7 @@ import type { CommunityItem } from "../types";
 import { CommunityItemDetails } from "./community-item-details";
 
 const keyIcons: Record<string, string | null> = {
-   information: null,
+   information: "/icons/information.svg",
    rules: "/icons/rules.svg",
    updates: "/icons/updates.svg",
 };
