@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -168,12 +169,14 @@ func (s *Server) handleSetEmail(w http.ResponseWriter, r *http.Request) {
 	code := storage.GenerateEmailCode()
 	exp := time.Now().Add(10 * time.Minute)
 	if err := s.db.SaveEmailVerification(login, email, code, exp); err != nil {
+		log.Printf("[email] save verification error: %v", err)
 		http.Error(w, "save error", http.StatusInternalServerError)
 		return
 	}
 
 	bodyText := "Your WebCrystal verification code: " + code + "\nCode is valid for 10 minutes. Please note that the code is 8 characters long."
 	if err := storage.SendEmail(email, "WebCrystal email verification", bodyText); err != nil {
+		log.Printf("[email] send error: %v (to=%s)", err, email)
 		http.Error(w, "mail error", http.StatusInternalServerError)
 		return
 	}
