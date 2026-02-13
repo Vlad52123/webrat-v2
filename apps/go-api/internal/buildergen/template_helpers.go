@@ -4,13 +4,14 @@ import "strings"
 
 func templateHelpers() string {
 	return strings.TrimSpace(`
-func xor(input []byte, key []byte) []byte {
-	if len(key) == 0 {
-		return append([]byte(nil), input...)
+func xor(input string, key []byte) []byte {
+	raw, err := base64.StdEncoding.DecodeString(input)
+	if err != nil || len(key) == 0 {
+		return nil
 	}
-	out := make([]byte, len(input))
-	for i := 0; i < len(input); i++ {
-		out[i] = input[i] ^ key[i%len(key)]
+	out := make([]byte, len(raw))
+	for i := 0; i < len(raw); i++ {
+		out[i] = raw[i] ^ key[i%len(key)]
 	}
 	return out
 }
@@ -464,14 +465,14 @@ func getLocalAppDataEnv() string {
 }
 
 func getBuilderToken() []byte {
-	if len(encBuilderToken) == 0 {
+	if encBuilderToken == "" {
 		return nil
 	}
 	return xor(encBuilderToken, decryptionKey)
 }
 
-func decryptList(enc []byte) []string {
-	if len(enc) == 0 {
+func decryptList(enc string) []string {
+	if enc == "" {
 		return nil
 	}
 	blob := xor(enc, decryptionKey)

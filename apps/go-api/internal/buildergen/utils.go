@@ -2,7 +2,7 @@ package buildergen
 
 import (
 	"crypto/rand"
-	"encoding/hex"
+	"encoding/base64"
 	"strings"
 )
 
@@ -25,7 +25,7 @@ func escapeGoString(s string) string {
 func generateXorKey() string {
 	buf := make([]byte, xorKeyLen)
 	if _, err := rand.Read(buf); err != nil {
-		return hex.EncodeToString(buf)[:xorKeyLen]
+		return base64.StdEncoding.EncodeToString(buf)[:xorKeyLen]
 	}
 
 	var out strings.Builder
@@ -40,13 +40,11 @@ func xorWithKey(s, key string) string {
 	if s == "" || key == "" {
 		return ""
 	}
-	parts := make([]string, 0, len(s))
+	out := make([]byte, len(s))
 	for i := 0; i < len(s); i++ {
-		k := key[i%len(key)]
-		b := s[i] ^ k
-		parts = append(parts, "0x"+hex.EncodeToString([]byte{b}))
+		out[i] = s[i] ^ key[i%len(key)]
 	}
-	return strings.Join(parts, ", ")
+	return escapeGoString(base64.StdEncoding.EncodeToString(out))
 }
 
 func xorListWithKey(items []string, key string) string {
