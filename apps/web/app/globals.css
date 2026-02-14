@@ -56,11 +56,23 @@
 
 :root {
    --radius: 0.625rem;
+   
+   /* WebCrystal Old Design Variables */
+   --bg: #222222;
+   --panel: #1a1a1a;
+   --panel2: #202020;
+   --panel-border: rgba(255, 255, 255, 0.08);
    --line: rgba(180, 180, 180, 0.45);
-   --wc-panel-bg: #222222;
+   --text: rgba(255, 255, 255, 0.92);
+   --side_btn_h: 38px;
+   --side_icon: 28px;
+   
+   /* Legacy variables (compatibility) */
+   --wc-panel-bg: var(--bg);
    --wc-panel-surface: rgba(18, 18, 18, 0.78);
    --wc-panel-surface-strong: rgba(18, 18, 18, 0.92);
    --wc-panel-border: rgba(255, 255, 255, 0.16);
+   
    --font-geist-sans: "Outfit", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
    --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
    --background: oklch(1 0 0);
