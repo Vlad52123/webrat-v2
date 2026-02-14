@@ -37,25 +37,69 @@ function useToast() {
     return { show, el };
 }
 
-function HomeScreen({ profile, loading, onRefresh }: {
+function ShimmerSkeleton() {
+    return (
+        <div className="tg-section tg-fade-in">
+            <div className="tg-hero" style={{ padding: 24 }}>
+                <div className="tg-shimmer tg-shimmer-line short" style={{ margin: "0 auto 8px" }} />
+                <div className="tg-shimmer tg-shimmer-balance" />
+                <div className="tg-shimmer tg-shimmer-line short" style={{ margin: "8px auto 0", width: "40%" }} />
+            </div>
+            <div style={{ marginTop: 16 }}>
+                <div className="tg-card">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                        <div key={i} className="tg-stat-row">
+                            <div className="tg-shimmer tg-shimmer-line" style={{ width: "35%", marginBottom: 0 }} />
+                            <div className="tg-shimmer tg-shimmer-line" style={{ width: "25%", marginBottom: 0 }} />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+
+function HomeScreen({ profile, loading, onRefresh, username }: {
     profile: Profile | null;
     loading: boolean;
     onRefresh: () => void;
+    username?: string;
 }) {
+    if (loading && !profile) {
+        return <ShimmerSkeleton />;
+    }
+
+    const initial = username ? username.charAt(0).toUpperCase() : "?";
+
     return (
         <div className="tg-section">
-            <div className="tg-hero" onClick={onRefresh}>
+            {/* Header */}
+            <div className="tg-header tg-fade-in">
+                <div>
+                    <div className="tg-header-greeting">
+                        {getGreeting()}, {username || "пользователь"}
+                    </div>
+                    <div className="tg-header-title">
+                        <span className="tg-header-logo">💎</span>
+                        WebCrystal
+                    </div>
+                </div>
+                <div className="tg-header-avatar">{initial}</div>
+            </div>
+
+            {/* Hero Balance */}
+            <div className="tg-hero tg-fade-in tg-stagger-1" onClick={onRefresh} style={{ marginTop: 16 }}>
                 <div className="tg-hero-label">Баланс</div>
                 <div className="tg-hero-balance">
                     {loading ? "..." : `${(profile?.balance ?? 0).toFixed(0)} ₽`}
                 </div>
-                <div style={{ fontSize: 12, color: "var(--tg-text-muted)", marginTop: 4 }}>
-                    Нажми для обновления
-                </div>
+                <div className="tg-hero-hint">Нажми для обновления</div>
             </div>
 
-            <div style={{ marginTop: 16 }}>
-                <div className="tg-card" style={{ marginBottom: 8 }}>
+            {/* Stats */}
+            <div style={{ marginTop: 14 }}>
+                <div className="tg-card tg-fade-in tg-stagger-2">
                     <div className="tg-stat-row">
                         <span className="tg-stat-label">🔑 ID</span>
                         <span className="tg-stat-value">{profile?.telegramId ?? "-"}</span>
@@ -82,32 +126,35 @@ function HomeScreen({ profile, loading, onRefresh }: {
     );
 }
 
+/* ── Shop Screen ────────────────────────────── */
+
 function ShopScreen({ balance, onBuy, buying }: {
     balance: number;
     onBuy: (plan: "month" | "year" | "forever") => void;
     buying: boolean;
 }) {
-    const plans: { plan: "month" | "year" | "forever"; title: string; desc: string; price: number; popular?: boolean }[] = [
-        { plan: "month", title: "Месяц", desc: "30 дней доступа", price: 299 },
-        { plan: "year", title: "Год", desc: "365 дней доступа", price: 599, popular: true },
-        { plan: "forever", title: "Навсегда", desc: "Пожизненный доступ", price: 1299 },
+    const plans: { plan: "month" | "year" | "forever"; icon: string; title: string; desc: string; price: number; popular?: boolean }[] = [
+        { plan: "month", icon: "⏱", title: "Месяц", desc: "30 дней доступа", price: 299 },
+        { plan: "year", icon: "⭐", title: "Год", desc: "365 дней доступа", price: 599, popular: true },
+        { plan: "forever", icon: "♾️", title: "Навсегда", desc: "Пожизненный доступ", price: 1299 },
     ];
 
     return (
         <div className="tg-section">
-            <div className="tg-section-title">💎 WebCrystal</div>
+            <div className="tg-section-title tg-fade-in">💎 WebCrystal</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {plans.map((p) => (
+                {plans.map((p, i) => (
                     <button
                         key={p.plan}
-                        className={`tg-plan ${p.popular ? "tg-plan-popular" : ""}`}
+                        className={`tg-plan tg-fade-in tg-stagger-${i + 1} ${p.popular ? "tg-plan-popular" : ""}`}
                         onClick={() => onBuy(p.plan)}
                         disabled={buying}
                     >
                         <div>
                             <div className="tg-plan-title">
+                                <span>{p.icon}</span>
                                 {p.title}
-                                {p.popular && <span className="tg-plan-badge">Выгодно</span>}
+                                {p.popular && <span className="tg-plan-badge">🔥 Выгодно</span>}
                             </div>
                             <div className="tg-plan-desc">{p.desc}</div>
                         </div>
@@ -115,12 +162,16 @@ function ShopScreen({ balance, onBuy, buying }: {
                     </button>
                 ))}
             </div>
-            <div style={{ marginTop: 16, textAlign: "center", fontSize: 13, color: "var(--tg-text-muted)" }}>
-                Баланс: {balance.toFixed(0)} ₽
+            <div style={{ textAlign: "center", marginTop: 16 }}>
+                <div className="tg-balance-chip tg-fade-in tg-stagger-4">
+                    💰 Баланс: {balance.toFixed(0)} ₽
+                </div>
             </div>
         </div>
     );
 }
+
+/* ── Deposit Screen ─────────────────────────── */
 
 function DepositScreen({ onDeposit, depositing }: {
     onDeposit: (amount: number) => void;
@@ -132,9 +183,9 @@ function DepositScreen({ onDeposit, depositing }: {
 
     return (
         <div className="tg-section">
-            <div className="tg-section-title">💳 Пополнение</div>
+            <div className="tg-section-title tg-fade-in">💳 Пополнение</div>
 
-            <div className="tg-preset-grid">
+            <div className="tg-preset-grid tg-fade-in tg-stagger-1">
                 {presets.map((p) => (
                     <button
                         key={p}
@@ -146,23 +197,25 @@ function DepositScreen({ onDeposit, depositing }: {
                 ))}
             </div>
 
-            <input
-                className="tg-input"
-                type="number"
-                inputMode="numeric"
-                placeholder="Сумма (₽)"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))}
-                min="50"
-                max="1000000"
-            />
+            <div className="tg-fade-in tg-stagger-2">
+                <input
+                    className="tg-input"
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="Сумма (₽)"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))}
+                    min="50"
+                    max="1000000"
+                />
+            </div>
 
-            <div style={{ marginTop: 8, textAlign: "center", fontSize: 12, color: "var(--tg-text-muted)" }}>
+            <div className="tg-deposit-hint tg-fade-in tg-stagger-3">
                 От 50 до 1 000 000 ₽
             </div>
 
             <button
-                className="tg-btn tg-btn-primary"
+                className="tg-btn tg-btn-primary tg-fade-in tg-stagger-3"
                 style={{ marginTop: 16 }}
                 disabled={depositing || numAmount < 50 || numAmount > 1000000}
                 onClick={() => onDeposit(numAmount)}
@@ -173,14 +226,29 @@ function DepositScreen({ onDeposit, depositing }: {
     );
 }
 
+/* ── Purchases Screen ───────────────────────── */
+
 function PurchasesScreen({ purchases, loading }: { purchases: Purchase[]; loading: boolean }) {
+    const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+
+    const copyKey = (key: string, idx: number) => {
+        navigator.clipboard?.writeText(key).catch(() => { });
+        setCopiedIdx(idx);
+        setTimeout(() => setCopiedIdx(null), 1500);
+    };
+
     if (loading) {
-        return <div className="tg-loading"><div className="tg-spinner" /></div>;
+        return (
+            <div className="tg-loading">
+                <div className="tg-spinner" />
+                <div className="tg-loading-text">Загрузка покупок...</div>
+            </div>
+        );
     }
 
     if (purchases.length === 0) {
         return (
-            <div className="tg-empty">
+            <div className="tg-empty tg-fade-in">
                 <div className="tg-empty-icon">📭</div>
                 <div className="tg-empty-text">Покупок пока нет</div>
             </div>
@@ -189,16 +257,21 @@ function PurchasesScreen({ purchases, loading }: { purchases: Purchase[]; loadin
 
     return (
         <div className="tg-section">
-            <div className="tg-section-title">🧾 Покупки</div>
+            <div className="tg-section-title tg-fade-in">🧾 Покупки</div>
             {purchases.map((p, i) => (
-                <div key={i} className="tg-purchase">
+                <div key={i} className={`tg-purchase tg-fade-in tg-stagger-${Math.min(i + 1, 5)}`}>
                     <div className="tg-purchase-product">{p.product}</div>
                     <div className="tg-purchase-meta">
                         <span>{p.price.toFixed(0)} ₽</span>
                         <span>{p.createdAt}</span>
                     </div>
                     {p.activationKey && (
-                        <div className="tg-purchase-key">🔑 {p.activationKey}</div>
+                        <div
+                            className={`tg-purchase-key ${copiedIdx === i ? "tg-copied" : ""}`}
+                            onClick={() => copyKey(p.activationKey, i)}
+                        >
+                            🔑 {p.activationKey}
+                        </div>
                     )}
                 </div>
             ))}
@@ -206,54 +279,82 @@ function PurchasesScreen({ purchases, loading }: { purchases: Purchase[]; loadin
     );
 }
 
+/* ── Info Screen ────────────────────────────── */
+
 function InfoScreen() {
     const { openLink } = useTelegram();
 
     return (
         <div className="tg-section">
-            <div className="tg-section-title">📚 Информация</div>
+            <div className="tg-section-title tg-fade-in">📚 Информация</div>
 
-            <div className="tg-info-link" onClick={() => openLink("https://webcrystal.sbs/")}>
-                <span style={{ fontSize: 24 }}>🌐</span>
+            <div className="tg-info-link tg-fade-in tg-stagger-1" onClick={() => openLink("https://webcrystal.sbs/")}>
+                <span style={{ fontSize: 26 }}>🌐</span>
                 <div>
-                    <div style={{ fontWeight: 700, color: "#fff" }}>Наш сайт</div>
-                    <div style={{ fontSize: 12, color: "var(--tg-text-dim)" }}>webcrystal.sbs</div>
+                    <div style={{ fontWeight: 700, color: "#fff", fontSize: 15 }}>Наш сайт</div>
+                    <div style={{ fontSize: 12, color: "var(--tg-text-dim)", marginTop: 2 }}>webcrystal.sbs</div>
                 </div>
             </div>
 
-            <div className="tg-info-link" onClick={() => openLink("https://t.me/WebCrystalbot")}>
-                <span style={{ fontSize: 24 }}>🤖</span>
+            <div className="tg-info-link tg-fade-in tg-stagger-2" onClick={() => openLink("https://t.me/WebCrystalbot")}>
+                <span style={{ fontSize: 26 }}>🤖</span>
                 <div>
-                    <div style={{ fontWeight: 700, color: "#fff" }}>Бот покупок</div>
-                    <div style={{ fontSize: 12, color: "var(--tg-text-dim)" }}>@WebCrystalbot</div>
+                    <div style={{ fontWeight: 700, color: "#fff", fontSize: 15 }}>Бот покупок</div>
+                    <div style={{ fontSize: 12, color: "var(--tg-text-dim)", marginTop: 2 }}>@WebCrystalbot</div>
                 </div>
             </div>
 
-            <div className="tg-card" style={{ marginTop: 12, textAlign: "center" }}>
-                <div style={{ fontSize: 13, color: "var(--tg-text-dim)", lineHeight: 1.6 }}>
-                    ✅ Работает на сайте, без лаунчеров<br />
-                    ✅ Не нужны хостинги и порты<br />
-                    ✅ Билд на Go — не нужна Java/.NET<br />
-                    <br />
-                    <em style={{ color: "var(--tg-text-muted)" }}>Не открывается — используйте VPN</em>
+            <div className="tg-card tg-features-card tg-fade-in tg-stagger-3">
+                <div className="tg-feature-item">
+                    <span className="tg-feature-icon">✅</span>
+                    <span>Работает на сайте — без лаунчеров и десктопных панелей</span>
+                </div>
+                <div className="tg-feature-item">
+                    <span className="tg-feature-icon">✅</span>
+                    <span>Не нужны хостинги и открытые порты, всё готово к работе</span>
+                </div>
+                <div className="tg-feature-item">
+                    <span className="tg-feature-icon">✅</span>
+                    <span>Билд на Go — не нужна Java или .NET Framework</span>
+                </div>
+                <div className="tg-feature-item">
+                    <span className="tg-feature-icon">💡</span>
+                    <span style={{ color: "var(--tg-text-muted)", fontStyle: "italic" }}>
+                        Не открывается — используйте VPN
+                    </span>
                 </div>
             </div>
         </div>
     );
 }
 
+/* ── Success Screen ─────────────────────────── */
+
 function SuccessScreen({ product, activationKey, onDone }: {
     product: string;
     activationKey: string;
     onDone: () => void;
 }) {
+    const [copied, setCopied] = useState(false);
+
+    const copyKey = () => {
+        navigator.clipboard?.writeText(activationKey).catch(() => { });
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
     return (
         <div className="tg-success-screen">
-            <div className="tg-success-icon">✅</div>
+            <div className="tg-success-icon">🎉</div>
             <div className="tg-success-title">Оплата прошла успешно!</div>
-            <div style={{ fontSize: 14, color: "var(--tg-text-dim)", marginTop: 4 }}>{product}</div>
-            <div className="tg-success-key">{activationKey}</div>
-            <div style={{ fontSize: 12, color: "var(--tg-text-muted)", marginBottom: 20 }}>
+            <div className="tg-success-subtitle">{product}</div>
+            <div
+                className={`tg-success-key ${copied ? "tg-copied" : ""}`}
+                onClick={copyKey}
+            >
+                {activationKey}
+            </div>
+            <div style={{ fontSize: 12, color: "var(--tg-text-muted)", marginBottom: 24 }}>
                 Нажми на ключ чтобы скопировать
             </div>
             <button className="tg-btn tg-btn-primary" onClick={onDone}>
@@ -262,6 +363,8 @@ function SuccessScreen({ product, activationKey, onDone }: {
         </div>
     );
 }
+
+/* ── Bottom Navigation ──────────────────────── */
 
 const TABS: { id: Tab; icon: string; label: string }[] = [
     { id: "home", icon: "🏠", label: "Главная" },
@@ -292,8 +395,20 @@ function BottomNav({ active, onChange }: { active: Tab; onChange: (t: Tab) => vo
     );
 }
 
+/* ── Helpers ─────────────────────────────────── */
+
+function getGreeting(): string {
+    const h = new Date().getHours();
+    if (h >= 5 && h < 12) return "Доброе утро";
+    if (h >= 12 && h < 17) return "Добрый день";
+    if (h >= 17 && h < 22) return "Добрый вечер";
+    return "Доброй ночи";
+}
+
+/* ── Main App ────────────────────────────────── */
+
 function TgApp() {
-    const { ready } = useTelegram();
+    const { ready, user } = useTelegram();
     const api = useTgApi();
     const toast = useToast();
 
@@ -377,6 +492,7 @@ function TgApp() {
             <div className="tg-app">
                 <div className="tg-loading" style={{ minHeight: "100dvh" }}>
                     <div className="tg-spinner" />
+                    <div className="tg-loading-text">Загрузка...</div>
                 </div>
             </div>
         );
@@ -403,7 +519,12 @@ function TgApp() {
             {toast.el}
 
             {tab === "home" && (
-                <HomeScreen profile={profile} loading={loadingProfile} onRefresh={loadProfile} />
+                <HomeScreen
+                    profile={profile}
+                    loading={loadingProfile}
+                    onRefresh={loadProfile}
+                    username={user?.firstName || user?.username}
+                />
             )}
             {tab === "shop" && (
                 <ShopScreen balance={profile?.balance ?? 0} onBuy={handleBuy} buying={buying} />
@@ -431,7 +552,6 @@ export default function TgAppPage() {
         return () => clearTimeout(timer);
     }, []);
 
-    // Not yet determined or not Telegram — show nothing
     if (!isTelegram) {
         return null;
     }

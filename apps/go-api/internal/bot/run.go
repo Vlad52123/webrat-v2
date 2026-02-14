@@ -2,15 +2,12 @@ package bot
 
 import (
 	"errors"
-	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
 	"webrat-go-api/internal/bot/handlers"
-	"webrat-go-api/internal/bot/state"
 	"webrat-go-api/internal/storage"
 )
 
@@ -19,23 +16,15 @@ func Run(db *storage.DB) error {
 	if tgTok == "" {
 		return errors.New("TELEGRAM_BOT_TOKEN is empty")
 	}
-	cpTok := strings.TrimSpace(os.Getenv("CRYPTOBOT_TOKEN"))
-	if cpTok == "" {
-		return errors.New("CRYPTOBOT_TOKEN is empty")
-	}
 
 	api, err := tgbotapi.NewBotAPI(tgTok)
 	if err != nil {
 		return err
 	}
 
-	hc := &http.Client{Timeout: 15 * time.Second}
 	b := &Bot{
-		api:        api,
-		cryptoTok:  cpTok,
-		httpClient: hc,
-		st:         state.NewStore(),
-		db:         db,
+		api: api,
+		db:  db,
 	}
 
 	updCfg := tgbotapi.NewUpdate(0)
