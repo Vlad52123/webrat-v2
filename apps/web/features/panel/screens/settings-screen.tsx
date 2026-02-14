@@ -86,7 +86,7 @@ export function SettingsScreen(props: { tab: SettingsTabKey }) {
          <div className="flex-1 min-h-0 p-[10px]">
             <div className="w-[920px] max-w-[min(980px,calc(100vw-60px))] mx-auto mt-[22px] px-[10px] pb-[10px] min-h-[220px]">
                <div className="mb-[20px] text-center">
-                  <div className="text-[11px] font-bold uppercase tracking-[1.6px] text-[rgba(255,255,255,0.30)]">Settings</div>
+                  <div className="text-[11px] font-bold uppercase tracking-[1.6px] text-[rgba(255,255,255,0.55)]" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.6)" }}>Settings</div>
                </div>
                <PersonalizationPane
                   tab={tab}

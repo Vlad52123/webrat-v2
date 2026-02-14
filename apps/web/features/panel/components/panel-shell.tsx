@@ -101,7 +101,7 @@ function PanelShellInner() {
       return (
          <div
             className={
-               "grid h-[100dvh] overflow-hidden place-items-center transition-opacity duration-200 " +
+               "grid h-[100dvh] overflow-hidden place-items-center transition-opacity duration-[600ms] " +
                (shouldShowLoader && !loaderFadingOut ? "opacity-100" : "opacity-0")
             }
             style={{ background: "var(--wc-panel-bg)" }}

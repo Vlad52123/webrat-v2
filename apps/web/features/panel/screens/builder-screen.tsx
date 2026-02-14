@@ -44,7 +44,7 @@ export function BuilderScreen() {
             }
          >
             <div className="mb-[20px] text-center">
-               <div className="text-[11px] font-bold uppercase tracking-[1.6px] text-[rgba(255,255,255,0.30)]">Builder</div>
+               <div className="text-[11px] font-bold uppercase tracking-[1.6px] text-[rgba(255,255,255,0.55)]" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.6)" }}>Builder</div>
             </div>
             <BuilderToggle open={open} onToggle={() => setOpen((v) => !v)} />
             <BuilderForm open={open} mutex={mutex} />

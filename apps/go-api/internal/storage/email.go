@@ -40,20 +40,29 @@ func SendEmail(to, subject, body string) error {
 <body style="margin:0;padding:0;background:#0a0a0e;font-family:'Segoe UI',Arial,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0e;padding:40px 0;">
 <tr><td align="center">
-<table width="460" cellpadding="0" cellspacing="0" style="background:linear-gradient(180deg,rgba(24,24,32,0.98),rgba(16,16,22,0.98));border:1px solid rgba(255,255,255,0.12);border-radius:20px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.06) inset;">
+<table width="460" cellpadding="0" cellspacing="0" style="background:linear-gradient(180deg,rgba(24,24,32,0.98),rgba(16,16,22,0.98));border:1px solid rgba(255,255,255,0.10);border-radius:20px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.05) inset;">
+<tr><td style="height:4px;background:linear-gradient(90deg,#6c5ce7,#a855f7,#6c5ce7);"></td></tr>
 <tr><td style="padding:32px 36px 20px;text-align:center;">
-<img src="` + baseURL + `/img/logo/register_logo.ico" alt="WebCrystal" width="72" height="72" style="image-rendering:pixelated;display:block;margin:0 auto 16px;" />
+<div style="display:inline-block;padding:12px;border-radius:18px;background:rgba(108,92,231,0.10);box-shadow:0 0 30px rgba(108,92,231,0.15);margin-bottom:16px;">
+<img src="` + baseURL + `/logo/register_logo.ico" alt="WebCrystal" width="52" height="52" style="display:block;image-rendering:pixelated;" />
+</div>
 <div style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:0.5px;margin-bottom:4px;">WebCrystal</div>
-<div style="font-size:12px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:2px;">Email Verification</div>
+<div style="font-size:11px;color:rgba(255,255,255,0.30);text-transform:uppercase;letter-spacing:3px;margin-top:4px;">Email Verification</div>
 </td></tr>
 <tr><td style="padding:0 36px;">
-<div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);"></div>
+<div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent);"></div>
 </td></tr>
-<tr><td style="padding:24px 36px;text-align:center;">
-<div style="font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:20px;line-height:1.5;">` + body + `</div>
+<tr><td style="padding:28px 36px;text-align:center;">
+<div style="font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:20px;line-height:1.6;">` + body + `</div>
 </td></tr>
-<tr><td style="padding:0 36px 32px;text-align:center;">
-<div style="font-size:11px;color:rgba(255,255,255,0.25);line-height:1.4;">If you did not request this, please ignore this email.</div>
+<tr><td style="padding:0 36px;">
+<div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent);"></div>
+</td></tr>
+<tr><td style="padding:20px 36px 28px;text-align:center;">
+<div style="font-size:11px;color:rgba(255,255,255,0.20);line-height:1.5;">If you did not request this, please ignore this email.</div>
+<div style="margin-top:12px;font-size:10px;color:rgba(255,255,255,0.14);letter-spacing:0.5px;">
+<a href="` + baseURL + `" style="color:rgba(168,85,247,0.55);text-decoration:none;">webcrystal.sbs</a>
+</div>
 </td></tr>
 </table>
 </td></tr>
@@ -74,7 +83,7 @@ func SendEmail(to, subject, body string) error {
 func SendVerificationEmail(to, code string) error {
 	codeHTML := ""
 	for _, ch := range code {
-		codeHTML += `<span style="display:inline-block;width:36px;height:44px;line-height:44px;text-align:center;font-size:22px;font-weight:700;font-family:'Courier New',monospace;color:#fff;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.16);border-radius:8px;margin:0 2px;letter-spacing:0;">` + string(ch) + `</span>`
+		codeHTML += `<span style="display:inline-block;width:38px;height:46px;line-height:46px;text-align:center;font-size:22px;font-weight:700;font-family:'Courier New',monospace;color:#fff;background:rgba(108,92,231,0.08);border:1px solid rgba(168,85,247,0.25);border-radius:10px;margin:0 3px;letter-spacing:0;">` + string(ch) + `</span>`
 	}
 
 	body := `Your verification code:

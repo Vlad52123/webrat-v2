@@ -38,7 +38,7 @@ export function usePanelLoader(isPendingRestrictedTab: boolean) {
 
         if (!prev) return;
         setLoaderFadingOut(true);
-        const t = window.setTimeout(() => setLoaderFadingOut(false), 220);
+        const t = window.setTimeout(() => setLoaderFadingOut(false), 700);
         return () => window.clearTimeout(t);
     }, [loaderFadingOut, shouldShowLoader]);
 
