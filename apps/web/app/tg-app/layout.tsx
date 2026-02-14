@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import "./styles.css";
 
 export const metadata: Metadata = {
     title: "WebCrystal",
@@ -12,7 +11,7 @@ export const viewport: Viewport = {
     initialScale: 1,
     maximumScale: 1,
     userScalable: false,
-    themeColor: "#0a0a0f",
+    themeColor: "#07060b",
 };
 
 export default function TgAppLayout({ children }: { children: React.ReactNode }) {
