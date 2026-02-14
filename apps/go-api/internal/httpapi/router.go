@@ -100,5 +100,13 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 		r.Get("/compile-download", s.requireVIP(s.handleCompileDownload))
 	})
 
+	r.Route("/api/tg", func(r chi.Router) {
+		r.Use(s.tgAuthMiddleware)
+		r.Get("/profile", s.handleTGProfile)
+		r.Get("/purchases", s.handleTGPurchases)
+		r.Post("/deposit", s.handleTGDeposit)
+		r.Post("/buy", s.handleTGBuy)
+	})
+
 	return r
 }

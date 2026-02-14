@@ -25,4 +25,13 @@ func HandleStart(b BotContext, msg *tgbotapi.Message) {
 	if _, err := b.TelegramAPI().Send(resp); err != nil {
 		log.Printf("send start error: %v", err)
 	}
+
+	appBtn := tgbotapi.NewInlineKeyboardButtonWebApp("🚀 Открыть Mini App", tgbotapi.WebAppInfo{URL: "https://webcrystal.sbs/tg-app"})
+	appMsg := tgbotapi.NewMessage(msg.Chat.ID, "Или откройте приложение:")
+	appMsg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(appBtn),
+	)
+	if _, err := b.TelegramAPI().Send(appMsg); err != nil {
+		log.Printf("send mini app button error: %v", err)
+	}
 }
