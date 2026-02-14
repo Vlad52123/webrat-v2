@@ -28,20 +28,19 @@ export function DetailView(props: { victims: Victim[] }) {
    if (!isOpen) return null;
 
    return (
-      <div id="detailView" className="view h-full">
+      <div id="detailView" className={"view h-full" + (isRemoteDesktop ? " isRemoteDesktop" : "")}>
          <div
             id="detailViewInner"
-            className={
-               "relative grid h-full w-full grid-cols-[170px_1fr] bg-[#222222] " +
-               (isRemoteDesktop ? "" : "")
-            }
+            className="relative grid h-full w-full grid-cols-[170px_1fr] bg-[var(--bg)]"
          >
             <DetailSidebar victim={victim} />
 
             <div
                className={
-                  "detail-main overflow-y-visible border-l border-[rgba(120,120,120,0.6)] " +
-                  (isRemoteDesktop ? "h-full min-h-0 overflow-hidden p-0" : "h-auto p-[12px_14px]")
+                  "detail-main border-l border-[rgba(120,120,120,0.6)] " +
+                  (isRemoteDesktop
+                     ? "h-full min-h-0 overflow-hidden p-0"
+                     : "h-auto overflow-y-visible p-[12px_14px]")
                }
             >
                {section === "information" && <InformationSection victim={victim} />}

