@@ -13,10 +13,10 @@ import (
 	"strings"
 )
 
-type ctxKey string
+type tgCtxKey string
 
-const tgUserIDKey ctxKey = "tgUserID"
-const tgUsernameKey ctxKey = "tgUsername"
+const tgUserIDKey tgCtxKey = "tgUserID"
+const tgUsernameKey tgCtxKey = "tgUsername"
 
 func validateTelegramInitData(initData, botToken string) (telegramID int64, username string, ok bool) {
 	vals, err := url.ParseQuery(initData)
