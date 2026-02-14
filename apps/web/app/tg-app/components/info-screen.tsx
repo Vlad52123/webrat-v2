@@ -7,47 +7,47 @@ export function InfoScreen() {
 
     return (
         <div className="px-4 pt-4">
-            <h2 className="mb-3.5 text-[12px] font-bold uppercase tracking-[2px] text-white/30">Information</h2>
+            <h2 className="mb-4 text-[12px] font-bold uppercase tracking-[2.5px] text-white/30">Information</h2>
 
             <button
                 type="button"
                 onClick={() => openLink("https://webcrystal.sbs/")}
-                className="mb-2.5 flex w-full items-center gap-3.5 rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4 text-left transition-all duration-200 active:scale-[0.97]"
+                className="mb-3 flex w-full items-center gap-4 rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4 text-left transition-all duration-200 active:scale-[0.97]"
             >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-[20px]">🌐</span>
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-[22px]">🌐</span>
                 <div>
-                    <p className="text-[15px] font-bold text-white/90">Website</p>
-                    <p className="mt-0.5 text-[12px] text-white/30">webcrystal.sbs</p>
+                    <p className="text-[15px] font-bold text-white">Website</p>
+                    <p className="mt-0.5 text-[12px] text-white/25">webcrystal.sbs</p>
                 </div>
             </button>
 
             <button
                 type="button"
                 onClick={() => openLink("https://t.me/WebCrystalbot")}
-                className="mb-2.5 flex w-full items-center gap-3.5 rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4 text-left transition-all duration-200 active:scale-[0.97]"
+                className="mb-3 flex w-full items-center gap-4 rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4 text-left transition-all duration-200 active:scale-[0.97]"
             >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-[20px]">🤖</span>
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-[22px]">🤖</span>
                 <div>
-                    <p className="text-[15px] font-bold text-white/90">Bot</p>
-                    <p className="mt-0.5 text-[12px] text-white/30">@WebCrystalbot</p>
+                    <p className="text-[15px] font-bold text-white">Bot</p>
+                    <p className="mt-0.5 text-[12px] text-white/25">@WebCrystalbot</p>
                 </div>
             </button>
 
-            <div className="mt-1 rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4">
-                <Feature text="Works in browser — no launchers needed" />
-                <Feature text="No hosting or open ports required" />
-                <Feature text="Built with Go — no Java or .NET" />
-                <Feature text="VPN may be required in some regions" dim />
+            <div className="mt-1 overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.03] px-5 py-2">
+                <Feature icon="✅" text="Works in browser — no launchers needed" />
+                <Feature icon="✅" text="No hosting or open ports required" />
+                <Feature icon="✅" text="Built with Go — no Java or .NET" />
+                <Feature icon="💡" text="VPN may be required in some regions" dim />
             </div>
         </div>
     );
 }
 
-function Feature({ text, dim }: { text: string; dim?: boolean }) {
+function Feature({ icon, text, dim }: { icon: string; text: string; dim?: boolean }) {
     return (
-        <div className="flex items-start gap-2.5 border-b border-white/[0.03] py-2.5 last:border-0">
-            <span className="mt-0.5 text-[14px]">{dim ? "💡" : "✓"}</span>
-            <span className={`text-[13px] leading-relaxed ${dim ? "italic text-white/20" : "text-white/40"}`}>{text}</span>
+        <div className="flex items-start gap-3 border-b border-white/[0.03] py-3 last:border-0">
+            <span className="mt-0.5 text-[14px]">{icon}</span>
+            <span className={`text-[13px] leading-relaxed ${dim ? "italic text-white/15" : "text-white/40"}`}>{text}</span>
         </div>
     );
 }
