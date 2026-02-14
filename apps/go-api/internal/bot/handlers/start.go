@@ -26,7 +26,7 @@ func HandleStart(b BotContext, msg *tgbotapi.Message) {
 		log.Printf("send start error: %v", err)
 	}
 
-	appBtn := tgbotapi.NewInlineKeyboardButtonWebApp("🚀 Открыть Mini App", tgbotapi.WebAppInfo{URL: "https://webcrystal.sbs/tg-app"})
+	appBtn := tgbotapi.NewInlineKeyboardButtonURL("🚀 Открыть Mini App", "https://webcrystal.sbs/tg-app")
 	appMsg := tgbotapi.NewMessage(msg.Chat.ID, "Или откройте приложение:")
 	appMsg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(appBtn),
