@@ -3,11 +3,14 @@ import { type RefObject } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SliderCaptcha, type SliderCaptchaHandle } from "../slider-captcha";
-import type { UseFormReturn } from "react-hook-form";
-import type { LoginValues } from "../../schemas";
+
+type FormLike = {
+    register: (name: string) => Record<string, unknown>;
+    getValues: (name: string) => unknown;
+};
 
 interface Props {
-    form: UseFormReturn<LoginValues>;
+    form: FormLike;
     forgotEmail: string;
     setForgotEmail: (v: string) => void;
     forgotLoading: boolean;

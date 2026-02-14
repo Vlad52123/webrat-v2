@@ -53,6 +53,10 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 	}
 	r.Handle("/captcha/*", s.handleCaptchaStatic(captchaDir))
 
+	// serve static logo (for emails etc.)
+	logoDir := filepath.Join("static", "logo")
+	r.Handle("/static/logo/*", http.StripPrefix("/static/logo/", http.FileServer(http.Dir(logoDir))))
+
 	r.Get("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("ok"))

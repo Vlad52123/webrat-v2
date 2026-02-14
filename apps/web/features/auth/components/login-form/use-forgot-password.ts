@@ -2,12 +2,16 @@
 
 import { useCallback, useState } from "react";
 import { showToast } from "@/features/panel/toast";
-import type { UseFormReturn } from "react-hook-form";
-import type { LoginValues } from "../../schemas";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type FormLike = {
+    getValues: (name: string) => unknown;
+    setValue: (name: string, value: string) => void;
+};
 
 type ForgotMode = false | "email" | "code";
 
-export function useForgotPassword(form: UseFormReturn<LoginValues>) {
+export function useForgotPassword(form: FormLike) {
     const [forgotMode, setForgotMode] = useState<ForgotMode>(false);
     const [forgotEmail, setForgotEmail] = useState("");
     const [forgotCode, setForgotCode] = useState("");
