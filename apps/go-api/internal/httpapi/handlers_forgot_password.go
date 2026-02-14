@@ -31,6 +31,10 @@ func (s *Server) handleForgotPassword(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	if !storage.IsAllowedEmailDomain(email) {
+		s.writeJSON(w, http.StatusBadRequest, map[string]string{"error": "unsupported_email_domain"})
+		return
+	}
 
 	profile, exists, err := s.db.GetUserProfile(login)
 	if err != nil {

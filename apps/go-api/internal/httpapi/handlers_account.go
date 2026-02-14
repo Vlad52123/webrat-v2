@@ -155,6 +155,10 @@ func (s *Server) handleSetEmail(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "missing fields", http.StatusBadRequest)
 		return
 	}
+	if !storage.IsAllowedEmailDomain(email) {
+		s.writeJSON(w, http.StatusBadRequest, map[string]string{"error": "unsupported_email_domain"})
+		return
+	}
 
 	hash, exists, err := s.db.GetUserPassword(login)
 	if err != nil {

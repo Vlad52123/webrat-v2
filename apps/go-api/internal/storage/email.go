@@ -12,6 +12,44 @@ import (
 	"time"
 )
 
+var allowedEmailDomains = map[string]bool{
+	"gmail.com":       true,
+	"googlemail.com":  true,
+	"outlook.com":     true,
+	"hotmail.com":     true,
+	"live.com":        true,
+	"msn.com":         true,
+	"yahoo.com":       true,
+	"yahoo.co.uk":     true,
+	"yandex.ru":       true,
+	"yandex.com":      true,
+	"ya.ru":           true,
+	"mail.ru":         true,
+	"bk.ru":           true,
+	"inbox.ru":        true,
+	"list.ru":         true,
+	"internet.ru":     true,
+	"icloud.com":      true,
+	"me.com":          true,
+	"mac.com":         true,
+	"proton.me":       true,
+	"protonmail.com":  true,
+	"protonmail.ch":   true,
+	"aol.com":         true,
+	"zoho.com":        true,
+	"rambler.ru":      true,
+	"ukr.net":         true,
+}
+
+func IsAllowedEmailDomain(email string) bool {
+	email = strings.ToLower(strings.TrimSpace(email))
+	parts := strings.SplitN(email, "@", 2)
+	if len(parts) != 2 || parts[1] == "" {
+		return false
+	}
+	return allowedEmailDomains[parts[1]]
+}
+
 func SendEmail(to, subject, body string) error {
 	host := os.Getenv("SMTP_HOST")
 	port := os.Getenv("SMTP_PORT")
