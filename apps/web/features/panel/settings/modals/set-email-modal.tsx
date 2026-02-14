@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SliderCaptcha, type SliderCaptchaHandle } from "@/features/auth/components/slider-captcha";
+import { useTurnstile as useTurnstileHook } from "@/features/auth/components/login-form/use-turnstile";
 
 function formatTime(ms: number): string {
    const totalSec = Math.max(0, Math.ceil(ms / 1000));
@@ -43,14 +44,25 @@ export function SetEmailModal(props: {
    const [remaining, setRemaining] = useState(0);
    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+   /* ── captcha ── */
    const captchaRef = useRef<SliderCaptchaHandle | null>(null);
    const [captchaReady, setCaptchaReady] = useState(false);
+   const [useTurnstile, setUseTurnstile] = useState(false);
+
+   const { turnstileContainerRef } = useTurnstileHook({
+      useTurnstile,
+      setCaptchaReady,
+   });
 
    const handleCaptchaReadyChange = useCallback((ready: boolean) => {
       setCaptchaReady(ready);
    }, []);
 
-   const handleCaptchaError = useCallback((_msg: string) => {
+   const handleCaptchaError = useCallback(() => { }, []);
+
+   const handleToggleCaptcha = useCallback(() => {
+      setUseTurnstile(true);
+      setCaptchaReady(false);
    }, []);
 
    useEffect(() => {
@@ -58,6 +70,7 @@ export function SetEmailModal(props: {
          setConfirmUnbind(false);
          setUnbindPassword("");
          setCaptchaReady(false);
+         setUseTurnstile(false);
       }
    }, [open]);
 
@@ -189,16 +202,34 @@ export function SetEmailModal(props: {
                   onChange={(e) => setPasswordOrCode(e.target.value)}
                />
 
-               <div className="w-full">
-                  <div className="grid gap-2 rounded-2xl border border-[rgba(117,61,255,0.32)] bg-[rgba(24,14,42,0.52)] p-2.5 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_18px_50px_rgba(0,0,0,0.34)] backdrop-blur-[14px]">
-                     <SliderCaptcha
-                        ref={captchaRef}
-                        onReadyChange={handleCaptchaReadyChange}
-                        onError={handleCaptchaError}
-                        onToggleCaptcha={() => { }}
-                     />
+               {useTurnstile ? (
+                  <div className="grid w-full gap-2 rounded-2xl border border-[rgba(117,61,255,0.32)] bg-[rgba(24,14,42,0.52)] p-2.5 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_18px_50px_rgba(0,0,0,0.34)] backdrop-blur-[14px]">
+                     <div className="flex items-center justify-center rounded-xl border border-[rgba(117,61,255,0.32)] bg-white/6 p-3">
+                        <div ref={turnstileContainerRef} />
+                     </div>
+                     <button
+                        type="button"
+                        className="select-none justify-self-center cursor-pointer text-[13px] font-normal text-[rgba(227,190,255,0.80)] hover:text-white"
+                        onClick={() => {
+                           setUseTurnstile(false);
+                           setCaptchaReady(false);
+                        }}
+                     >
+                        change the captcha
+                     </button>
                   </div>
-               </div>
+               ) : (
+                  <div className="w-full">
+                     <div className="grid gap-2 rounded-2xl border border-[rgba(117,61,255,0.32)] bg-[rgba(24,14,42,0.52)] p-2.5 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_18px_50px_rgba(0,0,0,0.34)] backdrop-blur-[14px]">
+                        <SliderCaptcha
+                           ref={captchaRef}
+                           onReadyChange={handleCaptchaReadyChange}
+                           onError={handleCaptchaError}
+                           onToggleCaptcha={handleToggleCaptcha}
+                        />
+                     </div>
+                  </div>
+               )}
             </>
          )}
 

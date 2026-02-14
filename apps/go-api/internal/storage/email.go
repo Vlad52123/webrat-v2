@@ -45,7 +45,7 @@ func SendEmail(to, subject, body string) error {
 <table width="460" cellpadding="0" cellspacing="0" style="background:linear-gradient(180deg,rgba(24,24,32,0.98),rgba(16,16,22,0.98));border:1px solid rgba(255,255,255,0.10);border-radius:20px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.05) inset;">
 <tr><td style="height:4px;background:linear-gradient(90deg,#6c5ce7,#a855f7,#6c5ce7);"></td></tr>
 <tr><td style="padding:36px 36px 20px;text-align:center;">
-<img src="` + baseURL + `/logo/register_logo.ico" alt="WebCrystal" width="96" height="96" style="display:block;margin:0 auto 18px;image-rendering:pixelated;" />
+<img src="` + baseURL + `/logo/register_logo.ico" alt="WebCrystal" width="48" height="48" style="display:block;margin:0 auto 18px;" />
 <div style="font-size:24px;font-weight:800;color:#ffffff;letter-spacing:0.5px;margin-bottom:4px;font-family:'Inter','Segoe UI',Arial,sans-serif;">WebCrystal</div>
 <div style="font-size:11px;color:rgba(255,255,255,0.30);text-transform:uppercase;letter-spacing:3px;margin-top:4px;font-family:'Inter','Segoe UI',Arial,sans-serif;">Email Verification</div>
 </td></tr>
