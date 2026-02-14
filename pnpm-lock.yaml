@@ -6,7 +6,11 @@ settings:
 
 importers:
 
-  .: {}
+  .:
+    dependencies:
+      react-hook-form:
+        specifier: ^7.56.4
+        version: 7.71.1(react@19.2.3)
 
   apps/web:
     dependencies:
