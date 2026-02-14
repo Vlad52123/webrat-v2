@@ -12,7 +12,7 @@ export function useExtensionSync(): void {
             extensionInput.value = "webcrystal.exe";
             return;
          }
-         raw = raw.replace(/[^A-Za-z0-9_-]+/g, "_").slice(0, 25);
+         raw = raw.replace(/[^\p{L}\p{N}_-]+/gu, "_").slice(0, 25);
          extensionInput.value = raw + ".exe";
       };
 

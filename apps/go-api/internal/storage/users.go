@@ -193,3 +193,26 @@ func (d *DB) GetUserProfile(login string) (UserProfile, bool, error) {
 	out.Email = strings.TrimSpace(out.Email)
 	return out, true, nil
 }
+
+func (d *DB) GetLoginByEmail(email string) (string, bool, error) {
+	email = strings.TrimSpace(email)
+	if email == "" {
+		return "", false, nil
+	}
+	if d == nil || d.sql == nil {
+		return "", false, errors.New("db is nil")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var login string
+	row := d.sql.QueryRowContext(ctx, `SELECT login FROM users WHERE LOWER(email) = LOWER($1) AND email_verified = TRUE`, email)
+	if err := row.Scan(&login); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", false, nil
+		}
+		return "", false, err
+	}
+	return strings.TrimSpace(login), true, nil
+}

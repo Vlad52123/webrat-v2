@@ -45,8 +45,8 @@ func SendEmail(to, subject, body string) error {
 <table width="460" cellpadding="0" cellspacing="0" style="background:linear-gradient(180deg,rgba(24,24,32,0.98),rgba(16,16,22,0.98));border:1px solid rgba(255,255,255,0.10);border-radius:20px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.05) inset;">
 <tr><td style="height:4px;background:linear-gradient(90deg,#6c5ce7,#a855f7,#6c5ce7);"></td></tr>
 <tr><td style="padding:36px 36px 20px;text-align:center;">
-<img src="` + baseURL + `/logo/register_logo.ico" alt="WebCrystal" width="48" height="48" style="display:block;margin:0 auto 18px;" />
-<div style="font-size:24px;font-weight:800;color:#ffffff;letter-spacing:0.5px;margin-bottom:4px;font-family:'Inter','Segoe UI',Arial,sans-serif;">WebCrystal</div>
+<div style="font-size:32px;font-weight:900;color:#a855f7;letter-spacing:6px;text-transform:uppercase;font-family:'Inter','Segoe UI',Arial,sans-serif;text-shadow:0 0 30px rgba(168,85,247,0.3);">WEB CRYSTAL</div>
+<div style="font-size:24px;font-weight:800;color:#ffffff;letter-spacing:0.5px;margin-top:10px;margin-bottom:4px;font-family:'Inter','Segoe UI',Arial,sans-serif;">WebCrystal</div>
 <div style="font-size:11px;color:rgba(255,255,255,0.30);text-transform:uppercase;letter-spacing:3px;margin-top:4px;font-family:'Inter','Segoe UI',Arial,sans-serif;">Email Verification</div>
 </td></tr>
 <tr><td style="padding:0 36px;">
@@ -93,6 +93,21 @@ func SendVerificationEmail(to, code string) error {
 Code is valid for <strong style="color:rgba(255,255,255,0.7);">5 minutes</strong>`
 
 	return SendEmail(to, "WebCrystal — Verification Code", body)
+}
+
+func SendPasswordResetEmail(to, code string) error {
+	codeHTML := ""
+	for _, ch := range code {
+		codeHTML += `<span style="display:inline-block;width:38px;height:46px;line-height:46px;text-align:center;font-size:22px;font-weight:700;font-family:'Courier New',monospace;color:#fff;background:rgba(108,92,231,0.08);border:1px solid rgba(168,85,247,0.25);border-radius:10px;margin:0 3px;letter-spacing:0;">` + string(ch) + `</span>`
+	}
+
+	body := `Your password reset code:
+</div>
+<div style="margin:20px 0;text-align:center;line-height:50px;">` + codeHTML + `</div>
+<div style="font-size:13px;color:rgba(255,255,255,0.45);text-align:center;">
+Code is valid for <strong style="color:rgba(255,255,255,0.7);">5 minutes</strong>`
+
+	return SendEmail(to, "WebCrystal — Password Reset", body)
 }
 
 func GenerateEmailCode() string {
