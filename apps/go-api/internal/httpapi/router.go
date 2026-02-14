@@ -53,7 +53,6 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 	}
 	r.Handle("/captcha/*", s.handleCaptchaStatic(captchaDir))
 
-	// serve static logo (for emails etc.)
 	logoDir := filepath.Join("static", "logo")
 	r.Handle("/api/logo/*", http.StripPrefix("/api/logo/", http.FileServer(http.Dir(logoDir))))
 
@@ -65,8 +64,8 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 	r.With(rateLimitMiddleware(loginLimiter)).Post("/login", s.handleLogin)
 	r.Get("/me", s.requireAPIAuth(s.handleMe))
 	r.Post("/logout", s.handleLogout)
-	r.With(rateLimitMiddleware(loginLimiter)).Post("/forgot-password", s.handleForgotPassword)
-	r.With(rateLimitMiddleware(loginLimiter)).Post("/reset-password", s.handleResetPassword)
+	r.With(rateLimitMiddleware(loginLimiter)).Post("/api/forgot-password", s.handleForgotPassword)
+	r.With(rateLimitMiddleware(loginLimiter)).Post("/api/reset-password", s.handleResetPassword)
 
 	r.Get("/ws", s.handleWS)
 	r.Get("/api/ws", s.handleWS)

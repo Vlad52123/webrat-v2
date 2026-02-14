@@ -3,122 +3,100 @@
 import { type Dispatch, type RefObject, type SetStateAction } from "react";
 import { createPortal } from "react-dom";
 
-import { WS_OPTIONS, wsLabel } from "./ws-options";
+import { WS_OPTIONS } from "./ws-options";
+import { useSubscriptionQuery } from "../../../hooks/use-subscription-query";
+import { showToast } from "../../../toast";
 
-function navigateToHost(host: string) {
-   try {
-      const cleaned = String(host || "").trim();
-      if (!cleaned || cleaned === "__default__") {
-         window.location.reload();
-         return;
-      }
-
-      const proto = window.location.protocol || "https:";
-      const path = window.location.pathname + window.location.search + window.location.hash;
-      const target = `${proto}//${cleaned}${path}`;
-      window.location.replace(target);
-   } catch {
-      try {
-         window.location.reload();
-      } catch {
-      }
-   }
+interface Props {
+    setWsHost: (host: string) => void;
+    wsSelectValue: string;
+    wsWrapRef: RefObject<HTMLDivElement | null>;
+    wsBtnRef: RefObject<HTMLButtonElement | null>;
+    wsMenuRef: RefObject<HTMLDivElement | null>;
+    wsOpen: boolean;
+    setWsOpen: Dispatch<SetStateAction<boolean>>;
+    wsMenuPos: { left: number; top: number; width: number } | null;
 }
 
-export function WsServerSelect(props: {
-   setWsHost: (host: string) => void;
-   wsSelectValue: string;
-   wsWrapRef: RefObject<HTMLDivElement | null>;
-   wsBtnRef: RefObject<HTMLButtonElement | null>;
-   wsMenuRef: RefObject<HTMLDivElement | null>;
-   wsOpen: boolean;
-   setWsOpen: Dispatch<SetStateAction<boolean>>;
-   wsMenuPos: { left: number; top: number; width: number } | null;
-}) {
-   const { setWsHost, wsSelectValue, wsWrapRef, wsBtnRef, wsMenuRef, wsOpen, setWsOpen, wsMenuPos } = props;
+const PREMIUM_VALUES = new Set(["ru.webcrystal.sbs", "kz.webcrystal.sbs", "ua.webcrystal.sbs"]);
 
-   return (
-      <div ref={wsWrapRef} className="relative min-w-[220px]">
-         <select
-            id="settingsWsServer"
-            className="absolute inset-0 opacity-0 pointer-events-none"
-            value={wsSelectValue}
-            onChange={(e) => {
-               setWsHost(e.target.value);
-               try {
-                  window.setTimeout(() => navigateToHost(e.target.value), 60);
-               } catch {
-               }
-            }}
-            aria-hidden
-            tabIndex={-1}
-         >
-            {WS_OPTIONS.map((o) => (
-               <option key={o.value} value={o.value}>
-                  {o.label}
-               </option>
-            ))}
-         </select>
+export function WsServerSelect({
+    setWsHost,
+    wsSelectValue,
+    wsWrapRef,
+    wsBtnRef,
+    wsMenuRef,
+    wsOpen,
+    setWsOpen,
+    wsMenuPos,
+}: Props) {
+    const subQ = useSubscriptionQuery();
+    const isVip = String(subQ.data?.status || "").toLowerCase() === "vip";
 
-         <button
-            ref={wsBtnRef}
-            type="button"
-            className={
-               "w-full h-[34px] px-[12px] pr-[32px] rounded-[12px] border border-white/[0.12] bg-white/[0.03] text-[13px] font-semibold text-white/[0.92] cursor-pointer text-left whitespace-nowrap overflow-hidden text-ellipsis transition-[border-color,background,transform] " +
-               (wsOpen ? "border-white/[0.22] bg-white/[0.05]" : "hover:bg-white/[0.045] hover:border-white/[0.18]")
-            }
-            onClick={() => setWsOpen((v) => !v)}
-         >
-            {wsLabel(wsSelectValue)}
-            <span className="pointer-events-none absolute right-[12px] top-1/2 -translate-y-1/2">
-               <img
-                  src="/icons/arrow.svg"
-                  alt="v"
-                  draggable={false}
-                  className={"h-[10px] w-[10px] invert opacity-85 transition-transform " + (wsOpen ? "rotate-180" : "")}
-               />
-            </span>
-         </button>
+    return (
+        <div ref={wsWrapRef}>
+            <button
+                ref={wsBtnRef}
+                type="button"
+                className={
+                    "flex h-[32px] items-center gap-[6px] rounded-[10px] border border-white/[0.12] bg-white/[0.04] px-[10px] text-[13px] font-semibold text-white/80 transition-all cursor-pointer " +
+                    "hover:bg-white/[0.07] hover:border-white/[0.18] hover:text-white"
+                }
+                onClick={() => {
+                    const willOpen = !wsOpen;
+                    setWsOpen(willOpen);
+                    if (!willOpen) return;
+                    const btn = wsBtnRef.current;
+                    if (!btn) return;
+                }}
+            >
+                {WS_OPTIONS.find((o) => o.value === wsSelectValue)?.label || "Default"}
+                <span className="text-[10px] opacity-50">▼</span>
+            </button>
 
-         {wsOpen && wsMenuPos
-            ? createPortal(
-               <div
-                  ref={wsMenuRef}
-                  className="fixed z-[9999] max-h-[240px] overflow-auto rounded-[14px] border border-white/[0.12] bg-[rgba(16,16,16,0.96)] p-[6px] text-white shadow-[0_14px_34px_rgba(0,0,0,0.55)]"
-                  style={{ left: wsMenuPos.left, top: wsMenuPos.top, width: wsMenuPos.width }}
-                  role="listbox"
-               >
-                  {WS_OPTIONS.map((opt) => {
-                     const selected = wsSelectValue === opt.value;
-                     return (
-                        <button
-                           key={opt.value}
-                           type="button"
-                           className={
-                              "w-full text-left px-[10px] py-[9px] rounded-[12px] text-[13px] leading-[1.15] font-semibold text-white/90 transition-[background,border-color] cursor-pointer border " +
-                              (selected
-                                 ? "bg-white/[0.07] border-white/[0.16] text-white"
-                                 : "bg-transparent border-transparent hover:bg-white/[0.045] hover:border-white/[0.10]")
-                           }
-                           onClick={() => {
-                              setWsHost(opt.value);
-                              setWsOpen(false);
-                              try {
-                                 window.setTimeout(() => navigateToHost(opt.value), 60);
-                              } catch {
-                              }
-                           }}
-                           role="option"
-                           aria-selected={selected}
-                        >
-                           {opt.label}
-                        </button>
-                     );
-                  })}
-               </div>,
-               document.body,
-            )
-            : null}
-      </div>
-   );
+            {wsOpen && wsMenuPos
+                ? createPortal(
+                    <div
+                        ref={wsMenuRef}
+                        className="fixed z-[9999] max-h-[240px] overflow-auto rounded-[14px] border border-white/[0.12] bg-[rgba(16,16,16,0.96)] p-[6px] text-white shadow-[0_14px_34px_rgba(0,0,0,0.55)]"
+                        style={{ left: wsMenuPos.left, top: wsMenuPos.top, minWidth: wsMenuPos.width }}
+                        role="listbox"
+                    >
+                        {WS_OPTIONS.map((opt) => {
+                            const selected = wsSelectValue === opt.value;
+                            const locked = PREMIUM_VALUES.has(opt.value) && !isVip;
+                            return (
+                                <button
+                                    key={opt.value}
+                                    type="button"
+                                    className={
+                                        "w-full text-left px-[10px] py-[9px] rounded-[12px] text-[13px] leading-[1.15] font-semibold transition-[background,border-color] cursor-pointer border " +
+                                        (selected
+                                            ? "bg-white/[0.07] border-white/[0.16] text-white"
+                                            : locked
+                                                ? "bg-transparent border-transparent text-white/30 hover:bg-white/[0.02]"
+                                                : "bg-transparent border-transparent text-white/90 hover:bg-white/[0.045] hover:border-white/[0.10]")
+                                    }
+                                    onClick={() => {
+                                        if (locked) {
+                                            showToast("error", "Premium subscription required");
+                                            return;
+                                        }
+                                        setWsHost(opt.value === "__default__" ? "" : opt.value);
+                                        setWsOpen(false);
+                                    }}
+                                    role="option"
+                                    aria-selected={selected}
+                                >
+                                    {opt.label}
+                                    {locked && <span className="ml-[6px] text-[10px] opacity-40">🔒</span>}
+                                </button>
+                            );
+                        })}
+                    </div>,
+                    document.body,
+                )
+                : null}
+        </div>
+    );
 }

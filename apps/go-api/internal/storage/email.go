@@ -120,15 +120,21 @@ func SendEmail(to, subject, body string) error {
 	return smtp.SendMail(addr, auth, user, []string{to}, []byte(msg))
 }
 
-func SendVerificationEmail(to, code string) error {
+func codeBlockHTML(code string) string {
 	codeHTML := ""
 	for _, ch := range code {
 		codeHTML += `<span style="display:inline-block;width:38px;height:46px;line-height:46px;text-align:center;font-size:22px;font-weight:700;font-family:'Courier New',monospace;color:#fff;background:rgba(108,92,231,0.08);border:1px solid rgba(168,85,247,0.25);border-radius:10px;margin:0 3px;letter-spacing:0;">` + string(ch) + `</span>`
 	}
-
-	body := `Your verification code:
+	return `<div style="margin:20px 0;text-align:center;line-height:50px;">` + codeHTML + `</div>
+<div style="margin:0 auto 16px;text-align:center;">
+<div style="display:inline-block;padding:8px 20px;border-radius:10px;border:1px solid rgba(168,85,247,0.3);background:rgba(108,92,231,0.12);font-family:'Courier New',monospace;font-size:20px;font-weight:700;color:#fff;letter-spacing:6px;user-select:all;-webkit-user-select:all;">` + code + `</div>
 </div>
-<div style="margin:20px 0;text-align:center;line-height:50px;">` + codeHTML + `</div>
+<div style="font-size:11px;color:rgba(255,255,255,0.3);text-align:center;margin-bottom:12px;">tap code above to select &amp; copy</div>`
+}
+
+func SendVerificationEmail(to, code string) error {
+	body := `Your verification code:
+</div>` + codeBlockHTML(code) + `
 <div style="font-size:13px;color:rgba(255,255,255,0.45);text-align:center;">
 Code is valid for <strong style="color:rgba(255,255,255,0.7);">5 minutes</strong>`
 
@@ -136,14 +142,8 @@ Code is valid for <strong style="color:rgba(255,255,255,0.7);">5 minutes</strong
 }
 
 func SendPasswordResetEmail(to, code string) error {
-	codeHTML := ""
-	for _, ch := range code {
-		codeHTML += `<span style="display:inline-block;width:38px;height:46px;line-height:46px;text-align:center;font-size:22px;font-weight:700;font-family:'Courier New',monospace;color:#fff;background:rgba(108,92,231,0.08);border:1px solid rgba(168,85,247,0.25);border-radius:10px;margin:0 3px;letter-spacing:0;">` + string(ch) + `</span>`
-	}
-
 	body := `Your password reset code:
-</div>
-<div style="margin:20px 0;text-align:center;line-height:50px;">` + codeHTML + `</div>
+</div>` + codeBlockHTML(code) + `
 <div style="font-size:13px;color:rgba(255,255,255,0.45);text-align:center;">
 Code is valid for <strong style="color:rgba(255,255,255,0.7);">5 minutes</strong>`
 

