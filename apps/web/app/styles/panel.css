@@ -13,7 +13,7 @@ body.hasCustomBg .content::after {
     content: "";
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.30);
+    background: rgba(0, 0, 0, 0.55);
     pointer-events: none;
     z-index: 0;
 }
