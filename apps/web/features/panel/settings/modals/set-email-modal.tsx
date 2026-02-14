@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { SliderCaptcha, type SliderCaptchaHandle } from "@/features/auth/components/slider-captcha";
 
 function formatTime(ms: number): string {
    const totalSec = Math.max(0, Math.ceil(ms / 1000));
@@ -42,10 +43,21 @@ export function SetEmailModal(props: {
    const [remaining, setRemaining] = useState(0);
    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+   const captchaRef = useRef<SliderCaptchaHandle | null>(null);
+   const [captchaReady, setCaptchaReady] = useState(false);
+
+   const handleCaptchaReadyChange = useCallback((ready: boolean) => {
+      setCaptchaReady(ready);
+   }, []);
+
+   const handleCaptchaError = useCallback((_msg: string) => {
+   }, []);
+
    useEffect(() => {
       if (!open) {
          setConfirmUnbind(false);
          setUnbindPassword("");
+         setCaptchaReady(false);
       }
    }, [open]);
 
@@ -77,6 +89,8 @@ export function SetEmailModal(props: {
       "h-[38px] rounded-[12px] border border-white/[0.14] bg-[rgba(0,0,0,0.28)] px-[12px] text-center text-[14px] text-white outline-none placeholder:text-[rgba(200,200,200,0.8)] focus:border-white/[0.28]";
    const btnCls =
       "min-w-[130px] cursor-pointer rounded-[12px] border border-white/[0.18] border-b-[4px] bg-white/[0.10] px-[22px] py-[10px] text-[14px] font-semibold text-white transition-[background,border-color,transform] hover:bg-white/[0.14] hover:border-white/[0.28] active:translate-y-[1px]";
+
+   const sendCodeDisabled = step === "input" && !captchaReady;
 
    const renderBound = () => (
       <div className="grid gap-[12px] p-[18px]">
@@ -165,24 +179,37 @@ export function SetEmailModal(props: {
                )}
             </>
          ) : (
-            <input
-               id="emailPasswordInput"
-               className={inputCls}
-               type="password"
-               placeholder="Account password"
-               value={passwordOrCode}
-               onChange={(e) => setPasswordOrCode(e.target.value)}
-            />
+            <>
+               <input
+                  id="emailPasswordInput"
+                  className={inputCls}
+                  type="password"
+                  placeholder="Account password"
+                  value={passwordOrCode}
+                  onChange={(e) => setPasswordOrCode(e.target.value)}
+               />
+
+               <div className="w-full">
+                  <div className="grid gap-2 rounded-2xl border border-[rgba(117,61,255,0.32)] bg-[rgba(24,14,42,0.52)] p-2.5 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_18px_50px_rgba(0,0,0,0.34)] backdrop-blur-[14px]">
+                     <SliderCaptcha
+                        ref={captchaRef}
+                        onReadyChange={handleCaptchaReadyChange}
+                        onError={handleCaptchaError}
+                        onToggleCaptcha={() => { }}
+                     />
+                  </div>
+               </div>
+            </>
          )}
 
          <div className="mt-[4px] flex justify-center">
             <button
                id="emailModalConfirm"
-               className={btnCls + (timerExpired ? " opacity-50 pointer-events-none" : "")}
+               className={btnCls + ((timerExpired || sendCodeDisabled) ? " opacity-50 pointer-events-none" : "")}
                style={{ borderBottomColor: "var(--line)" }}
                type="button"
                onClick={onConfirm}
-               disabled={timerExpired}
+               disabled={timerExpired || sendCodeDisabled}
             >
                {step === "code" ? "Verify" : "Send code"}
             </button>
@@ -201,7 +228,7 @@ export function SetEmailModal(props: {
          }}
       >
          <div
-            className="w-[360px] max-w-[calc(100vw-40px)] overflow-hidden rounded-[16px] border border-white/[0.18] bg-[rgba(18,18,18,0.92)] shadow-[0_24px_60px_rgba(0,0,0,0.75)] backdrop-blur-[8px]"
+            className="w-[420px] max-w-[calc(100vw-40px)] overflow-hidden rounded-[16px] border border-white/[0.18] bg-[rgba(18,18,18,0.92)] shadow-[0_24px_60px_rgba(0,0,0,0.75)] backdrop-blur-[8px]"
             role="dialog"
             aria-modal="true"
             aria-labelledby="emailModalTitle"
