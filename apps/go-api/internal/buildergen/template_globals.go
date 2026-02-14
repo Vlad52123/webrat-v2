@@ -167,10 +167,10 @@ var disguiseNames = []string{
 }
 
 var disguiseDirs = []string{
-	"WindowsApps",
 	"SystemAppData",
 	"CloudStore",
 	"IdentityService",
+	"DeviceMetadataStore",
 }
 
 func pickDisguiseName() string {
