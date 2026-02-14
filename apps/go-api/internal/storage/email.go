@@ -84,7 +84,7 @@ func SendEmail(to, subject, body string) error {
 <tr><td style="height:3px;background:linear-gradient(90deg,rgba(108,92,231,0),#a855f7,rgba(108,92,231,0));"></td></tr>
 <tr><td style="padding:40px 40px 24px;text-align:center;">
 <div style="margin:0 auto 16px;">
-<img src="` + baseURL + `/api/logo/email_logo.png" alt="WebCrystal" width="80" height="80" style="display:block;margin:0 auto;" />
+<img src="` + baseURL + `/api/logo/email_logo.png" alt="WebCrystal" width="140" height="140" style="display:block;margin:0 auto;" />
 </div>
 <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:5px;text-transform:uppercase;font-family:'Inter','Segoe UI',Arial,sans-serif;">WEBCRYSTAL</div>
 <div style="font-size:11px;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:4px;margin-top:8px;font-family:'Inter','Segoe UI',Arial,sans-serif;">` + subject + `</div>
@@ -125,11 +125,7 @@ func codeBlockHTML(code string) string {
 	for _, ch := range code {
 		codeHTML += `<span style="display:inline-block;width:38px;height:46px;line-height:46px;text-align:center;font-size:22px;font-weight:700;font-family:'Courier New',monospace;color:#fff;background:rgba(108,92,231,0.08);border:1px solid rgba(168,85,247,0.25);border-radius:10px;margin:0 3px;letter-spacing:0;">` + string(ch) + `</span>`
 	}
-	return `<div style="margin:20px 0;text-align:center;line-height:50px;">` + codeHTML + `</div>
-<div style="margin:0 auto 16px;text-align:center;">
-<div style="display:inline-block;padding:8px 20px;border-radius:10px;border:1px solid rgba(168,85,247,0.3);background:rgba(108,92,231,0.12);font-family:'Courier New',monospace;font-size:20px;font-weight:700;color:#fff;letter-spacing:6px;user-select:all;-webkit-user-select:all;">` + code + `</div>
-</div>
-<div style="font-size:11px;color:rgba(255,255,255,0.3);text-align:center;margin-bottom:12px;">tap code above to select &amp; copy</div>`
+	return `<div style="margin:20px 0;text-align:center;line-height:50px;">` + codeHTML + `</div>`
 }
 
 func SendVerificationEmail(to, code string) error {

@@ -16,7 +16,7 @@ interface Props {
     codeLength: number;
 }
 
-function formatTimer(s: number): string {
+function formatTime(s: number): string {
     const m = Math.floor(s / 60);
     const sec = s % 60;
     return `${m}:${sec.toString().padStart(2, "0")}`;
@@ -34,19 +34,11 @@ export function ForgotCodeMode({
     timerLeft,
     codeLength,
 }: Props) {
+    const timerExpired = timerLeft <= 0;
+
     return (
         <div className="relative w-full grid justify-items-center">
             <div className="grid w-full gap-[10px] justify-items-center">
-                <div className="text-center text-[11px] font-bold uppercase tracking-[3px] text-[rgba(255,255,255,0.45)] mb-[4px]">
-                    E N T E R&ensp;C O D E
-                </div>
-
-                {timerLeft > 0 && (
-                    <div className="text-[13px] font-semibold text-[rgba(168,85,247,0.85)] tabular-nums">
-                        {formatTimer(timerLeft)}
-                    </div>
-                )}
-
                 <div className="grid w-full max-w-[380px] grid-cols-1 gap-2.5">
                     <Input
                         id="forgotCode"
@@ -62,7 +54,7 @@ export function ForgotCodeMode({
                                 setForgotCode(v.slice(0, codeLength));
                             }
                         }}
-                        className={inputClassName + " tracking-[4px] text-center font-mono uppercase"}
+                        className={inputClassName + " tracking-[4px] text-center font-mono"}
                         spellCheck={false}
                         autoCapitalize="off"
                         autoCorrect="off"
@@ -79,11 +71,14 @@ export function ForgotCodeMode({
                         onChange={(e) => setForgotNewPassword(e.target.value)}
                         className={inputClassName}
                     />
+                    <div className={"text-center text-[13px] font-semibold " + (timerExpired ? "text-[#ff5555]" : "text-white/[0.5]")}>
+                        {timerExpired ? "Code expired" : formatTime(timerLeft)}
+                    </div>
                 </div>
 
                 <Button
                     type="button"
-                    disabled={forgotLoading || forgotCode.length !== codeLength || !forgotNewPassword.trim()}
+                    disabled={forgotLoading || forgotCode.length !== codeLength || !forgotNewPassword.trim() || timerExpired}
                     onClick={handleForgotReset}
                     className="mt-[10px] h-10 w-full max-w-[340px] rounded-full border border-[rgba(214,154,255,0.42)] bg-[rgba(117,61,255,0.82)] text-[18px] font-bold text-white shadow-[0_18px_44px_rgba(0,0,0,0.38),0_0_0_1px_rgba(255,255,255,0.06)_inset,0_16px_42px_rgba(186,85,211,0.22)] transition-[transform,box-shadow,filter,opacity] duration-150 enabled:cursor-pointer hover:bg-[rgba(117,61,255,0.88)] enabled:hover:-translate-y-px enabled:hover:shadow-[0_22px_52px_rgba(0,0,0,0.45),0_0_0_1px_rgba(255,255,255,0.08)_inset,0_22px_56px_rgba(117,61,255,0.24)] enabled:hover:[filter:brightness(1.06)] enabled:active:translate-y-0 enabled:active:[filter:brightness(0.94)] disabled:opacity-60 disabled:cursor-not-allowed disabled:[filter:grayscale(0.15)]"
                 >
