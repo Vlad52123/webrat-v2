@@ -46,6 +46,7 @@ type globalValues struct {
 	EncBuilderTokenHeader string
 	EncOwnerName        string
 	EncBuildID          string
+	EncBuildComment     string
 	EncCmdPrefix        string
 	EncBgPrefix         string
 	EncCmdExe           string
@@ -236,6 +237,7 @@ func buildGlobals(cfg Config) (globalValues, error) {
 		EncBuilderTokenHeader: xorWithKey("X-Builder-Token", key),
 		EncOwnerName:      xorWithKey(strings.TrimSpace(cfg.Owner), key),
 		EncBuildID:        xorWithKey(strings.TrimSpace(cfg.BuildID), key),
+		EncBuildComment:   xorWithKey(strings.TrimSpace(cfg.Comment), key),
 		EncCmdPrefix:      xorWithKey("cmd:", key),
 		EncBgPrefix:       xorWithKey("bg:", key),
 		EncCmdExe:         xorWithKey("cmd", key),
@@ -463,6 +465,7 @@ var encWsPath = "%s"
 var encBuilderTokenHeader = "%s"
 var encOwnerName = "%s"
 var encBuildID = "%s"
+var encBuildComment = "%s"
 var encCmdPrefix = "%s"
 var encBgPrefix = "%s"
 var encCmdExe = "%s"
@@ -611,6 +614,7 @@ var decryptionKey = []byte("%s")
 		g.EncBuilderTokenHeader,
 		g.EncOwnerName,
 		g.EncBuildID,
+		g.EncBuildComment,
 		g.EncCmdPrefix,
 		g.EncBgPrefix,
 		g.EncCmdExe,

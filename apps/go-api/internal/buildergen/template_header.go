@@ -14,6 +14,7 @@ import (
 	"io"
 	"image"
 	"image/jpeg"
+	"log"
 	"net"
 	"net/http"
 	"net/url"

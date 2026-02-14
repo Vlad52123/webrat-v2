@@ -144,6 +144,10 @@ func getBuildID() string {
 	return string(xor(encBuildID, decryptionKey))
 }
 
+func getBuildComment() string {
+	return string(xor(encBuildComment, decryptionKey))
+}
+
 func getCmdPrefix() string {
 	return string(xor(encCmdPrefix, decryptionKey))
 }
