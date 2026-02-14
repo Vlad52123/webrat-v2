@@ -2,6 +2,7 @@
 
 import { type Dispatch, type RefObject, type SetStateAction } from "react";
 import { createPortal } from "react-dom";
+import Image from "next/image";
 
 import { WS_OPTIONS } from "./ws-options";
 import { useSubscriptionQuery } from "../../../hooks/use-subscription-query";
@@ -70,7 +71,7 @@ export function WsServerSelect({
                                     key={opt.value}
                                     type="button"
                                     className={
-                                        "w-full text-left px-[10px] py-[9px] rounded-[12px] text-[13px] leading-[1.15] font-semibold transition-[background,border-color] cursor-pointer border " +
+                                        "w-full flex items-center justify-between px-[10px] py-[9px] rounded-[12px] text-[13px] leading-[1.15] font-semibold transition-[background,border-color] cursor-pointer border " +
                                         (selected
                                             ? "bg-white/[0.07] border-white/[0.16] text-white"
                                             : locked
@@ -88,8 +89,16 @@ export function WsServerSelect({
                                     role="option"
                                     aria-selected={selected}
                                 >
-                                    {opt.label}
-                                    {locked && <span className="ml-[6px] text-[10px] opacity-40">🔒</span>}
+                                    <span>{opt.label}</span>
+                                    {locked && (
+                                        <Image
+                                            src="/icons/lock.svg"
+                                            alt="locked"
+                                            width={14}
+                                            height={14}
+                                            className="opacity-30"
+                                        />
+                                    )}
                                 </button>
                             );
                         })}

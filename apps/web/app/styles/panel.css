@@ -23,8 +23,7 @@
 }
 
 body.isPanelShell .wc-bottom-line {
-    opacity: 1;
-    left: 46px;
+    display: none;
 }
 
 body.isPanelShell {

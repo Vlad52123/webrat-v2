@@ -164,7 +164,7 @@ export function DetailStatusCard(props: { victim: Victim | null }) {
                               key={opt.value}
                               type="button"
                               className={
-                                 "w-full text-left px-[10px] py-[9px] rounded-[12px] text-[13px] leading-[1.15] font-semibold transition-[background,border-color] cursor-pointer border " +
+                                 "w-full flex items-center justify-between px-[10px] py-[9px] rounded-[12px] text-[13px] leading-[1.15] font-semibold transition-[background,border-color] cursor-pointer border " +
                                  (selected
                                     ? "bg-white/[0.07] border-white/[0.16] text-white"
                                     : locked
@@ -183,8 +183,16 @@ export function DetailStatusCard(props: { victim: Victim | null }) {
                               role="option"
                               aria-selected={selected}
                            >
-                              {opt.label}
-                              {locked && <span className="ml-[6px] text-[10px] opacity-40">🔒</span>}
+                              <span>{opt.label}</span>
+                              {locked && (
+                                 <img
+                                    src="/icons/lock.svg"
+                                    alt="locked"
+                                    width={14}
+                                    height={14}
+                                    className="opacity-30"
+                                 />
+                              )}
                            </button>
                         );
                      })}
