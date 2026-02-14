@@ -75,31 +75,33 @@ func SendEmail(to, subject, body string) error {
 	bodyHTML := `<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 </head>
-<body style="margin:0;padding:0;background:#0a0a0e;font-family:'Inter','Segoe UI',Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0e;padding:40px 0;">
+<body style="margin:0;padding:0;background:#08080c;font-family:'Inter','Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#08080c;padding:48px 0;">
 <tr><td align="center">
-<table width="460" cellpadding="0" cellspacing="0" style="background:linear-gradient(180deg,rgba(24,24,32,0.98),rgba(16,16,22,0.98));border:1px solid rgba(255,255,255,0.10);border-radius:20px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.05) inset;">
-<tr><td style="height:4px;background:linear-gradient(90deg,#6c5ce7,#a855f7,#6c5ce7);"></td></tr>
-<tr><td style="padding:36px 36px 20px;text-align:center;">
-<div style="font-size:32px;font-weight:900;color:#a855f7;letter-spacing:6px;text-transform:uppercase;font-family:'Inter','Segoe UI',Arial,sans-serif;text-shadow:0 0 30px rgba(168,85,247,0.3);">WEB CRYSTAL</div>
-<div style="font-size:24px;font-weight:800;color:#ffffff;letter-spacing:0.5px;margin-top:10px;margin-bottom:4px;font-family:'Inter','Segoe UI',Arial,sans-serif;">WebCrystal</div>
-<div style="font-size:11px;color:rgba(255,255,255,0.30);text-transform:uppercase;letter-spacing:3px;margin-top:4px;font-family:'Inter','Segoe UI',Arial,sans-serif;">Email Verification</div>
+<table width="480" cellpadding="0" cellspacing="0" style="background:linear-gradient(180deg,#141420 0%,#0e0e18 100%);border:1px solid rgba(168,85,247,0.15);border-radius:24px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.7),0 0 0 1px rgba(255,255,255,0.04) inset,0 0 80px rgba(117,61,255,0.06);">
+<tr><td style="height:3px;background:linear-gradient(90deg,rgba(108,92,231,0),#a855f7,rgba(108,92,231,0));"></td></tr>
+<tr><td style="padding:40px 40px 24px;text-align:center;">
+<div style="margin:0 auto 16px;">
+<img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImEiIHgxPSI0MCIgeTE9IjAiIHgyPSI0MCIgeTI9IjgwIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agc3RvcC1jb2xvcj0iI2M0YjVmZCIvPjxzdG9wIG9mZnNldD0iLjUiIHN0b3AtY29sb3I9IiNhODU1ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM3YzNhZWQiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0iYiIgeDE9IjQwIiB5MT0iMTAiIHgyPSI0MCIgeTI9IjcwIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agc3RvcC1jb2xvcj0iI2U5ZDVmZiIgc3RvcC1vcGFjaXR5PSIuMyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2U5ZDVmZiIgc3RvcC1vcGFjaXR5PSIwIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHBhdGggZD0iTTQwIDRMNjggMjhMNTggNzZINDBIMjJMMTIgMjhaIiBmaWxsPSJ1cmwoI2EpIiBvcGFjaXR5PSIuOSIvPjxwYXRoIGQ9Ik00MCA0TDY4IDI4TDQwIDM0TDEyIDI4WiIgZmlsbD0idXJsKCNiKSIvPjxwYXRoIGQ9Ik00MCAzNEw2OCAyOEw1OCA3Nkg0MFoiIGZpbGw9InJnYmEoMCwwLDAsMC4xNSkiLz48cGF0aCBkPSJNNDAgNEw2OCAyOEw1OCA3NkgyMkwxMiAyOFoiIHN0cm9rZT0icmdiYSgyMDAsMTcwLDI1NSwwLjQpIiBzdHJva2Utd2lkdGg9IjEuNSIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0yNiA1Mkw0MCAzNEw1NCA1MiIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTUpIiBzdHJva2Utd2lkdGg9IjEiIGZpbGw9Im5vbmUiLz48L3N2Zz4=" alt="WebCrystal" width="80" height="80" style="display:block;margin:0 auto;" />
+</div>
+<div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:5px;text-transform:uppercase;font-family:'Inter','Segoe UI',Arial,sans-serif;">WEBCRYSTAL</div>
+<div style="font-size:11px;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:4px;margin-top:8px;font-family:'Inter','Segoe UI',Arial,sans-serif;">` + subject + `</div>
 </td></tr>
-<tr><td style="padding:0 36px;">
-<div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent);"></div>
+<tr><td style="padding:0 40px;">
+<div style="height:1px;background:linear-gradient(90deg,transparent,rgba(168,85,247,0.2),transparent);"></div>
 </td></tr>
-<tr><td style="padding:28px 36px;text-align:center;">
-<div style="font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:20px;line-height:1.6;font-family:'Inter','Segoe UI',Arial,sans-serif;">` + body + `</div>
+<tr><td style="padding:32px 40px;text-align:center;">
+<div style="font-size:15px;color:rgba(255,255,255,0.7);margin-bottom:20px;line-height:1.7;font-family:'Inter','Segoe UI',Arial,sans-serif;">` + body + `</div>
 </td></tr>
-<tr><td style="padding:0 36px;">
-<div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent);"></div>
+<tr><td style="padding:0 40px;">
+<div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent);"></div>
 </td></tr>
-<tr><td style="padding:20px 36px 28px;text-align:center;">
-<div style="font-size:11px;color:rgba(255,255,255,0.20);line-height:1.5;font-family:'Inter','Segoe UI',Arial,sans-serif;">If you did not request this, please ignore this email.</div>
-<div style="margin-top:12px;font-size:10px;color:rgba(255,255,255,0.14);letter-spacing:0.5px;">
-<a href="` + baseURL + `" style="color:rgba(168,85,247,0.55);text-decoration:none;font-family:'Inter','Segoe UI',Arial,sans-serif;">webcrystal.sbs</a>
+<tr><td style="padding:24px 40px 32px;text-align:center;">
+<div style="font-size:11px;color:rgba(255,255,255,0.18);line-height:1.6;font-family:'Inter','Segoe UI',Arial,sans-serif;">If you did not request this, please ignore this email.</div>
+<div style="margin-top:14px;font-size:10px;">
+<a href="` + baseURL + `" style="color:rgba(168,85,247,0.5);text-decoration:none;letter-spacing:1px;font-family:'Inter','Segoe UI',Arial,sans-serif;">webcrystal.sbs</a>
 </div>
 </td></tr>
 </table>
