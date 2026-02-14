@@ -22,27 +22,6 @@ const nextConfig: NextConfig = {
       removeConsole: process.env.NODE_ENV === "production",
    },
    turbopack: {},
-   async headers() {
-      return [
-         {
-            source: "/(.*)",
-            headers: [
-               {
-                  key: "Content-Security-Policy",
-                  value: [
-                     "default-src 'self'",
-                     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://static.cloudflareinsights.com",
-                     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-                     "font-src 'self' https://fonts.gstatic.com",
-                     "img-src 'self' data: blob: *",
-                     "frame-src https://challenges.cloudflare.com",
-                     "connect-src 'self' *",
-                  ].join("; "),
-               },
-            ],
-         },
-      ];
-   },
    async rewrites() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL?.trim() || "http://localhost:3001";
 
