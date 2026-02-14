@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"log"
+	"os"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -26,17 +28,11 @@ func HandleStart(b BotContext, msg *tgbotapi.Message) {
 		log.Printf("send start error: %v", err)
 	}
 
-	webAppURL := "https://webcrystal.sbs/tg-app"
-	btnText := "🚀 Открыть Mini App"
-	appBtn := tgbotapi.InlineKeyboardButton{
-		Text:   btnText,
-		WebApp: &tgbotapi.WebAppInfo{URL: webAppURL},
-	}
-	appMsg := tgbotapi.NewMessage(msg.Chat.ID, "Или откройте приложение:")
-	appMsg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(appBtn),
-	)
-	if _, err := b.TelegramAPI().Send(appMsg); err != nil {
-		log.Printf("send mini app button error: %v", err)
+	// Send WebApp button via raw API (library doesn't have WebApp structs)
+	token := strings.TrimSpace(os.Getenv("TELEGRAM_BOT_TOKEN"))
+	if token != "" {
+		if err := sendWebAppButton(token, msg.Chat.ID, "Или откройте приложение:", "🚀 Открыть Mini App", "https://webcrystal.sbs/tg-app"); err != nil {
+			log.Printf("send mini app button error: %v", err)
+		}
 	}
 }
