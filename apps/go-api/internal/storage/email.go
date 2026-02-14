@@ -84,7 +84,7 @@ func SendEmail(to, subject, body string) error {
 <tr><td style="height:3px;background:linear-gradient(90deg,rgba(108,92,231,0),#a855f7,rgba(108,92,231,0));"></td></tr>
 <tr><td style="padding:40px 40px 24px;text-align:center;">
 <div style="margin:0 auto 16px;">
-<img src="` + baseURL + `/api/logo/email_logo.svg" alt="WebCrystal" width="80" height="80" style="display:block;margin:0 auto;" />
+<img src="` + baseURL + `/api/logo/email_logo.png" alt="WebCrystal" width="80" height="80" style="display:block;margin:0 auto;" />
 </div>
 <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:5px;text-transform:uppercase;font-family:'Inter','Segoe UI',Arial,sans-serif;">WEBCRYSTAL</div>
 <div style="font-size:11px;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:4px;margin-top:8px;font-family:'Inter','Segoe UI',Arial,sans-serif;">` + subject + `</div>

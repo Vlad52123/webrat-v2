@@ -138,6 +138,8 @@ export function LoginForm() {
             handleForgotReset={forgot.handleForgotReset}
             backToLogin={backToLoginWithCaptchaReset}
             inputClassName={inputClassName}
+            timerLeft={forgot.timerLeft}
+            codeLength={forgot.codeLength}
          />
       );
    }
@@ -239,7 +241,7 @@ export function LoginForm() {
                type="button"
                className="mt-[4px] cursor-pointer select-none text-[14px] font-normal text-[rgba(227,190,255,0.80)] transition-colors duration-150 hover:text-white"
                onClick={() => {
-                  forgot.setForgotMode("email");
+                  forgot.openForgotPassword();
                   setCaptchaReady(false);
                   setUseTurnstile(false);
                }}

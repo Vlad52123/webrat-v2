@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { showToast } from "@/features/panel/toast";
 
 type FormLike = {
@@ -10,12 +10,33 @@ type FormLike = {
 
 type ForgotMode = false | "email" | "code";
 
+const CODE_LENGTH = 8;
+const TIMER_SECONDS = 300;
+
 export function useForgotPassword(form: FormLike) {
     const [forgotMode, setForgotMode] = useState<ForgotMode>(false);
     const [forgotEmail, setForgotEmail] = useState("");
     const [forgotCode, setForgotCode] = useState("");
     const [forgotNewPassword, setForgotNewPassword] = useState("");
     const [forgotLoading, setForgotLoading] = useState(false);
+    const [timerLeft, setTimerLeft] = useState(0);
+    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const codeSentRef = useRef(false);
+
+    const startTimer = useCallback(() => {
+        if (timerRef.current) clearInterval(timerRef.current);
+        const end = Date.now() + TIMER_SECONDS * 1000;
+        setTimerLeft(TIMER_SECONDS);
+        timerRef.current = setInterval(() => {
+            const left = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+            setTimerLeft(left);
+            if (left <= 0) {
+                if (timerRef.current) clearInterval(timerRef.current);
+                timerRef.current = null;
+                codeSentRef.current = false;
+            }
+        }, 1000);
+    }, []);
 
     const handleForgotSendCode = useCallback(async () => {
         const login = String(form.getValues("login") || "").trim();
@@ -49,13 +70,15 @@ export function useForgotPassword(form: FormLike) {
                 return;
             }
             showToast("success", "Code sent to your email");
+            codeSentRef.current = true;
             setForgotMode("code");
+            startTimer();
         } catch {
             showToast("error", "Network error");
         } finally {
             setForgotLoading(false);
         }
-    }, [forgotEmail, form]);
+    }, [forgotEmail, form, startTimer]);
 
     const handleForgotReset = useCallback(async () => {
         const login = String(form.getValues("login") || "").trim();
@@ -85,6 +108,10 @@ export function useForgotPassword(form: FormLike) {
                 return;
             }
             showToast("success", "Password reset! You can now login.");
+            if (timerRef.current) clearInterval(timerRef.current);
+            timerRef.current = null;
+            codeSentRef.current = false;
+            setTimerLeft(0);
             setForgotMode(false);
             setForgotEmail("");
             setForgotCode("");
@@ -99,10 +126,15 @@ export function useForgotPassword(form: FormLike) {
 
     const backToLogin = useCallback(() => {
         setForgotMode(false);
-        setForgotEmail("");
-        setForgotCode("");
-        setForgotNewPassword("");
     }, []);
+
+    const openForgotPassword = useCallback(() => {
+        if (codeSentRef.current && timerLeft > 0) {
+            setForgotMode("code");
+        } else {
+            setForgotMode("email");
+        }
+    }, [timerLeft]);
 
     return {
         forgotMode,
@@ -114,8 +146,11 @@ export function useForgotPassword(form: FormLike) {
         forgotNewPassword,
         setForgotNewPassword,
         forgotLoading,
+        timerLeft,
         handleForgotSendCode,
         handleForgotReset,
         backToLogin,
+        openForgotPassword,
+        codeLength: CODE_LENGTH,
     };
 }
