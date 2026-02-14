@@ -6,12 +6,10 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 	"sort"
-	"strconv"
 	"strings"
 )
 
@@ -119,6 +117,3 @@ func jsonReply(w http.ResponseWriter, status int, v any) {
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(v)
 }
-
-var _ = fmt.Sprintf
-var _ = strconv.Atoi

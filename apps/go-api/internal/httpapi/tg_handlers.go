@@ -2,7 +2,6 @@ package httpapi
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -180,5 +179,3 @@ func (s *Server) handleTGBuy(w http.ResponseWriter, r *http.Request) {
 		"activationKey": key,
 	})
 }
-
-var _ = fmt.Sprintf
