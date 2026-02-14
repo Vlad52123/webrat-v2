@@ -5,8 +5,8 @@ import { Input } from "@/components/ui/input";
 import { SliderCaptcha, type SliderCaptchaHandle } from "../slider-captcha";
 
 type FormLike = {
-    register: (name: string) => Record<string, unknown>;
-    getValues: (name: string) => unknown;
+    register: (name: any) => Record<string, unknown>;
+    getValues: (name: any) => unknown;
 };
 
 interface Props {

@@ -3,10 +3,9 @@
 import { useCallback, useState } from "react";
 import { showToast } from "@/features/panel/toast";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type FormLike = {
-    getValues: (name: string) => unknown;
-    setValue: (name: string, value: string) => void;
+    getValues: (name: any) => unknown;
+    setValue: (name: any, value: any) => void;
 };
 
 type ForgotMode = false | "email" | "code";
