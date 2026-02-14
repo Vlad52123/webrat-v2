@@ -8,8 +8,6 @@ import (
 	"time"
 )
 
-// sendWebAppButton sends an inline keyboard with a web_app button
-// via raw Telegram Bot API, bypassing the Go library which lacks WebApp types.
 func sendWebAppButton(token string, chatID int64, text, buttonText, webAppURL string) error {
 	payload := map[string]any{
 		"chat_id": chatID,

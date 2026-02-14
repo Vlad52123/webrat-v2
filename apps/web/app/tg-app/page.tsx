@@ -421,7 +421,56 @@ function TgApp() {
     );
 }
 
+function NotTelegramScreen() {
+    return (
+        <div className="tg-app">
+            <div style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: "100dvh",
+                padding: "40px 20px",
+                textAlign: "center",
+            }}>
+                <div style={{ fontSize: 64, marginBottom: 16 }}>🔒</div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", marginBottom: 8 }}>
+                    Только через Telegram
+                </div>
+                <div style={{ fontSize: 14, color: "var(--tg-text-dim)", lineHeight: 1.6, maxWidth: 280 }}>
+                    Это приложение доступно только через Telegram бота.
+                    Откройте <strong>@WebCrystalbot</strong> и нажмите кнопку «Открыть Mini App».
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function TgAppPage() {
+    const [isTelegram, setIsTelegram] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        // Check after a short delay to let SDK initialize
+        const timer = setTimeout(() => {
+            setIsTelegram(!!window.Telegram?.WebApp?.initData);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, []);
+
+    if (isTelegram === null) {
+        return (
+            <div className="tg-app">
+                <div className="tg-loading" style={{ minHeight: "100dvh" }}>
+                    <div className="tg-spinner" />
+                </div>
+            </div>
+        );
+    }
+
+    if (!isTelegram) {
+        return <NotTelegramScreen />;
+    }
+
     return (
         <TelegramProvider>
             <TgApp />
