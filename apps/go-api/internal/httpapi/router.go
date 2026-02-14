@@ -55,7 +55,7 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 
 	// serve static logo (for emails etc.)
 	logoDir := filepath.Join("static", "logo")
-	r.Handle("/static/logo/*", http.StripPrefix("/static/logo/", http.FileServer(http.Dir(logoDir))))
+	r.Handle("/api/logo/*", http.StripPrefix("/api/logo/", http.FileServer(http.Dir(logoDir))))
 
 	r.Get("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
