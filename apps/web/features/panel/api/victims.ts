@@ -20,6 +20,11 @@ export const VictimSchema = z.object({
    device_type: z.string().optional(),
    online: z.boolean().optional(),
    status: z.string().optional(),
+   version: z.string().optional(),
+   startupDelaySeconds: z.number().optional(),
+   autorunMode: z.string().optional(),
+   installPath: z.string().optional(),
+   hideFilesEnabled: z.boolean().optional(),
 }).passthrough();
 
 export type Victim = z.infer<typeof VictimSchema>;

