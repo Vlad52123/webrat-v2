@@ -46,7 +46,7 @@ export function DetailView(props: { victims: Victim[] }) {
                      : isTerminal
                         ? "h-full min-h-0 overflow-hidden p-[12px_14px]"
                         : needsScroll
-                           ? "h-full min-h-0 overflow-y-auto p-[12px_14px]"
+                           ? "h-full min-h-0 overflow-y-auto p-[12px_14px] wc-scrollbar-transparent"
                            : "h-auto overflow-y-visible p-[12px_14px]")
                }
             >
