@@ -119,7 +119,7 @@ export function RemoteStartSection() {
             className={
                "detail-card remote-card relative overflow-hidden w-[1080px] max-w-[calc(100vw-200px)] min-h-[420px] mx-auto mt-[110px] rounded-[18px] " +
                "border border-[rgba(255,255,255,0.16)] p-[20px_40px_32px] " +
-               "bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),rgba(12,12,12,0.95))] " +
+               "bg-transparent " +
                "shadow-[0_22px_50px_rgba(0,0,0,0.85),0_0_0_3px_rgba(255,255,255,0.04)] " +
                "backdrop-blur-[12px]"
             }

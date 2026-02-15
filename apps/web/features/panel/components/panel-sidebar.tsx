@@ -23,7 +23,7 @@ export function PanelSidebar(props: { tab: PanelTabKey; setTab: (next: PanelTabK
             className={cn(
                "hidden",
                detail.isOpen &&
-               "grid flex-1 place-items-center border-none border-r border-[rgba(150,150,150,0.75)] bg-[rgba(30,30,30,0.95)] text-[rgba(200,200,200,0.9)] transition-[background] duration-150 hover:bg-[rgba(45,45,45,0.95)]",
+               "grid flex-1 place-items-center cursor-pointer border-none border-r border-[rgba(150,150,150,0.75)] bg-[rgba(30,30,30,0.95)] text-[rgba(200,200,200,0.9)] transition-[background] duration-150 hover:bg-[rgba(45,45,45,0.95)]",
             )}
             type="button"
             aria-label="Back"

