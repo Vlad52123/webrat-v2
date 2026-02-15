@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"webrat-go-api/internal/httpapi"
 	"webrat-go-api/internal/storage"
 
 	"github.com/gorilla/websocket"

