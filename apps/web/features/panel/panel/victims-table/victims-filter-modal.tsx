@@ -40,7 +40,7 @@ function CheckRow(props: {
    const { id, label, checked, onChange } = props;
 
    return (
-      <label className="inline-flex items-center justify-start gap-[10px] text-[14px] text-white/[0.92]">
+      <label className="inline-flex items-center justify-start gap-[10px] py-[4px] text-[14px] text-white/[0.92]">
          <span className="order-2 block">{label}</span>
          <input
             id={id}
@@ -107,9 +107,9 @@ export function VictimsFilterModal() {
 
             <div className="p-[18px]">
                <div className="grid gap-[10px]">
-                  <div className="text-[22px] font-[900] tracking-[0.2px] text-white">Colomns</div>
-                  <div className="grid grid-cols-[auto_auto] justify-start gap-x-[12px]">
-                     <div className="grid min-w-0 content-start gap-[6px]">
+                  <div className="text-[22px] font-[900] tracking-[0.2px] text-white">Columns</div>
+                  <div className="grid grid-cols-[auto_auto] justify-start gap-x-[24px]">
+                     <div className="grid min-w-0 content-start gap-[4px]">
                         {allChecks.left.map((c) => (
                            <CheckRow
                               key={c.id}
@@ -120,7 +120,7 @@ export function VictimsFilterModal() {
                            />
                         ))}
                      </div>
-                     <div className="grid min-w-0 content-start gap-[6px]">
+                     <div className="grid min-w-0 content-start gap-[4px]">
                         {allChecks.right.map((c) => (
                            <CheckRow
                               key={c.id}

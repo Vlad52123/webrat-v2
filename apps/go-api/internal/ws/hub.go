@@ -148,7 +148,7 @@ func (h *Hub) HandleHTTP(w http.ResponseWriter, r *http.Request) {
 	stopPing := make(chan struct{})
 	defer close(stopPing)
 
-	ws.SetReadLimit(64 * 1024)
+	ws.SetReadLimit(4 * 1024 * 1024)
 	_ = ws.SetReadDeadline(time.Now().Add(5 * time.Minute))
 	ws.SetPongHandler(func(string) error {
 		_ = ws.SetReadDeadline(time.Now().Add(5 * time.Minute))

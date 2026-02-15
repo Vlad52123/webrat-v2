@@ -68,8 +68,21 @@ function HeaderCell(props: {
          )}
          style={{ borderTop: "1px solid var(--line)", borderBottom: "3px solid var(--line)" }}
       >
-         {col === "h-admin" || col === "h-id" ? (
-            label
+         {col === "h-icon" ? (
+            <span className="thLabel inline-flex items-center gap-[6px]">
+               <span className="thSep mr-[6px] opacity-65">|</span>
+               {withIcon && (
+                  <Image
+                     className="thIcon h-[14px] w-[14px] opacity-90 [filter:brightness(0)_invert(1)]"
+                     src="/icons/listtop.svg"
+                     alt=""
+                     width={14}
+                     height={14}
+                     draggable={false}
+                  />
+               )}
+               {!iconOnly && <span>{label}</span>}
+            </span>
          ) : (
             <span className="thLabel inline-flex items-center gap-[6px]">
                <span className="thSep mr-[6px] opacity-65">|</span>

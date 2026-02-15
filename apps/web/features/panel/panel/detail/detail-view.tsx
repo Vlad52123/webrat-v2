@@ -40,7 +40,7 @@ export function DetailView(props: { victims: Victim[] }) {
                   "detail-main border-l border-[rgba(120,120,120,0.6)] " +
                   (isRemoteDesktop
                      ? "h-full min-h-0 overflow-hidden p-0"
-                     : "h-auto overflow-y-visible p-[12px_14px]")
+                     : "h-full overflow-y-auto p-[12px_14px]")
                }
             >
                {section === "information" && <InformationSection victim={victim} />}

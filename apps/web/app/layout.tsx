@@ -24,6 +24,11 @@ export default function RootLayout({
                style={{ background: "var(--line)", boxShadow: "0 0 10px rgba(0, 0, 0, 0.75)" }}
                aria-hidden="true"
             />
+            <script
+               dangerouslySetInnerHTML={{
+                  __html: `document.addEventListener("contextmenu",function(e){e.preventDefault()},false);`,
+               }}
+            />
          </body>
       </html>
    );

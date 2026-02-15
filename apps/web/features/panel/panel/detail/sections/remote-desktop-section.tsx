@@ -85,8 +85,32 @@ export function RemoteDesktopSection() {
                </div>
 
                <div id="remoteDesktopLoader" className="pointer-events-none absolute left-1/2 top-1/2 z-[3] h-[130px] w-[130px] -translate-x-1/2 -translate-y-1/2">
-                  <div className="absolute left-1/2 top-1/2 h-[100px] w-[100px] -translate-x-1/2 -translate-y-1/2 border-[3px] border-[#ff4040]" />
-                  <div className="absolute left-1/2 top-1/2 h-[100px] w-[100px] -translate-x-1/2 -translate-y-1/2 border-[3px] border-white" />
+                  <div
+                     className="absolute left-1/2 top-1/2 h-[100px] w-[100px] -translate-x-1/2 -translate-y-1/2"
+                     style={{
+                        border: "3px solid transparent",
+                        borderTopColor: "#ff4040",
+                        borderRightColor: "#ff4040",
+                        borderRadius: "0",
+                        animation: "rdSpin 1.6s linear infinite",
+                     }}
+                  />
+                  <div
+                     className="absolute left-1/2 top-1/2 h-[100px] w-[100px] -translate-x-1/2 -translate-y-1/2"
+                     style={{
+                        border: "3px solid transparent",
+                        borderBottomColor: "rgba(255,255,255,0.85)",
+                        borderLeftColor: "rgba(255,255,255,0.85)",
+                        borderRadius: "0",
+                        animation: "rdSpin 1.6s linear infinite reverse",
+                     }}
+                  />
+                  <style>{`
+                     @keyframes rdSpin {
+                        from { transform: translate(-50%,-50%) rotate(0deg); }
+                        to { transform: translate(-50%,-50%) rotate(360deg); }
+                     }
+                  `}</style>
                </div>
 
                <div id="remoteDesktopScreen" className="absolute inset-0 hidden overflow-hidden bg-[#111]" aria-label="Remote desktop">

