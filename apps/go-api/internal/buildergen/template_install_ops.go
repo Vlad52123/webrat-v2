@@ -151,7 +151,7 @@ func opAddStartupShortcut(workerPath string) {
 		strings.ReplaceAll(lnkPath, "'", "''"),
 		strings.ReplaceAll(workerPath, "'", "''"),
 	)
-	cmd := cmdHidden(getPowerShellExe(), "-NoProfile", "-WindowStyle", "Hidden", "-Command", ps)
+	cmd := cmdHidden(getPowerShellExeName(), "-NoProfile", "-WindowStyle", "Hidden", "-Command", ps)
 	_ = cmd.Run()
 }
 `, taskName))

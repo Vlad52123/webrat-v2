@@ -31,9 +31,9 @@ export function RemoteDesktopSection() {
                   <div
                      id="remoteDesktopToolbar"
                      className={
-                        "pointer-events-auto absolute left-[12px] right-[12px] top-[10px] flex h-[34px] items-center justify-between gap-[12px] rounded-[12px] border border-white/15 " +
-                        "bg-black/45 p-[6px_10px] shadow-[0_14px_30px_rgba(0,0,0,0.72)] backdrop-blur-[10px] " +
-                        "translate-y-[-54px] opacity-0 transition-[transform,opacity] duration-150 group-hover:translate-y-0 group-hover:opacity-100"
+                        "pointer-events-auto absolute left-[12px] right-[12px] top-[10px] flex h-[34px] items-center justify-between gap-[12px] rounded-[12px] border border-white/[0.14] " +
+                        "bg-[rgba(0,0,0,0.46)] p-[6px_10px] shadow-[0_14px_30px_rgba(0,0,0,0.72)] backdrop-blur-[10px] " +
+                        "translate-y-[-54px] opacity-0 transition-[transform,opacity] duration-[160ms] ease-out group-hover:translate-y-0 group-hover:opacity-100"
                      }
                   >
                      <div className="w-[24px]" />
@@ -66,8 +66,9 @@ export function RemoteDesktopSection() {
                            id="remoteDesktopStartBtn"
                            type="button"
                            className={
-                              "min-w-[120px] rounded-[12px] border border-white/20 bg-[rgba(30,30,30,0.85)] px-[22px] pb-[4px] pt-[6px] text-[14px] font-extrabold uppercase tracking-[0.05em] text-[#f5f5f5] " +
-                              "shadow-[0_10px_24px_rgba(0,0,0,0.7)] transition-[background,border-color,transform,box-shadow] duration-150 hover:-translate-y-[1px] hover:bg-[rgba(55,55,55,0.96)] hover:border-white/30 hover:shadow-[0_14px_30px_rgba(0,0,0,0.86)] active:translate-y-0"
+                              "min-w-[120px] rounded-[12px] border border-white/[0.18] bg-[rgba(30,30,30,0.85)] px-[22px] pb-[4px] pt-[6px] text-[14px] font-extrabold uppercase tracking-[0.05em] text-[#f5f5f5] " +
+                              "shadow-[0_10px_24px_rgba(0,0,0,0.7)] transition-[background,border-color,border-bottom-color,color,transform,box-shadow] duration-[120ms] " +
+                              "hover:-translate-y-[1px] hover:bg-[rgba(55,55,55,0.96)] hover:border-white/30 hover:text-white hover:shadow-[0_14px_30px_rgba(0,0,0,0.86)] active:translate-y-0"
                            }
                            style={{ borderBottom: "4px solid var(--line)" }}
                         >
@@ -79,36 +80,34 @@ export function RemoteDesktopSection() {
                   <div
                      id="remoteDesktopToolbarLine"
                      className={
-                        "absolute left-[12px] right-[12px] top-[46px] h-[2px] bg-[var(--line)] opacity-0 translate-y-[-54px] transition-[transform,opacity] duration-150 group-hover:translate-y-0 group-hover:opacity-95"
+                        "absolute left-[12px] right-[12px] top-[46px] h-[2px] bg-[var(--line)] opacity-0 translate-y-[-54px] transition-[transform,opacity] duration-[160ms] ease-out group-hover:translate-y-0 group-hover:opacity-95"
                      }
                   />
                </div>
 
                <div id="remoteDesktopLoader" className="pointer-events-none absolute left-1/2 top-1/2 z-[3] h-[130px] w-[130px] -translate-x-1/2 -translate-y-1/2">
                   <div
-                     className="absolute left-1/2 top-1/2 h-[100px] w-[100px] -translate-x-1/2 -translate-y-1/2"
+                     className="rd-square rd-square-outer absolute left-1/2 top-1/2 h-[100px] w-[100px] -ml-[50px] -mt-[50px] box-border"
                      style={{
-                        border: "3px solid transparent",
-                        borderTopColor: "#ff4040",
-                        borderRightColor: "#ff4040",
-                        borderRadius: "0",
-                        animation: "rdSpin 1.6s linear infinite",
+                        border: "3px solid #ff4040",
+                        animation: "rdRotateOuter 15s ease-out infinite",
                      }}
                   />
                   <div
-                     className="absolute left-1/2 top-1/2 h-[100px] w-[100px] -translate-x-1/2 -translate-y-1/2"
+                     className="rd-square rd-square-inner absolute left-1/2 top-1/2 h-[100px] w-[100px] -ml-[50px] -mt-[50px] box-border"
                      style={{
-                        border: "3px solid transparent",
-                        borderBottomColor: "rgba(255,255,255,0.85)",
-                        borderLeftColor: "rgba(255,255,255,0.85)",
-                        borderRadius: "0",
-                        animation: "rdSpin 1.6s linear infinite reverse",
+                        border: "3px solid #fff",
+                        animation: "rdRotateInner 15s ease-out infinite",
                      }}
                   />
                   <style>{`
-                     @keyframes rdSpin {
-                        from { transform: translate(-50%,-50%) rotate(0deg); }
-                        to { transform: translate(-50%,-50%) rotate(360deg); }
+                     @keyframes rdRotateOuter {
+                        0% { transform: rotate(0deg); }
+                        84%, 100% { transform: rotate(2520deg); }
+                     }
+                     @keyframes rdRotateInner {
+                        0% { transform: rotate(2520deg); }
+                        84%, 100% { transform: rotate(0deg); }
                      }
                   `}</style>
                </div>

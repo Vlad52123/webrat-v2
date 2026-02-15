@@ -28,14 +28,14 @@ export function DetailNav() {
                         onClick={() => setSection(item.key)}
                         className={cn(
                            "relative mb-[7px] flex min-h-[40px] w-full items-center justify-start overflow-hidden whitespace-nowrap rounded-[12px] border px-[14px] py-[9px]",
-                           "border-[rgba(150,150,150,0.18)]",
+                           "border-[rgba(150,150,150,0.2)]",
                            "text-[14px] font-[650] leading-[20px] text-[rgba(240,240,240,0.9)]",
-                           "bg-[rgba(28,28,34,0.55)] backdrop-blur-[12px]",
-                           "shadow-[0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08),inset_0_0_0_1px_rgba(255,255,255,0.04)]",
+                           "bg-[linear-gradient(180deg,rgba(36,36,42,0.92),rgba(18,18,22,0.92))]",
+                           "shadow-[0_10px_24px_rgba(0,0,0,0.55),inset_0_0_0_1px_rgba(255,255,255,0.06)]",
                            "transition-[background,border-color,transform,box-shadow] duration-[140ms]",
-                           "hover:-translate-y-[1px] hover:border-[rgba(200,200,200,0.32)] hover:bg-[rgba(42,42,52,0.65)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.12),inset_0_0_0_1px_rgba(255,255,255,0.06)]",
+                           "hover:-translate-y-[1px] hover:border-[rgba(200,200,200,0.38)] hover:bg-[linear-gradient(180deg,rgba(50,50,58,0.96),rgba(24,24,30,0.96))] hover:shadow-[0_12px_26px_rgba(0,0,0,0.7),inset_0_0_0_1px_rgba(255,255,255,0.08)]",
                            active &&
-                           "border-[rgba(255,255,255,0.35)] bg-[rgba(52,52,64,0.72)] shadow-[0_14px_30px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(255,255,255,0.14),inset_0_0_0_1px_rgba(255,255,255,0.08)]",
+                           "border-[rgba(255,255,255,0.45)] bg-[linear-gradient(180deg,rgba(62,62,74,1),rgba(28,28,36,1))] shadow-[0_14px_30px_rgba(0,0,0,0.78),inset_0_0_0_1px_rgba(255,255,255,0.1)]",
                         )}
                      >
                         <span

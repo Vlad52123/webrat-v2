@@ -117,33 +117,42 @@ export function RemoteStartSection() {
       <div className="detail-section" data-section="remote-start">
          <div
             className={
-               "detail-card remote-card w-[1080px] max-w-[calc(100vw-200px)] min-h-[420px] mx-auto mt-[110px] rounded-[18px] " +
-               "border-2 border-[rgba(170,170,170,0.85)] bg-transparent p-[20px_40px_32px] " +
-               "shadow-[0_0_0_1px_rgba(0,0,0,0.7),0_20px_46px_rgba(0,0,0,0.85)] backdrop-blur-[14px]"
+               "detail-card remote-card relative overflow-hidden w-[1080px] max-w-[calc(100vw-200px)] min-h-[420px] mx-auto mt-[110px] rounded-[18px] " +
+               "border border-[rgba(255,255,255,0.16)] p-[20px_40px_32px] " +
+               "bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),rgba(12,12,12,0.95))] " +
+               "shadow-[0_22px_50px_rgba(0,0,0,0.85),0_0_0_3px_rgba(255,255,255,0.04)] " +
+               "backdrop-blur-[12px]"
             }
          >
             <div
                id="remoteFileSelect"
-               className="remote-inner remote-file-select cursor-pointer"
+               className="remote-inner remote-file-select flex min-h-[220px] cursor-pointer flex-col items-center justify-center text-center transition-[transform,box-shadow,background] duration-[140ms] active:translate-y-[1px]"
             >
-               <div className="remote-title text-[18px] font-extrabold uppercase tracking-[0.05em] text-white/95">upload &amp; exec file</div>
+               <div className="remote-title mb-[14px] text-[17px] font-extrabold uppercase tracking-[0.04em] text-white/[0.96]">
+                  upload &amp; exec file
+               </div>
 
-               <div className="remote-icon-wrapper mt-[14px] grid place-items-center gap-[10px]">
+               <div className="remote-icon-wrapper flex flex-col items-center justify-center gap-[8px]">
                   <Image
                      src="/icons/remote-start.svg"
                      alt="remote start"
-                     width={54}
-                     height={54}
+                     width={64}
+                     height={64}
                      draggable={false}
-                     className="remote-icon opacity-90 invert"
+                     className="remote-icon [filter:drop-shadow(0_0_12px_rgba(144,216,255,0.75))_invert(0.95)]"
                   />
-                  <div className="remote-select-label text-[14px] font-extrabold tracking-[0.06em] text-white/90">SELECT FILE</div>
+                  <div className="remote-select-label mt-[4px] text-[14px] font-bold uppercase tracking-[0.18em] text-white/[0.94]">
+                     SELECT FILE
+                  </div>
                </div>
 
                <input id="remoteFileInput" type="file" className="hidden" />
             </div>
 
-            <div className="detail-separator detail-separator-bottom mt-[14px] h-[2px] bg-[var(--line)]" style={{ marginLeft: "-40px", marginRight: "-40px" }} />
+            <div
+               className="detail-separator detail-separator-bottom mt-[14px] h-[2px] bg-[var(--line)]"
+               style={{ marginLeft: "-40px", marginRight: "-40px" }}
+            />
          </div>
       </div>
    );

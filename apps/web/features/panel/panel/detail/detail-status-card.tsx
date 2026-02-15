@@ -84,7 +84,10 @@ export function DetailStatusCard(props: { victim: Victim | null }) {
    }, [wsOpen]);
 
    const lineColor =
-      status === "connected" ? "bg-[#4caf50]" : status === "disconnected" ? "bg-[#f44336]" : "bg-[#888]";
+      status === "connected" ? "#4caf50" : status === "disconnected" ? "#f44336" : "#888";
+
+   const pulseSpeed =
+      status === "connected" ? "1.2s" : status === "disconnected" ? "0.9s" : "1.5s";
 
    const label = status === "connected" ? "Connected" : status === "disconnected" ? "Disconnected" : "Waiting for user";
 
@@ -102,7 +105,21 @@ export function DetailStatusCard(props: { victim: Victim | null }) {
          <div className="mb-[4px]" id="detailStatusLabel">
             {label}
          </div>
-         <div className={"mx-auto h-[3px] w-[85%] rounded-full opacity-85 animate-pulse " + lineColor} />
+         <div
+            className="mx-auto h-[3px] w-[85%] rounded-full"
+            style={{
+               background: lineColor,
+               opacity: 0.85,
+               animation: `detailStatusPulse ${pulseSpeed} ease-in-out infinite`,
+            }}
+         />
+         <style>{`
+            @keyframes detailStatusPulse {
+               0% { opacity: 0.25; }
+               50% { opacity: 1; }
+               100% { opacity: 0.25; }
+            }
+         `}</style>
 
          <div className="mt-[10px] grid gap-[8px]">
             <button
