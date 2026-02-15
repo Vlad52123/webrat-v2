@@ -32,7 +32,7 @@ export function RoflSection() {
    }, [detail.selectedVictimId, qc, ws]);
 
    return (
-      <div className="detail-section pb-[80px]" data-section="rofl">
+      <div className="detail-section pb-[60px]" data-section="rofl">
          {/* Open URL */}
          <div className={CARD} style={{ marginTop: "8px" }}>
             <div className="p-[6px_2px_2px]">
