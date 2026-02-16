@@ -34,7 +34,6 @@ const nextConfig: NextConfig = {
             { source: "/api/forgot-password/", destination: `${apiUrl}/forgot-password` },
             { source: "/api/reset-password", destination: `${apiUrl}/reset-password` },
             { source: "/api/reset-password/", destination: `${apiUrl}/reset-password` },
-            { source: "/ws", destination: `${apiUrl}/api/ws` },
          ],
          afterFiles: [{ source: "/api/:path*", destination: `${apiUrl}/api/:path*` }],
       };
