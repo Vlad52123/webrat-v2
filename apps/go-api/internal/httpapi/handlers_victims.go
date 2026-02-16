@@ -89,5 +89,9 @@ func (s *Server) handleDeleteVictim(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if s.wsHub != nil {
+		s.wsHub.HideVictim(owner, id)
+	}
+
 	w.WriteHeader(http.StatusNoContent)
 }

@@ -92,6 +92,22 @@ func NewHub(db *storage.DB) (*Hub, error) {
 	return h, nil
 }
 
+func (h *Hub) HideVictim(owner, victimID string) {
+	owner = strings.ToLower(strings.TrimSpace(owner))
+	victimID = strings.TrimSpace(victimID)
+	if owner == "" || victimID == "" {
+		return
+	}
+	h.mu.Lock()
+	if h.hiddenVictimIDs[owner] == nil {
+		h.hiddenVictimIDs[owner] = make(map[string]bool)
+	}
+	h.hiddenVictimIDs[owner][victimID] = true
+	h.mu.Unlock()
+
+	h.broadcastVictims()
+}
+
 func (h *Hub) HandleHTTP(w http.ResponseWriter, r *http.Request) {
 	ip := getClientIP(r)
 	log.Printf("[ws] new connection ip=%s ua=%s", ip, r.UserAgent())

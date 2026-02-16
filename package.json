@@ -1,15 +1,15 @@
 {
-   "name": "webrat-v2",
-   "private": true,
-   "packageManager": "pnpm@10.28.2",
-   "scripts": {
-      "dev": "pnpm --filter web dev",
-      "build": "pnpm --filter web build",
-      "start": "pnpm --filter web start",
-      "lint": "pnpm --filter web lint",
-      "typecheck": "pnpm --filter web typecheck"
-   },
-   "dependencies": {
-      "react-hook-form": "^7.56.4"
-   }
+    "name": "webrat-v2",
+    "private": true,
+    "packageManager": "pnpm@10.28.2",
+    "scripts": {
+        "dev": "pnpm --filter web dev",
+        "build": "pnpm --filter web build",
+        "start": "pnpm --filter web start",
+        "lint": "pnpm --filter web lint",
+        "typecheck": "pnpm --filter web typecheck"
+    },
+    "dependencies": {
+        "react-hook-form": "^7.56.4"
+    }
 }
