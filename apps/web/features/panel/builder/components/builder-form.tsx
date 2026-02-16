@@ -20,8 +20,8 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
     const [installMode, setInstallMode] = useState<string>("random");
     const [delay, setDelay] = useState<number>(2);
     const [iconBase64, setIconBase64] = useState<string>("");
-    const [hidden, setHidden] = useState<boolean>(true);
-    const [isOpenClass, setIsOpenClass] = useState<boolean>(false);
+    const [hidden, setHidden] = useState<boolean>(!open);
+    const [isOpenClass, setIsOpenClass] = useState<boolean>(open);
     const formRef = useRef<HTMLDivElement | null>(null);
 
     const { startBuild, cancelBuild } = useBuilderBuildFlow({
@@ -42,7 +42,6 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
     useBuilderIconInput({ setIconBase64 });
     useExtensionSync();
 
-    // Restore build progress UI on mount if build is active
     useEffect(() => {
         try {
             const login = String(localStorage.getItem("webrat_login") || "").trim();
@@ -52,7 +51,6 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
                 setBuildingUi(true, "Build in progress...");
             }
         } catch {
-            // ignore
         }
     }, []);
 

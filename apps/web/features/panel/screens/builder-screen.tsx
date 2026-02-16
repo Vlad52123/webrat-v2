@@ -24,7 +24,6 @@ export function BuilderScreen() {
     const [mutex] = useState(() => makeMutex());
     const [hasCustomBg, setHasCustomBg] = useState(false);
 
-    // Keep form open while build is active
     useEffect(() => {
         if (hasActiveBuild() && !open) {
             setOpen(true);
