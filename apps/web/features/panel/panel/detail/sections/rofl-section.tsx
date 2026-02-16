@@ -32,7 +32,7 @@ export function RoflSection() {
    }, [detail.selectedVictimId, qc, ws]);
 
    return (
-      <div className="detail-section pb-[60px] h-full flex-1 min-h-0 overflow-y-auto" data-section="rofl">
+      <div className="detail-section pb-[60px] h-full flex-1 min-h-0 overflow-y-auto" data-section="rofl" style={{overflowY: 'auto'}}>
          {/* Open URL */}
          <div className={CARD} style={{ marginTop: "8px" }}>
             <div className="p-[6px_2px_2px]">
@@ -127,7 +127,7 @@ export function RoflSection() {
                   <textarea
                      id="roflMsgContent"
                      rows={3}
-                     className="min-h-[72px] resize-y rounded-[10px] border border-white/[0.14] bg-black/40 px-[10px] py-[8px] text-[14px] text-white outline-none placeholder:text-[rgba(200,200,200,0.6)] focus:border-[rgba(220,220,220,0.95)]"
+                     className="min-h-[72px] max-h-[160px] resize-none rounded-[10px] border border-white/[0.14] bg-black/40 px-[10px] py-[8px] text-[14px] text-white outline-none placeholder:text-[rgba(200,200,200,0.6)] focus:border-[rgba(220,220,220,0.95)]"
                      placeholder="Message content"
                   />
                </div>
