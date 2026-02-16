@@ -84,10 +84,6 @@ export function StealerSection() {
             headers: csrfHeaders(),
          });
          if (!res.ok) {
-            if (res.status === 404) {
-               showToast("warning", "No steal data yet");
-               return;
-            }
             showToast("error", "Download failed");
             return;
          }

