@@ -13,223 +13,223 @@ import { useBuilderIconInput } from "./builder-form/use-builder-icon-input";
 import { useExtensionSync } from "./builder-form/use-extension-sync";
 
 export function BuilderForm(props: { open: boolean; mutex: string }) {
-   const { open, mutex } = props;
+    const { open, mutex } = props;
 
-   const [installMode, setInstallMode] = useState<string>("random");
-   const [delay, setDelay] = useState<number>(2);
-   const [iconBase64, setIconBase64] = useState<string>("");
-   const [hidden, setHidden] = useState<boolean>(true);
-   const [isOpenClass, setIsOpenClass] = useState<boolean>(false);
-   const formRef = useRef<HTMLDivElement | null>(null);
+    const [installMode, setInstallMode] = useState<string>("random");
+    const [delay, setDelay] = useState<number>(2);
+    const [iconBase64, setIconBase64] = useState<string>("");
+    const [hidden, setHidden] = useState<boolean>(true);
+    const [isOpenClass, setIsOpenClass] = useState<boolean>(false);
+    const formRef = useRef<HTMLDivElement | null>(null);
 
-   const { startBuild, cancelBuild } = useBuilderBuildFlow({
-      iconBase64,
-      setIconBase64,
-      delay,
-      setDelay,
-      setInstallMode,
-   });
+    const { startBuild, cancelBuild } = useBuilderBuildFlow({
+        iconBase64,
+        setIconBase64,
+        delay,
+        setDelay,
+        setInstallMode,
+    });
 
-   useBuilderFormVisibility({
-      open,
-      hidden,
-      setHidden,
-      setIsOpenClass,
-      el: formRef.current,
-   });
-   useBuilderIconInput({ setIconBase64 });
-   useExtensionSync();
+    useBuilderFormVisibility({
+        open,
+        hidden,
+        setHidden,
+        setIsOpenClass,
+        el: formRef.current,
+    });
+    useBuilderIconInput({ setIconBase64 });
+    useExtensionSync();
 
-   const onCreate = () => {
-      const delaySec = clampDelay(delay);
-      if (delaySec !== delay) setDelay(delaySec);
+    const onCreate = () => {
+        const delaySec = clampDelay(delay);
+        if (delaySec !== delay) setDelay(delaySec);
 
-      void iconBase64;
-      void startBuild();
-   };
+        void iconBase64;
+        void startBuild();
+    };
 
-   return (
-      <div
-         id="builderForm"
-         ref={formRef}
-         className={
-            isOpenClass
-               ? "builderForm isOpen grid place-items-center overflow-visible opacity-100 transition-[max-height,opacity,transform,margin-top] duration-[320ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] [max-height:900px] [transform:translateY(0)] mt-[14px]"
-               : "builderForm grid place-items-center overflow-hidden opacity-0 transition-[max-height,opacity,transform,margin-top] duration-[320ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] [max-height:0] [transform:translateY(-6px)] mt-0"
-         }
-         hidden={hidden}
-      >
-         <div className="builderFormInner relative grid w-[min(860px,92vw)] gap-[16px] rounded-[18px] border border-[rgba(255,255,255,0.10)] bg-[rgba(22,22,26,0.72)] p-[22px] shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.04)_inset,0_1px_0_rgba(255,255,255,0.06)_inset] backdrop-blur-[12px]">
-            <div className="builderGrid grid grid-cols-2 gap-x-[32px] gap-y-[0px]">
-               {/* ── Left column ── */}
-               <div className="builderCol grid gap-[10px] content-start">
-                  <div className="text-[11px] font-bold uppercase tracking-[1.2px] text-[rgba(255,255,255,0.35)] mb-[2px]">General</div>
+    return (
+        <div
+            id="builderForm"
+            ref={formRef}
+            className={
+                isOpenClass
+                    ? "builderForm isOpen grid place-items-center overflow-visible opacity-100 transition-[max-height,opacity,transform,margin-top] duration-[320ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] [max-height:900px] [transform:translateY(0)] mt-[14px]"
+                    : "builderForm grid place-items-center overflow-hidden opacity-0 transition-[max-height,opacity,transform,margin-top] duration-[320ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] [max-height:0] [transform:translateY(-6px)] mt-0"
+            }
+            hidden={hidden}
+        >
+            <div className="builderFormInner relative grid w-[min(860px,92vw)] gap-[16px] rounded-[18px] border border-[rgba(255,255,255,0.10)] bg-[rgba(22,22,26,0.72)] p-[22px] shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.04)_inset,0_1px_0_rgba(255,255,255,0.06)_inset] backdrop-blur-[12px]">
+                <div className="builderGrid grid grid-cols-2 gap-x-[32px] gap-y-[0px]">
+                    {/* ── Left column ── */}
+                    <div className="builderCol grid gap-[10px] content-start">
+                        <div className="text-[11px] font-bold uppercase tracking-[1.2px] text-[rgba(255,255,255,0.35)] mb-[2px]">General</div>
 
-                  <BuilderField label="Name">
-                     <BuilderTextInput id="buildName" placeholder="Build name" autoComplete="off" maxLength={255} />
-                  </BuilderField>
+                        <BuilderField label="Name">
+                            <BuilderTextInput id="buildName" placeholder="Build name" autoComplete="off" maxLength={255} />
+                        </BuilderField>
 
-                  <BuilderField label="Mutex">
-                     <BuilderTextInput id="buildMutex" value={mutex} readOnly style={{ color: "rgba(255,255,255,0.4)" }} />
-                  </BuilderField>
+                        <BuilderField label="Mutex">
+                            <BuilderTextInput id="buildMutex" value={mutex} readOnly style={{ color: "rgba(255,255,255,0.4)" }} />
+                        </BuilderField>
 
-                  <BuilderField label="Comment">
-                     <BuilderTextInput id="buildComment" placeholder="Optional comment" autoComplete="off" maxLength={10} />
-                  </BuilderField>
+                        <BuilderField label="Comment">
+                            <BuilderTextInput id="buildComment" placeholder="Optional comment" autoComplete="off" maxLength={10} />
+                        </BuilderField>
 
-                  <BuilderField label="Anti-analysis">
-                     <BuilderNiceSelect
-                        id="antiAnalysis"
-                        defaultValue="None"
-                        options={[
-                           { value: "None", label: "None" },
-                           { value: "AntiMitm", label: "Anti Mitm" },
-                           { value: "AntiVps", label: "Anti VPS" },
-                           { value: "Full", label: "Full" },
-                        ]}
-                     />
-                  </BuilderField>
+                        <BuilderField label="Anti-analysis">
+                            <BuilderNiceSelect
+                                id="antiAnalysis"
+                                defaultValue="None"
+                                options={[
+                                    { value: "None", label: "None" },
+                                    { value: "AntiMitm", label: "Anti Mitm" },
+                                    { value: "AntiVps", label: "Anti VPS" },
+                                    { value: "Full", label: "Full" },
+                                ]}
+                            />
+                        </BuilderField>
 
-                  <BuilderField label="Extension">
-                     <BuilderTextInput
-                        id="extension"
-                        defaultValue="webcrystal.exe"
-                        readOnly
-                        tabIndex={-1}
-                        style={{ color: "rgba(255,255,255,0.4)" }}
-                        className={inputFixedClass}
-                     />
-                  </BuilderField>
+                        <BuilderField label="Extension">
+                            <BuilderTextInput
+                                id="extension"
+                                defaultValue="webcrystal.exe"
+                                readOnly
+                                tabIndex={-1}
+                                style={{ color: "rgba(255,255,255,0.4)" }}
+                                className={inputFixedClass}
+                            />
+                        </BuilderField>
 
-                  <BuilderIconField />
-               </div>
+                        <BuilderIconField />
+                    </div>
 
-               {/* ── Vertical divider ── */}
-               <div className="absolute left-1/2 top-[22px] bottom-[22px] w-px bg-[rgba(255,255,255,0.07)]" style={{ pointerEvents: "none" }} />
+                    {/* ── Vertical divider ── */}
+                    <div className="absolute left-1/2 top-[22px] bottom-[22px] w-px bg-[rgba(255,255,255,0.07)]" style={{ pointerEvents: "none" }} />
 
-               {/* ── Right column ── */}
-               <div className="builderCol grid gap-[10px] content-start">
-                  <div className="text-[11px] font-bold uppercase tracking-[1.2px] text-[rgba(255,255,255,0.35)] mb-[2px]">Behavior</div>
+                    {/* ── Right column ── */}
+                    <div className="builderCol grid gap-[10px] content-start">
+                        <div className="text-[11px] font-bold uppercase tracking-[1.2px] text-[rgba(255,255,255,0.35)] mb-[2px]">Behavior</div>
 
-                  <BuilderField variant="two" label="Auto Steal">
-                     <BuilderNiceSelect
-                        id="autoSteal"
-                        defaultValue="Once"
-                        options={[
-                           { value: "Once", label: "Once" },
-                           { value: "Every connect", label: "Every connect" },
-                        ]}
-                     />
-                  </BuilderField>
+                        <BuilderField variant="two" label="Auto Steal">
+                            <BuilderNiceSelect
+                                id="autoSteal"
+                                defaultValue="Once"
+                                options={[
+                                    { value: "Once", label: "Once" },
+                                    { value: "Every connect", label: "Every connect" },
+                                ]}
+                            />
+                        </BuilderField>
 
-                  <BuilderField variant="two" label="Force admin">
-                     <BuilderNiceSelect
-                        id="forceAdmin"
-                        defaultValue="Normal"
-                        options={[
-                           { value: "Normal", label: "Normal" },
-                           { value: "Agressive", label: "Agressive" },
-                        ]}
-                     />
-                  </BuilderField>
+                        <BuilderField variant="two" label="Force admin">
+                            <BuilderNiceSelect
+                                id="forceAdmin"
+                                defaultValue="Normal"
+                                options={[
+                                    { value: "Normal", label: "Normal" },
+                                    { value: "Agressive", label: "Agressive" },
+                                ]}
+                            />
+                        </BuilderField>
 
-                  <BuilderField variant="two" label="Install">
-                     <BuilderNiceSelect
-                        id="installMode"
-                        value={installMode}
-                        onValueChange={(v) => setInstallMode(v)}
-                        options={[
-                           { value: "random", label: "Random" },
-                           { value: "custom", label: "Custom" },
-                        ]}
-                     />
-                  </BuilderField>
+                        <BuilderField variant="two" label="Install">
+                            <BuilderNiceSelect
+                                id="installMode"
+                                value={installMode}
+                                onValueChange={(v) => setInstallMode(v)}
+                                options={[
+                                    { value: "random", label: "Random" },
+                                    { value: "custom", label: "Custom" },
+                                ]}
+                            />
+                        </BuilderField>
 
-                  <BuilderField
-                     id="installPathRow"
-                     variant="two"
-                     label="Path"
-                     hidden={installMode !== "custom"}
-                  >
-                     <BuilderTextInput id="installPath" placeholder="$AppData\\build.exe" autoComplete="off" />
-                  </BuilderField>
+                        <BuilderField
+                            id="installPathRow"
+                            variant="two"
+                            label="Path"
+                            hidden={installMode !== "custom"}
+                        >
+                            <BuilderTextInput id="installPath" placeholder="$AppData\\build.exe" autoComplete="off" />
+                        </BuilderField>
 
-                  <BuilderField variant="checkbox" label="Hide files">
-                     <input
-                        id="hideFiles"
-                        className="builderCheck justify-self-start m-0 grid h-[18px] w-[18px] cursor-pointer appearance-none place-items-center rounded-[6px] border border-[rgba(255,255,255,0.18)] bg-[rgba(0,0,0,0.18)] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-[background,border-color,transform] duration-[140ms] hover:border-[rgba(255,255,255,0.28)] active:translate-y-[1px] checked:bg-[rgba(255,75,75,0.22)] checked:border-[rgba(255,75,75,0.55)] checked:after:content-[''] checked:after:w-[10px] checked:after:h-[6px] checked:after:mt-[-1px] checked:after:border-l-[2px] checked:after:border-b-[2px] checked:after:border-[rgba(255,255,255,0.98)] checked:after:[transform:rotate(-45deg)] focus-visible:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_0_0_3px_rgba(255,255,255,0.1)]"
-                        type="checkbox"
-                     />
-                  </BuilderField>
+                        <BuilderField variant="checkbox" label="Hide files">
+                            <input
+                                id="hideFiles"
+                                className="builderCheck justify-self-start m-0 grid h-[18px] w-[18px] cursor-pointer appearance-none place-items-center rounded-[6px] border border-[rgba(255,255,255,0.18)] bg-[rgba(0,0,0,0.18)] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-[background,border-color,transform] duration-[140ms] hover:border-[rgba(255,255,255,0.28)] active:translate-y-[1px] checked:bg-[rgba(255,75,75,0.22)] checked:border-[rgba(255,75,75,0.55)] checked:after:content-[''] checked:after:w-[10px] checked:after:h-[6px] checked:after:mt-[-1px] checked:after:border-l-[2px] checked:after:border-b-[2px] checked:after:border-[rgba(255,255,255,0.98)] checked:after:[transform:rotate(-45deg)] focus-visible:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_0_0_3px_rgba(255,255,255,0.1)]"
+                                type="checkbox"
+                            />
+                        </BuilderField>
 
-                  <BuilderStartupDelay
-                     delay={delay}
-                     onMinus={() => setDelay((v) => clampDelay(v - 1))}
-                     onPlus={() => setDelay((v) => clampDelay(v + 1))}
-                  />
+                        <BuilderStartupDelay
+                            delay={delay}
+                            onMinus={() => setDelay((v) => clampDelay(v - 1))}
+                            onPlus={() => setDelay((v) => clampDelay(v + 1))}
+                        />
 
-                  <BuilderField variant="two" label="Autorun">
-                     <BuilderNiceSelect
-                        id="autorun"
-                        defaultValue="scheduler"
-                        options={[
-                           { value: "scheduler", label: "Scheduler" },
-                           { value: "scheduler_registry", label: "Scheduler + Registry" },
-                           { value: "registry", label: "Registry" },
-                           { value: "none", label: "None" },
-                        ]}
-                     />
-                  </BuilderField>
+                        <BuilderField variant="two" label="Autorun">
+                            <BuilderNiceSelect
+                                id="autorun"
+                                defaultValue="scheduler"
+                                options={[
+                                    { value: "scheduler", label: "Scheduler" },
+                                    { value: "scheduler_registry", label: "Scheduler + Registry" },
+                                    { value: "registry", label: "Registry" },
+                                    { value: "none", label: "None" },
+                                ]}
+                            />
+                        </BuilderField>
 
-                  <BuilderField variant="two" label="Offline Mode">
-                     <BuilderNiceSelect
-                        id="offlineMode"
-                        defaultValue="Enabled"
-                        options={[
-                           { value: "Enabled", label: "Enabled" },
-                           { value: "Disabled", label: "Disabled" },
-                        ]}
-                     />
-                  </BuilderField>
-               </div>
-            </div>
+                        <BuilderField variant="two" label="Offline Mode">
+                            <BuilderNiceSelect
+                                id="offlineMode"
+                                defaultValue="Enabled"
+                                options={[
+                                    { value: "Enabled", label: "Enabled" },
+                                    { value: "Disabled", label: "Disabled" },
+                                ]}
+                            />
+                        </BuilderField>
+                    </div>
+                </div>
 
-            <div
-               id="buildProgress"
-               className="buildProgress grid w-full place-items-center py-[10px]"
-               hidden
-            >
-               <div className="buildProgressInner grid h-[210px] w-[min(520px,90vw)] place-items-center rounded-[16px] border border-[rgba(255,255,255,0.10)] bg-[rgba(22,22,26,0.72)] shadow-[0_18px_40px_rgba(0,0,0,0.55),0_1px_0_rgba(255,255,255,0.06)_inset] backdrop-blur-[12px]">
-                  <div className="grid place-items-center gap-[16px]">
-                     <div
-                        id="buildProgressText"
-                        className="text-[18px] font-normal text-white"
-                     >
-                        Build generation
-                     </div>
-                     <button
+                <div
+                    id="buildProgress"
+                    className="buildProgress grid w-full place-items-center py-[10px]"
+                    hidden
+                >
+                    <div className="buildProgressInner grid h-[210px] w-[min(520px,90vw)] place-items-center rounded-[16px] border border-[rgba(255,255,255,0.10)] bg-[rgba(22,22,26,0.72)] shadow-[0_18px_40px_rgba(0,0,0,0.55),0_1px_0_rgba(255,255,255,0.06)_inset] backdrop-blur-[12px]">
+                        <div className="grid place-items-center gap-[16px]">
+                            <div
+                                id="buildProgressText"
+                                className="text-[18px] font-normal text-white"
+                            >
+                                Build generation
+                            </div>
+                            <button
+                                type="button"
+                                onClick={cancelBuild}
+                                className="cursor-pointer rounded-[10px] border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.06)] px-[20px] py-[6px] text-[13px] font-medium text-[rgba(255,255,255,0.7)] transition-[background,border-color,color] duration-[140ms] hover:bg-[rgba(255,255,255,0.12)] hover:border-[rgba(255,255,255,0.22)] hover:text-white"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ── Create button ── */}
+                <div className="builderFooter grid justify-items-center gap-[12px]">
+                    <button
+                        id="createBtn"
+                        className="w-[200px] cursor-pointer appearance-none rounded-[14px] border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.05)] px-[24px] py-[11px] text-center text-[15px] font-extrabold tracking-[0.3px] text-[rgba(255,255,255,0.94)] transition-all duration-[180ms] hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.20)] active:translate-y-[1px] [border-bottom:3px_solid_var(--line)]"
                         type="button"
-                        onClick={cancelBuild}
-                        className="cursor-pointer rounded-[10px] border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.06)] px-[20px] py-[6px] text-[13px] font-medium text-[rgba(255,255,255,0.7)] transition-[background,border-color,color] duration-[140ms] hover:bg-[rgba(255,255,255,0.12)] hover:border-[rgba(255,255,255,0.22)] hover:text-white"
-                     >
-                        Cancel
-                     </button>
-                  </div>
-               </div>
+                        onClick={onCreate}
+                    >
+                        Create
+                    </button>
+                </div>
             </div>
-
-            {/* ── Create button ── */}
-            <div className="builderFooter grid justify-items-center gap-[12px]">
-               <button
-                  id="createBtn"
-                  className="w-[200px] cursor-pointer appearance-none rounded-[14px] border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.05)] px-[24px] py-[11px] text-center text-[15px] font-extrabold tracking-[0.3px] text-[rgba(255,255,255,0.94)] transition-all duration-[180ms] hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.20)] active:translate-y-[1px] [border-bottom:3px_solid_var(--line)]"
-                  type="button"
-                  onClick={onCreate}
-               >
-                  Create
-               </button>
-            </div>
-         </div>
-      </div>
-   );
+        </div>
+    );
 }

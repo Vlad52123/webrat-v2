@@ -1,42 +1,42 @@
 import { useEffect } from "react";
 
 type Params = {
-   open: boolean;
-   hidden: boolean;
-   setHidden: (v: boolean) => void;
-   setIsOpenClass: (v: boolean) => void;
-   el: HTMLDivElement | null;
+    open: boolean;
+    hidden: boolean;
+    setHidden: (v: boolean) => void;
+    setIsOpenClass: (v: boolean) => void;
+    el: HTMLDivElement | null;
 };
 
 export function useBuilderFormVisibility(p: Params): void {
-   const { open, hidden, setHidden, setIsOpenClass, el } = p;
+    const { open, hidden, setHidden, setIsOpenClass, el } = p;
 
-   useEffect(() => {
-      if (!el) return;
+    useEffect(() => {
+        if (!el) return;
 
-      if (open) {
-         if (hidden) setHidden(false);
-         requestAnimationFrame(() => {
+        if (open) {
+            if (hidden) setHidden(false);
             requestAnimationFrame(() => {
-               setIsOpenClass(true);
+                requestAnimationFrame(() => {
+                    setIsOpenClass(true);
+                });
             });
-         });
-         return;
-      }
+            return;
+        }
 
-      window.setTimeout(() => {
-         setIsOpenClass(false);
-      }, 0);
-      const onEnd = (e: TransitionEvent) => {
-         if (e.target !== el) return;
-         setHidden(true);
-      };
-      el.addEventListener("transitionend", onEnd, { once: true });
-      return () => {
-         try {
-            el.removeEventListener("transitionend", onEnd);
-         } catch {
-         }
-      };
-   }, [open, hidden, setHidden, setIsOpenClass, el]);
+        window.setTimeout(() => {
+            setIsOpenClass(false);
+        }, 0);
+        const onEnd = (e: TransitionEvent) => {
+            if (e.target !== el) return;
+            setHidden(true);
+        };
+        el.addEventListener("transitionend", onEnd, { once: true });
+        return () => {
+            try {
+                el.removeEventListener("transitionend", onEnd);
+            } catch {
+            }
+        };
+    }, [open, hidden, setHidden, setIsOpenClass, el]);
 }

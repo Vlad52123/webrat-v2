@@ -2,18 +2,18 @@ import { wipeClientState } from "../wipe-client-state";
 import { csrfHeaders } from "../../builder/utils/csrf";
 
 export async function logoutAndRedirect(): Promise<void> {
-   wipeClientState().catch(() => { });
+    wipeClientState().catch(() => { });
 
-   try {
-      await fetch(`/api/logout`, {
-         method: "POST",
-         credentials: "include",
-         headers: { ...csrfHeaders() },
-      });
-   } catch {
-   }
+    try {
+        await fetch(`/api/logout`, {
+            method: "POST",
+            credentials: "include",
+            headers: { ...csrfHeaders() },
+        });
+    } catch {
+    }
 
-   if (typeof window !== "undefined") {
-      window.location.href = "/login/";
-   }
+    if (typeof window !== "undefined") {
+        window.location.href = "/login/";
+    }
 }
