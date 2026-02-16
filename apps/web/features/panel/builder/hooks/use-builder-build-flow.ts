@@ -7,6 +7,7 @@ import { getLastBuildTimestamp, setLastBuildTimestamp } from "../utils/last-buil
 import { openBuildModal } from "../utils/build-modal";
 import { generateArchivePassword, generateBuildId } from "../utils/build-ids";
 import { showToastSafe } from "../utils/toast";
+import { csrfHeaders } from "../utils/csrf";
 
 import type { BuildHistoryItem } from "./build-flow/types";
 import { formatCreated } from "./build-flow/format-created";
