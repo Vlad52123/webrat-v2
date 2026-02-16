@@ -173,7 +173,7 @@ export function PanelTopbar(props: {
             {!isBuilder && !isSettings && !isCommunity && !isShop && !detail.isOpen && (
                <div className="pointer-events-none absolute left-1/2 top-[6px] hidden h-[40px] w-[min(560px,70vw)] translate-x-[calc(-50%+60px)] items-center justify-center md:flex">
                   <span className="whitespace-nowrap rounded-full border px-[18px] py-[6px] text-[15px] font-bold text-white/[0.96] shadow-[0_0_0_1px_rgba(0,0,0,0.8)]" style={{ borderColor: "var(--line)" }}>
-                     Welcome to WebCrystal Beta pre-release!
+                     Welcome to WebCrystal Beta v1.2026!
                   </span>
                </div>
             )}
