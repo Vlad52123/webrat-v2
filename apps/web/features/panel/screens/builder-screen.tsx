@@ -6,12 +6,30 @@ import { BuilderForm } from "../builder/components/builder-form";
 import { BuilderToggle } from "../builder/components/builder-toggle";
 import { BuildsList } from "../builder/components/builds/builds-list";
 import { makeMutex } from "../builder/utils/make-mutex";
+import { loadActiveBuild } from "../builder/hooks/build-flow/storage";
 
+function hasActiveBuild(): boolean {
+    try {
+        const login = String(localStorage.getItem("webrat_login") || "").trim();
+        if (!login) return false;
+        const active = loadActiveBuild(login);
+        return active !== null && !!active.jobId;
+    } catch {
+        return false;
+    }
+}
 
 export function BuilderScreen() {
-    const [open, setOpen] = useState(false);
+    const [open, setOpen] = useState(() => hasActiveBuild());
     const [mutex] = useState(() => makeMutex());
     const [hasCustomBg, setHasCustomBg] = useState(false);
+
+    // Keep form open while build is active
+    useEffect(() => {
+        if (hasActiveBuild() && !open) {
+            setOpen(true);
+        }
+    }, [open]);
 
     useEffect(() => {
 

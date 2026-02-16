@@ -194,12 +194,13 @@ export function useBuilderBuildFlow(opts: {
                         setBuildingUi(true, `Build generation ${pct}%`);
                     }
                 },
+                signal: ac.signal,
             });
 
             setBuildingUi(true, "Downloading build: 0%");
             const { blob, filename } = await downloadCompileResult(jobId, buildName, (pct) => {
                 setBuildingUi(true, `Downloading build: ${Math.round(pct)}%`);
-            });
+            }, ac.signal);
 
             downloadBlob(blob, filename);
             const buildEntry: BuildHistoryItem = { name: buildName, id: buildId, version: "0.22.2", created, victims: 0 };

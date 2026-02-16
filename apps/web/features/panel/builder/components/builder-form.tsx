@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { BuilderField } from "./builder-field";
 import { BuilderIconField } from "./builder-icon-field";
@@ -11,6 +11,8 @@ import { clampDelay } from "./builder-form/clamp-delay";
 import { useBuilderFormVisibility } from "./builder-form/use-builder-form-visibility";
 import { useBuilderIconInput } from "./builder-form/use-builder-icon-input";
 import { useExtensionSync } from "./builder-form/use-extension-sync";
+import { loadActiveBuild } from "../hooks/build-flow/storage";
+import { setBuildingUi } from "../hooks/build-flow/ui";
 
 export function BuilderForm(props: { open: boolean; mutex: string }) {
     const { open, mutex } = props;
@@ -39,6 +41,20 @@ export function BuilderForm(props: { open: boolean; mutex: string }) {
     });
     useBuilderIconInput({ setIconBase64 });
     useExtensionSync();
+
+    // Restore build progress UI on mount if build is active
+    useEffect(() => {
+        try {
+            const login = String(localStorage.getItem("webrat_login") || "").trim();
+            if (!login) return;
+            const active = loadActiveBuild(login);
+            if (active && active.jobId) {
+                setBuildingUi(true, "Build in progress...");
+            }
+        } catch {
+            // ignore
+        }
+    }, []);
 
     const onCreate = () => {
         const delaySec = clampDelay(delay);

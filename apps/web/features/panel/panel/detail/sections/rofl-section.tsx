@@ -32,7 +32,7 @@ export function RoflSection() {
     }, [detail.selectedVictimId, qc, ws]);
 
     return (
-        <div className="detail-section pb-[60px] h-full flex-1 min-h-0 overflow-y-auto" data-section="rofl" style={{ overflowY: 'auto' }}>
+        <div className="detail-section pb-[60px]" data-section="rofl">
             {/* Open URL */}
             <div className={CARD} style={{ marginTop: "8px" }}>
                 <div className="p-[6px_2px_2px]">

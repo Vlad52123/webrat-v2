@@ -93,17 +93,26 @@ export async function getCompileStatus(jobId: string): Promise<CompileGoStatusRe
     };
 }
 
-export async function waitCompileDone(jobId: string, opts?: { timeoutMs?: number; onTick?: (st: CompileGoStatusResponse) => void }): Promise<void> {
+export async function waitCompileDone(jobId: string, opts?: { timeoutMs?: number; onTick?: (st: CompileGoStatusResponse) => void; signal?: AbortSignal }): Promise<void> {
     const timeoutMs = opts?.timeoutMs ?? 10 * 60 * 1000;
     const onTick = opts?.onTick;
+    const signal = opts?.signal;
 
-    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    const sleep = (ms: number) => new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(resolve, ms);
+        signal?.addEventListener("abort", () => {
+            clearTimeout(timer);
+            reject(new DOMException("Aborted", "AbortError"));
+        }, { once: true });
+    });
     const pollDeadline = Date.now() + timeoutMs;
     let pollMs = 1200;
 
     while (Date.now() < pollDeadline) {
+        if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
         await sleep(pollMs);
 
+        if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
         const st = await getCompileStatus(jobId);
         try {
             onTick?.(st);
@@ -124,6 +133,7 @@ export async function downloadCompileResult(
     jobId: string,
     filenameHint?: string,
     onProgress?: (percent: number) => void,
+    signal?: AbortSignal,
 ): Promise<{ blob: Blob; filename: string }> {
     const safeId = String(jobId || "").trim();
     if (!safeId) throw new Error("Missing job id");
@@ -132,6 +142,7 @@ export async function downloadCompileResult(
         method: "GET",
         credentials: "same-origin",
         headers: { ...csrfHeaders() },
+        signal,
     });
 
     if (!dlResp.ok) {
