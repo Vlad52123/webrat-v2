@@ -332,13 +332,7 @@ func (h *Hub) handleStealResult(ws *websocket.Conn, payload map[string]any) {
 		owner = strings.ToLower(strings.TrimSpace(v.Owner))
 	}
 
-	stealTime := ""
-	if metaData, err := json.Marshal(map[string]string{"steal_time": time.Now().Format("02.01.2006, 15:04:05")}); err == nil {
-		var m map[string]string
-		if json.Unmarshal(metaData, &m) == nil {
-			stealTime = m["steal_time"]
-		}
-	}
+	stealTime := time.Now().Format("02.01.2006, 15:04:05")
 
 	relay := map[string]any{
 		"type":       "steal_result",

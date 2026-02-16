@@ -3,7 +3,6 @@ package httpapi
 import (
 	"encoding/json"
 	"net/http"
-	"os"
 	"regexp"
 	"strings"
 
@@ -132,29 +131,5 @@ func (s *Server) writeJSON(w http.ResponseWriter, status int, v any) {
 }
 
 func (s *Server) clearCookie(w http.ResponseWriter, r *http.Request, name string, httpOnly bool) {
-	dom := strings.TrimSpace(os.Getenv("WEBRAT_COOKIE_DOMAIN"))
-	secure := strings.TrimSpace(os.Getenv("WEBRAT_SECURE_COOKIE")) == "1" || (r != nil && r.TLS != nil)
-
-	if dom != "" {
-		http.SetCookie(w, &http.Cookie{
-			Name:     name,
-			Value:    "",
-			Path:     "/",
-			HttpOnly: httpOnly,
-			SameSite: http.SameSiteStrictMode,
-			MaxAge:   -1,
-			Domain:   dom,
-			Secure:   secure,
-		})
-	}
-
-	http.SetCookie(w, &http.Cookie{
-		Name:     name,
-		Value:    "",
-		Path:     "/",
-		HttpOnly: httpOnly,
-		SameSite: http.SameSiteStrictMode,
-		MaxAge:   -1,
-		Secure:   secure,
-	})
+	deleteCookie(w, r, name, httpOnly)
 }

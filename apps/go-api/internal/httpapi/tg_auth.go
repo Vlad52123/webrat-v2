@@ -13,6 +13,11 @@ import (
 	"strings"
 )
 
+// jsonReply is an alias for writeJSON used by TG handlers (receiver-free context).
+func (s *Server) tgJSON(w http.ResponseWriter, status int, v any) {
+	s.writeJSON(w, status, v)
+}
+
 type tgCtxKey string
 
 const tgUserIDKey tgCtxKey = "tgUserID"
@@ -112,8 +117,3 @@ func getTelegramUsername(r *http.Request) string {
 	return u
 }
 
-func jsonReply(w http.ResponseWriter, status int, v any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(v)
-}

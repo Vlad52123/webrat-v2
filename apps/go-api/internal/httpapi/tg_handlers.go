@@ -14,7 +14,7 @@ import (
 func (s *Server) handleTGProfile(w http.ResponseWriter, r *http.Request) {
 	uid := getTelegramUserID(r)
 	if uid == 0 {
-		jsonReply(w, 401, map[string]string{"error": "unauthorized"})
+		s.tgJSON(w, 401, map[string]string{"error": "unauthorized"})
 		return
 	}
 
@@ -35,7 +35,7 @@ func (s *Server) handleTGProfile(w http.ResponseWriter, r *http.Request) {
 		reg = createdAt.Format("2006-01-02 15:04")
 	}
 
-	jsonReply(w, 200, map[string]any{
+	s.tgJSON(w, 200, map[string]any{
 		"telegramId":  uid,
 		"login":       login,
 		"registeredAt": reg,
@@ -48,14 +48,14 @@ func (s *Server) handleTGProfile(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleTGPurchases(w http.ResponseWriter, r *http.Request) {
 	uid := getTelegramUserID(r)
 	if uid == 0 {
-		jsonReply(w, 401, map[string]string{"error": "unauthorized"})
+		s.tgJSON(w, 401, map[string]string{"error": "unauthorized"})
 		return
 	}
 
 	purchases, err := s.db.GetBotPurchases(uid)
 	if err != nil {
 		log.Printf("tg purchases error: %v", err)
-		jsonReply(w, 500, map[string]string{"error": "internal"})
+		s.tgJSON(w, 500, map[string]string{"error": "internal"})
 		return
 	}
 
@@ -76,13 +76,13 @@ func (s *Server) handleTGPurchases(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	jsonReply(w, 200, map[string]any{"purchases": items})
+	s.tgJSON(w, 200, map[string]any{"purchases": items})
 }
 
 func (s *Server) handleTGDeposit(w http.ResponseWriter, r *http.Request) {
 	uid := getTelegramUserID(r)
 	if uid == 0 {
-		jsonReply(w, 401, map[string]string{"error": "unauthorized"})
+		s.tgJSON(w, 401, map[string]string{"error": "unauthorized"})
 		return
 	}
 
@@ -90,17 +90,17 @@ func (s *Server) handleTGDeposit(w http.ResponseWriter, r *http.Request) {
 		Amount int64 `json:"amount"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		jsonReply(w, 400, map[string]string{"error": "invalid body"})
+		s.tgJSON(w, 400, map[string]string{"error": "invalid body"})
 		return
 	}
 	if body.Amount < 50 || body.Amount > 1000000 {
-		jsonReply(w, 400, map[string]string{"error": "amount must be 50-1000000"})
+		s.tgJSON(w, 400, map[string]string{"error": "amount must be 50-1000000"})
 		return
 	}
 
 	cpTok := strings.TrimSpace(os.Getenv("CRYPTOBOT_TOKEN"))
 	if cpTok == "" {
-		jsonReply(w, 500, map[string]string{"error": "payments not configured"})
+		s.tgJSON(w, 500, map[string]string{"error": "payments not configured"})
 		return
 	}
 
@@ -108,7 +108,7 @@ func (s *Server) handleTGDeposit(w http.ResponseWriter, r *http.Request) {
 	invoiceID, link, err := cryptopay.CreateInvoice(hc, cpTok, float64(body.Amount), "deposit")
 	if err != nil {
 		log.Printf("tg deposit cryptopay error: %v", err)
-		jsonReply(w, 500, map[string]string{"error": "payment error"})
+		s.tgJSON(w, 500, map[string]string{"error": "payment error"})
 		return
 	}
 
@@ -116,7 +116,7 @@ func (s *Server) handleTGDeposit(w http.ResponseWriter, r *http.Request) {
 		log.Printf("tg CreateBotOrder error: %v", err)
 	}
 
-	jsonReply(w, 200, map[string]any{
+	s.tgJSON(w, 200, map[string]any{
 		"invoiceId": invoiceID,
 		"payUrl":    link,
 		"amount":    body.Amount,
@@ -126,7 +126,7 @@ func (s *Server) handleTGDeposit(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleTGBuy(w http.ResponseWriter, r *http.Request) {
 	uid := getTelegramUserID(r)
 	if uid == 0 {
-		jsonReply(w, 401, map[string]string{"error": "unauthorized"})
+		s.tgJSON(w, 401, map[string]string{"error": "unauthorized"})
 		return
 	}
 
@@ -134,7 +134,7 @@ func (s *Server) handleTGBuy(w http.ResponseWriter, r *http.Request) {
 		Plan string `json:"plan"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		jsonReply(w, 400, map[string]string{"error": "invalid body"})
+		s.tgJSON(w, 400, map[string]string{"error": "invalid body"})
 		return
 	}
 
@@ -152,19 +152,19 @@ func (s *Server) handleTGBuy(w http.ResponseWriter, r *http.Request) {
 		price = 1299
 		productName = "💎 WebCrystal навсегда 💎"
 	default:
-		jsonReply(w, 400, map[string]string{"error": "invalid plan"})
+		s.tgJSON(w, 400, map[string]string{"error": "invalid plan"})
 		return
 	}
 
 	if err := s.db.DeductBotBalance(uid, price); err != nil {
-		jsonReply(w, 402, map[string]string{"error": "insufficient funds"})
+		s.tgJSON(w, 402, map[string]string{"error": "insufficient funds"})
 		return
 	}
 
 	key, err := s.db.CreateSubscriptionKey(body.Plan)
 	if err != nil {
 		log.Printf("tg CreateSubscriptionKey error: %v", err)
-		jsonReply(w, 500, map[string]string{"error": "key generation failed"})
+		s.tgJSON(w, 500, map[string]string{"error": "key generation failed"})
 		return
 	}
 
@@ -172,7 +172,7 @@ func (s *Server) handleTGBuy(w http.ResponseWriter, r *http.Request) {
 		log.Printf("tg AddBotPurchase error: %v", err)
 	}
 
-	jsonReply(w, 200, map[string]any{
+	s.tgJSON(w, 200, map[string]any{
 		"success":       true,
 		"product":       productName,
 		"price":         price,

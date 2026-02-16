@@ -1,13 +1,13 @@
 package httpapi
 
 import (
-	"net"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
 	"golang.org/x/time/rate"
+
+	"webrat-go-api/internal/netutil"
 )
 
 type ipLimiter struct {
@@ -58,30 +58,10 @@ func (l *ipLimiter) cleanup() {
 	}
 }
 
-func extractIP(r *http.Request) string {
-	if xff := strings.TrimSpace(r.Header.Get("X-Forwarded-For")); xff != "" {
-		parts := strings.Split(xff, ",")
-		if len(parts) > 0 {
-			ip := strings.TrimSpace(parts[0])
-			if ip != "" {
-				return ip
-			}
-		}
-	}
-	if xri := strings.TrimSpace(r.Header.Get("X-Real-IP")); xri != "" {
-		return xri
-	}
-	host, _, err := net.SplitHostPort(r.RemoteAddr)
-	if err != nil {
-		return r.RemoteAddr
-	}
-	return host
-}
-
 func rateLimitMiddleware(lim *ipLimiter) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ip := extractIP(r)
+			ip := netutil.GetClientIP(r)
 			if !lim.allow(ip) {
 				w.Header().Set("Retry-After", "10")
 				w.WriteHeader(http.StatusTooManyRequests)

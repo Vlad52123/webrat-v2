@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"webrat-go-api/internal/app"
 )
@@ -19,6 +20,14 @@ func main() {
 		log.Fatal(err)
 	}
 
+	srv := &http.Server{
+		Addr:         addr,
+		Handler:      a.Router(),
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 60 * time.Second,
+		IdleTimeout:  120 * time.Second,
+	}
+
 	log.Println("go-api listening on", addr)
-	log.Fatal(http.ListenAndServe(addr, a.Router()))
+	log.Fatal(srv.ListenAndServe())
 }

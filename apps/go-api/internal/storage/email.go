@@ -6,6 +6,7 @@ import (
 	"crypto/subtle"
 	"database/sql"
 	"errors"
+	"html"
 	"net/smtp"
 	"os"
 	"strings"
@@ -121,6 +122,7 @@ func SendEmail(to, subject, body string) error {
 }
 
 func codeBlockHTML(code string) string {
+	code = html.EscapeString(code)
 	codeHTML := ""
 	for _, ch := range code {
 		codeHTML += `<span style="display:inline-block;width:38px;height:46px;line-height:46px;text-align:center;font-size:22px;font-weight:700;font-family:'Courier New',monospace;color:#fff;background:rgba(108,92,231,0.08);border:1px solid rgba(168,85,247,0.25);border-radius:10px;margin:0 3px;letter-spacing:0;">` + string(ch) + `</span>`
@@ -148,11 +150,19 @@ Code is valid for <strong style="color:rgba(255,255,255,0.7);">5 minutes</strong
 
 func GenerateEmailCode() string {
 	const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-	buf := make([]byte, 8)
-	_, _ = rand.Read(buf)
-	out := make([]byte, 8)
+	const n = 8
+	out := make([]byte, n)
 	for i := range out {
-		out[i] = letters[int(buf[i])%len(letters)]
+		for {
+			b := make([]byte, 1)
+			_, _ = rand.Read(b)
+			// rejection sampling: 256 - (256 % 62) = 256 - 8 = 248
+			if int(b[0]) >= 256-(256%len(letters)) {
+				continue
+			}
+			out[i] = letters[int(b[0])%len(letters)]
+			break
+		}
 	}
 	return string(out)
 }

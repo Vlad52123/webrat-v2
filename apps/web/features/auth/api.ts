@@ -1,18 +1,7 @@
 import type { LoginValues } from "./schemas";
+import { getCookie } from "../../lib/cookie";
 
 export type LoginRequest = LoginValues & { cfToken?: string };
-
-function getCookie(name: string): string {
-    const parts = String(document.cookie || "").split(";");
-    for (const p of parts) {
-        const kv = p.trim();
-        if (!kv) continue;
-        const eq = kv.indexOf("=");
-        const k = eq >= 0 ? kv.slice(0, eq) : kv;
-        if (k === name) return eq >= 0 ? decodeURIComponent(kv.slice(eq + 1)) : "";
-    }
-    return "";
-}
 
 export async function login(values: LoginValues, cfToken = ""): Promise<void> {
     const csrf = getCookie("webrat_csrf");

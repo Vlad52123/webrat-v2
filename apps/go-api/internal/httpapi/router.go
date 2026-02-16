@@ -15,14 +15,43 @@ import (
 )
 
 type Server struct {
-	db       *storage.DB
-	auth     *auth.Service
-	wsHub    *ws.Hub
-	loginLim *loginLimiter
+	db         *storage.DB
+	auth       *auth.Service
+	wsHub      *ws.Hub
+	loginLim   *loginLimiter
+	remoteDir  string
+	captchaDir string
+}
+
+func maxBodyMiddleware(maxBytes int64) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Body != nil && r.ContentLength != 0 {
+				r.Body = http.MaxBytesReader(w, r.Body, maxBytes)
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
 }
 
 func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
-	s := &Server{db: db, auth: auth.New(db), wsHub: hub, loginLim: newLoginLimiter()}
+	remoteDir := strings.TrimSpace(os.Getenv("WEBRAT_REMOTE_DIR"))
+	if remoteDir == "" {
+		wd, _ := os.Getwd()
+		remoteDir = filepath.Join(wd, "remote_uploads")
+	}
+	_ = os.MkdirAll(remoteDir, 0o755)
+
+	captchaDir := strings.TrimSpace(os.Getenv("WEBRAT_CAPTCHA_DIR"))
+	if captchaDir == "" {
+		captchaDir = filepath.Join("static", "captcha")
+	}
+
+	s := &Server{
+		db: db, auth: auth.New(db), wsHub: hub,
+		loginLim: newLoginLimiter(),
+		remoteDir: remoteDir, captchaDir: captchaDir,
+	}
 
 	envTrue := func(key string) bool {
 		v := strings.ToLower(strings.TrimSpace(os.Getenv(key)))
@@ -32,25 +61,16 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.StripSlashes)
 	r.Use(middleware.Compress(5))
+	r.Use(maxBodyMiddleware(256 * 1024)) // 256KB default body limit
 
 	r.Use(s.ensureCSRF)
 
 	loginLimiter := newIPLimiter(0.5, 5)
 
-	remoteDir := strings.TrimSpace(os.Getenv("WEBRAT_REMOTE_DIR"))
-	if remoteDir == "" {
-		wd, _ := os.Getwd()
-		remoteDir = filepath.Join(wd, "remote_uploads")
-	}
-	_ = os.MkdirAll(remoteDir, 0o755)
 	if remoteDir != "" {
-		r.Handle("/remote/*", http.StripPrefix("/remote/", http.FileServer(http.Dir(remoteDir))))
+		r.Get("/remote/*", s.requireVIPHandler(http.StripPrefix("/remote/", http.FileServer(http.Dir(remoteDir)))))
 	}
 
-	captchaDir := strings.TrimSpace(os.Getenv("WEBRAT_CAPTCHA_DIR"))
-	if captchaDir == "" {
-		captchaDir = filepath.Join("static", "captcha")
-	}
 	r.Handle("/captcha/*", s.handleCaptchaStatic(captchaDir))
 
 	logoDir := filepath.Join("static", "logo")
@@ -67,7 +87,6 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 	r.With(rateLimitMiddleware(loginLimiter)).Post("/api/forgot-password", s.handleForgotPassword)
 	r.With(rateLimitMiddleware(loginLimiter)).Post("/api/reset-password", s.handleResetPassword)
 
-	r.Get("/ws", s.handleWS)
 	r.Get("/api/ws", s.handleWS)
 
 	r.HandleFunc("/api/cryptopay/webhook", s.handleCryptoPayWebhook)

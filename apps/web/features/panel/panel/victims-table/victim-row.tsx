@@ -47,7 +47,7 @@ function VictimRowInner(props: InnerProps) {
         switch (col) {
             case "h-country":
                 return (
-                    <td key={col} className={cn(col, victimsColumnSizeClass(col), cellBase, "text-[18px]")}>
+                    <td key={col} className={cn(col, victimsColumnSizeClass(col), cellBase, "text-[22px]")}>
                         {flag || v.country || ""}
                     </td>
                 );

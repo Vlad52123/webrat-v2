@@ -73,7 +73,7 @@ func (s *Server) handleRemoteUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	remoteDir := strings.TrimSpace(os.Getenv("WEBRAT_REMOTE_DIR"))
+	remoteDir := s.remoteDir
 	if remoteDir == "" {
 		wd, err := os.Getwd()
 		if err != nil {

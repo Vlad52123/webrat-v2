@@ -2,6 +2,7 @@ export function setBuildingUi(building: boolean, progressText: string) {
     const createBtn = document.getElementById("createBtn") as HTMLButtonElement | null;
     const buildProgress = document.getElementById("buildProgress") as HTMLDivElement | null;
     const buildProgressText = document.getElementById("buildProgressText") as HTMLDivElement | null;
+    const builderToggle = document.getElementById("builderToggle") as HTMLButtonElement | null;
 
     const builderGrid = document.querySelector(".builderGrid") as HTMLDivElement | null;
     const builderFooter = document.querySelector(".builderFooter") as HTMLDivElement | null;
@@ -11,6 +12,7 @@ export function setBuildingUi(building: boolean, progressText: string) {
     if (builderFormInner) builderFormInner.classList.toggle("isBuilding", building);
     if (builderGrid) builderGrid.hidden = building;
     if (builderFooter) builderFooter.hidden = building;
+    if (builderToggle) builderToggle.hidden = building;
 
     if (buildProgress) buildProgress.hidden = !building;
     if (buildProgressText) buildProgressText.textContent = progressText;

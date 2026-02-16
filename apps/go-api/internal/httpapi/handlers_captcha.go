@@ -17,7 +17,7 @@ func (s *Server) handleCaptchaImages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	captchaDir := strings.TrimSpace(os.Getenv("WEBRAT_CAPTCHA_DIR"))
+	captchaDir := s.captchaDir
 	if captchaDir == "" {
 		captchaDir = filepath.Join("static", "captcha")
 	}
@@ -44,23 +44,7 @@ func (s *Server) handleCaptchaImages(w http.ResponseWriter, r *http.Request) {
 	b := make([]byte, 16)
 	_, _ = rand.Read(b)
 	csrf := hex.EncodeToString(b)
-
-	secure := os.Getenv("WEBRAT_SECURE_COOKIE") == "1" || (r != nil && r.TLS != nil)
-	dom := strings.TrimSpace(os.Getenv("WEBRAT_COOKIE_DOMAIN"))
-
-	c := &http.Cookie{
-		Name:     csrfCookieName,
-		Value:    csrf,
-		Path:     "/",
-		HttpOnly: false,
-		SameSite: http.SameSiteStrictMode,
-		MaxAge:   10 * 60,
-		Secure:   secure,
-	}
-	if dom != "" {
-		c.Domain = dom
-	}
-	http.SetCookie(w, c)
+	setCookieWithDomain(w, r, csrfCookieName, csrf, 10*60, false, http.SameSiteStrictMode)
 
 	if images == nil {
 		images = []string{}
@@ -89,22 +73,7 @@ func (s *Server) handleCaptchaVerify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	secure := os.Getenv("WEBRAT_SECURE_COOKIE") == "1" || (r != nil && r.TLS != nil)
-	dom := strings.TrimSpace(os.Getenv("WEBRAT_COOKIE_DOMAIN"))
-
-	captchaCookie := &http.Cookie{
-		Name:     "webrat_captcha",
-		Value:    "1",
-		Path:     "/",
-		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
-		MaxAge:   10 * 60,
-		Secure:   secure,
-	}
-	if dom != "" {
-		captchaCookie.Domain = dom
-	}
-	http.SetCookie(w, captchaCookie)
+	setCookieWithDomain(w, r, "webrat_captcha", "1", 10*60, true, http.SameSiteStrictMode)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

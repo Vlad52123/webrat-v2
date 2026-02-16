@@ -15,6 +15,10 @@ func (s *Server) handleForgotPassword(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	if !s.checkCSRF(w, r) {
+		s.writeJSON(w, http.StatusForbidden, map[string]string{"error": "security_check_failed"})
+		return
+	}
 
 	var body struct {
 		Login string `json:"login"`
@@ -67,6 +71,10 @@ func (s *Server) handleForgotPassword(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleResetPassword(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	if !s.checkCSRF(w, r) {
+		s.writeJSON(w, http.StatusForbidden, map[string]string{"error": "security_check_failed"})
 		return
 	}
 

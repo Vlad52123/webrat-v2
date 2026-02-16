@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 )
@@ -44,35 +43,7 @@ func (s *Server) ensureCSRFToken(w http.ResponseWriter, r *http.Request) string 
 }
 
 func (s *Server) ensureCSRFCookie(w http.ResponseWriter, r *http.Request, value string, ttl time.Duration) {
-	secure := os.Getenv("WEBRAT_SECURE_COOKIE") == "1" || (r != nil && r.TLS != nil)
-	dom := strings.TrimSpace(os.Getenv("WEBRAT_COOKIE_DOMAIN"))
-	maxAge := int(ttl / time.Second)
-
-	if dom != "" {
-		http.SetCookie(w, &http.Cookie{
-			Name:     csrfCookieName,
-			Value:    "",
-			Path:     "/",
-			HttpOnly: false,
-			SameSite: http.SameSiteStrictMode,
-			MaxAge:   -1,
-			Secure:   secure,
-		})
-	}
-
-	c := &http.Cookie{
-		Name:     csrfCookieName,
-		Value:    value,
-		Path:     "/",
-		HttpOnly: false,
-		SameSite: http.SameSiteStrictMode,
-		MaxAge:   maxAge,
-		Secure:   secure,
-	}
-	if dom != "" {
-		c.Domain = dom
-	}
-	http.SetCookie(w, c)
+	setCookieWithDomain(w, r, csrfCookieName, value, int(ttl/time.Second), false, http.SameSiteStrictMode)
 }
 
 func (s *Server) checkCSRF(w http.ResponseWriter, r *http.Request) bool {
@@ -149,6 +120,29 @@ func (s *Server) requireVIP(next handlerFunc) handlerFunc {
 
 		r = r.WithContext(context.WithValue(r.Context(), ctxLoginKey, login))
 		next(w, r)
+	}
+}
+
+func (s *Server) requireVIPHandler(next http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		login, ok := s.auth.GetSession(r)
+		login = strings.ToLower(strings.TrimSpace(login))
+		if !ok || login == "" {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		status, _, _, err := s.db.GetSubscription(login)
+		if err != nil {
+			http.Error(w, "subscription error", http.StatusInternalServerError)
+			return
+		}
+		if status != "vip" {
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+
+		next.ServeHTTP(w, r)
 	}
 }
 
