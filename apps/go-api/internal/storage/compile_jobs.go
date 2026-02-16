@@ -185,6 +185,26 @@ func (d *DB) ClaimNextCompileJob() (WorkerJob, bool, error) {
 	return j, true, nil
 }
 
+func (d *DB) CancelCompileJob(login string) error {
+	login = strings.TrimSpace(login)
+	if login == "" {
+		return errors.New("empty login")
+	}
+	if d == nil || d.SQL() == nil {
+		return errors.New("db is nil")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := d.SQL().ExecContext(ctx, `
+		UPDATE compile_jobs
+		SET status='error', error='cancelled', finished_at=NOW(), updated_at=NOW()
+		WHERE login=$1 AND status IN ('pending','running')
+	`, login)
+	return err
+}
+
 func (d *DB) FinishCompileJob(id string, artifact []byte, filename string, errText string) error {
 	id = strings.TrimSpace(id)
 	if id == "" {

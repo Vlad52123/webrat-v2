@@ -46,6 +46,12 @@ export function useBuilderBuildFlow(opts: {
             try { clearActiveBuild(login); } catch { }
         }
 
+        fetch("/api/compile-cancel", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { ...csrfHeaders() },
+        }).catch(() => {});
+
         setBuildingUi(false, "");
     }, []);
 

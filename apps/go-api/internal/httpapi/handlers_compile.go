@@ -263,6 +263,30 @@ func (s *Server) handleCompileDownload(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(data)
 }
 
+func (s *Server) handleCompileCancel(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	if !s.checkCSRF(w, r) {
+		s.writeJSON(w, http.StatusForbidden, map[string]string{"error": "security_check_failed"})
+		return
+	}
+
+	login := strings.ToLower(strings.TrimSpace(loginFromContext(r)))
+	if login == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	if err := s.db.CancelCompileJob(login); err != nil {
+		http.Error(w, "cancel error", http.StatusInternalServerError)
+		return
+	}
+
+	s.writeJSON(w, http.StatusOK, map[string]string{"status": "cancelled"})
+}
+
 func decodeIcon(iconB64 string) []byte {
 	s := strings.TrimSpace(iconB64)
 	if s == "" {

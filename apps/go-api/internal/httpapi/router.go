@@ -100,6 +100,7 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 		r.Post("/compile-go-config", s.requireVIP(s.handleCompileGoConfig))
 		r.Get("/compile-status", s.requireVIP(s.handleCompileStatus))
 		r.Get("/compile-download", s.requireVIP(s.handleCompileDownload))
+		r.Post("/compile-cancel", s.requireVIP(s.handleCompileCancel))
 	})
 
 	r.Route("/api/tg", func(r chi.Router) {
