@@ -40,7 +40,7 @@ export function DetailView(props: { victims: Victim[] }) {
 
             <div
                className={
-                  "detail-main border-l border-[rgba(120,120,120,0.6)] " +
+                  "detail-main flex flex-col flex-1 min-h-0 border-l border-[rgba(120,120,120,0.6)] " +
                   (isRemoteDesktop
                      ? "h-full min-h-0 overflow-hidden p-0"
                      : isTerminal
