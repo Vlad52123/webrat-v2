@@ -10,6 +10,7 @@ import { VictimsContextMenu } from "./victims-context-menu";
 import { useDeleteVictim } from "./use-delete-victim";
 import { useVictimsErrorText } from "./use-victims-error-text";
 import { useVictimsTableColumns } from "./use-victims-table-columns";
+import { DeleteVictimModal } from "./delete-victim-modal";
 import { cn } from "../../../../lib/utils";
 import { victimsColumnSizeClass, type VictimsColumnKey } from "./victims-columns";
 import { useVictimsTableColumnReorder } from "./use-victims-table-column-reorder";
@@ -39,6 +40,8 @@ export function VictimsTable(props: {
     const [ctxVictimId, setCtxVictimId] = useState<string>("");
     const [ctxPos, setCtxPos] = useState<{ left: number; top: number } | null>(null);
     const ctxMenuRef = useRef<HTMLDivElement | null>(null);
+
+    const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
     const [headerRow, setHeaderRow] = useState<HTMLTableRowElement | null>(null);
     const headerRowRef = useCallback((el: HTMLTableRowElement | null) => {
@@ -240,7 +243,20 @@ export function VictimsTable(props: {
                         victimId={ctxVictimId}
                         close={closeCtx}
                         onOpenDetail={onOpenDetail}
-                        onDeleteVictim={onDeleteVictim}
+                        onDeleteVictim={(victimId) => {
+                            setPendingDeleteId(victimId);
+                            closeCtx();
+                        }}
+                    />
+
+                    <DeleteVictimModal
+                        open={!!pendingDeleteId}
+                        pendingDeleteId={pendingDeleteId}
+                        onConfirm={(victimId) => {
+                            void onDeleteVictim(victimId);
+                            setPendingDeleteId(null);
+                        }}
+                        onCancel={() => setPendingDeleteId(null)}
                     />
                 </div>
             </div>
