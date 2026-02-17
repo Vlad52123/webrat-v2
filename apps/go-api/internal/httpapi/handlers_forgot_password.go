@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/crypto/bcrypt"
 	"webrat-go-api/internal/storage"
 )
 
@@ -108,6 +109,16 @@ func (s *Server) handleResetPassword(w http.ResponseWriter, r *http.Request) {
 	}
 	if !valid {
 		s.writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "invalid_code"})
+		return
+	}
+
+	hash, _, err := s.db.GetUserPassword(login)
+	if err != nil {
+		http.Error(w, "server error", http.StatusInternalServerError)
+		return
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(newPw)); err == nil {
+		s.writeJSON(w, http.StatusConflict, map[string]string{"error": "password_unchanged"})
 		return
 	}
 

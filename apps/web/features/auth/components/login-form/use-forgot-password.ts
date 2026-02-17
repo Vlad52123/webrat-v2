@@ -112,6 +112,10 @@ export function useForgotPassword(form: FormLike) {
                 showToast("error", "Invalid or expired code");
                 return;
             }
+            if (res.status === 409) {
+                showToast("error", "Password must be different from your current one");
+                return;
+            }
             if (!res.ok) {
                 showToast("error", "Failed to reset password");
                 return;
