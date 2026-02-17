@@ -134,7 +134,7 @@ export function TerminalSection() {
     }, [detail.selectedVictimId, ws]);
 
     return (
-        <div className="detail-section h-full min-h-0 overflow-hidden">
+        <div className="detail-section h-full">
             <div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-[18px] border border-white/15 bg-black/90 shadow-[0_18px_44px_rgba(0,0,0,0.82),0_0_0_3px_rgba(255,255,255,0.04)] backdrop-blur-[10px]">
                 <div
                     id="terminalConsole"
@@ -143,7 +143,7 @@ export function TerminalSection() {
                     role="log"
                 />
 
-                <div className="shrink-0 grid grid-cols-[1fr_max-content] items-center gap-[14px] border-t border-white/10 bg-[linear-gradient(180deg,rgba(18,18,18,0.98),rgba(10,10,10,0.98))] p-[10px_12px]">
+                <div className="grid grid-cols-[1fr_max-content] items-center gap-[14px] border-t border-white/10 bg-[linear-gradient(180deg,rgba(18,18,18,0.98),rgba(10,10,10,0.98))] p-[10px_12px]">
                     <input
                         id="terminalCommandInput"
                         className="w-full rounded-full border border-white/20 bg-[rgba(12,12,12,0.9)] px-[14px] py-[7px] text-[14px] text-white outline-none placeholder:text-white/60 focus:border-[var(--line)] focus:bg-[rgba(18,18,18,0.95)]"

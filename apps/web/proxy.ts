@@ -12,6 +12,11 @@ function shouldRedirectToCanonical(host: string): boolean {
     return host === "ru.webcrystal.sbs" || host === "ua.webcrystal.sbs" || host === "kz.webcrystal.sbs";
 }
 
+function isTelegram(uaRaw: string): boolean {
+    const ua = String(uaRaw || "").toLowerCase();
+    return ua.includes("telegram");
+}
+
 function isBlockedDevice(uaRaw: string): boolean {
     const ua = String(uaRaw || "");
     if (!ua) return false;
@@ -33,7 +38,7 @@ export function proxy(req: NextRequest) {
     }
 
     const ua = req.headers.get("user-agent") || "";
-    if (isBlockedDevice(ua)) {
+    if (isBlockedDevice(ua) && !isTelegram(ua)) {
         return new NextResponse("Desktop only", {
             status: 403,
             headers: {
