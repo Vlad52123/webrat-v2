@@ -21,3 +21,4 @@ yarn-error.log*
 *.tsbuildinfo
 
 apps/go-api/bin/
+prompts/
