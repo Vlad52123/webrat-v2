@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { showToast } from "@/features/panel/toast";
+import { getCookie } from "@/lib/cookie";
 
 type FormLike = {
     getValues: (name: any) => unknown;
@@ -47,9 +48,13 @@ export function useForgotPassword(form: FormLike) {
         }
         setForgotLoading(true);
         try {
+            const csrf = getCookie("webrat_csrf");
             const res = await fetch("/api/forgot-password", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(csrf ? { "X-CSRF-Token": csrf } : {}),
+                },
                 body: JSON.stringify({ login, email }),
             });
             if (res.status === 404) {
@@ -94,9 +99,13 @@ export function useForgotPassword(form: FormLike) {
         }
         setForgotLoading(true);
         try {
+            const csrf = getCookie("webrat_csrf");
             const res = await fetch("/api/reset-password", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(csrf ? { "X-CSRF-Token": csrf } : {}),
+                },
                 body: JSON.stringify({ login, code, new_password: newPw }),
             });
             if (res.status === 401) {
