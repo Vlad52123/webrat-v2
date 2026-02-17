@@ -106,50 +106,46 @@ export function LoginForm() {
 
     if (forgot.forgotMode === "email") {
         return (
-            <div className="animate-in fade-in duration-300 w-full">
-                <ForgotEmailMode
-                    form={form}
-                    forgotEmail={forgot.forgotEmail}
-                    setForgotEmail={forgot.setForgotEmail}
-                    forgotLoading={forgot.forgotLoading}
-                    captchaReady={captchaReady}
-                    useTurnstile={useTurnstile}
-                    setUseTurnstile={setUseTurnstile}
-                    setCaptchaReady={setCaptchaReady}
-                    captchaRef={captchaRef}
-                    turnstileContainerRef={turnstileContainerRef}
-                    handleCaptchaReadyChange={handleCaptchaReadyChange}
-                    handleCaptchaError={handleCaptchaError}
-                    handleToggleCaptcha={handleToggleCaptcha}
-                    handleForgotSendCode={forgot.handleForgotSendCode}
-                    backToLogin={backToLoginWithCaptchaReset}
-                    inputClassName={inputClassName}
-                />
-            </div>
+            <ForgotEmailMode
+                form={form}
+                forgotEmail={forgot.forgotEmail}
+                setForgotEmail={forgot.setForgotEmail}
+                forgotLoading={forgot.forgotLoading}
+                captchaReady={captchaReady}
+                useTurnstile={useTurnstile}
+                setUseTurnstile={setUseTurnstile}
+                setCaptchaReady={setCaptchaReady}
+                captchaRef={captchaRef}
+                turnstileContainerRef={turnstileContainerRef}
+                handleCaptchaReadyChange={handleCaptchaReadyChange}
+                handleCaptchaError={handleCaptchaError}
+                handleToggleCaptcha={handleToggleCaptcha}
+                handleForgotSendCode={forgot.handleForgotSendCode}
+                backToLogin={backToLoginWithCaptchaReset}
+                inputClassName={inputClassName}
+            />
         );
     }
 
     if (forgot.forgotMode === "code") {
         return (
-            <div className="animate-in fade-in duration-300 w-full">
-                <ForgotCodeMode
-                    forgotCode={forgot.forgotCode}
-                    setForgotCode={forgot.setForgotCode}
-                    forgotNewPassword={forgot.forgotNewPassword}
-                    setForgotNewPassword={forgot.setForgotNewPassword}
-                    forgotLoading={forgot.forgotLoading}
-                    handleForgotReset={forgot.handleForgotReset}
-                    backToLogin={backToLoginWithCaptchaReset}
-                    inputClassName={inputClassName}
-                    timerLeft={forgot.timerLeft}
-                    codeLength={forgot.codeLength}
-                />
-            </div>
+            <ForgotCodeMode
+                forgotCode={forgot.forgotCode}
+                setForgotCode={forgot.setForgotCode}
+                forgotNewPassword={forgot.forgotNewPassword}
+                setForgotNewPassword={forgot.setForgotNewPassword}
+                forgotLoading={forgot.forgotLoading}
+                handleForgotReset={forgot.handleForgotReset}
+                backToLogin={backToLoginWithCaptchaReset}
+                inputClassName={inputClassName}
+                timerLeft={forgot.timerLeft}
+                codeLength={forgot.codeLength}
+            />
         );
     }
 
     return (
-        <div className="animate-in fade-in duration-300 relative w-full grid justify-items-center">
+        <div className="relative w-full grid justify-items-center">
             <form
                 className="grid w-full gap-[10px] justify-items-center"
                 autoComplete="on"
