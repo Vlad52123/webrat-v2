@@ -277,6 +277,11 @@ body.hasCustomBg .content::after {
     z-index: 1;
 }
 
+.wc-scrollbar-transparent {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+}
+
 .wc-scrollbar-transparent::-webkit-scrollbar {
     width: 10px;
     height: 10px;
