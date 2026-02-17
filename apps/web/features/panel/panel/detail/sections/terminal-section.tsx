@@ -134,7 +134,7 @@ export function TerminalSection() {
     }, [detail.selectedVictimId, ws]);
 
     return (
-        <div className="detail-section h-[100dvh] overflow-y-auto">
+        <div className="detail-section h-[100dvh] min-h-0 overflow-hidden">
             <div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-[18px] border border-white/15 bg-black/90 shadow-[0_18px_44px_rgba(0,0,0,0.82),0_0_0_3px_rgba(255,255,255,0.04)] backdrop-blur-[10px]">
                 <div
                     id="terminalConsole"
