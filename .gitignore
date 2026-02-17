@@ -22,3 +22,25 @@ yarn-error.log*
 
 apps/go-api/bin/
 prompts/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.bak
+
+Thumbs.db
+.AppleDouble
+.LSOverride
+$RECYCLE.BIN/
+.Spotlight-V100
+.Trashes
+
+*.o
+*.a
+*.so
+apps/go-api/*.exe
+
+*.pid
+*.tmp
+*.temp
