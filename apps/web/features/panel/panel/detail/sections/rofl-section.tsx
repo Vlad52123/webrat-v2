@@ -8,7 +8,7 @@ import { usePanelWS } from "../../../ws/ws-provider";
 import { bindRoflActions } from "./rofl/bind-rofl-actions";
 
 const CARD =
-    "rofl-card w-[420px] max-w-[calc(100vw-420px)] ml-[4px] rounded-[18px] border border-white/[0.14] " +
+    "rofl-card w-full rounded-[18px] border border-white/[0.14] " +
     "bg-[rgba(30,30,30,0.92)] p-[16px_18px] shadow-[0_18px_44px_rgba(0,0,0,0.82),0_0_0_3px_rgba(255,255,255,0.04)] backdrop-blur-[10px]";
 
 const BTN =
