@@ -88,6 +88,10 @@ func captureScreen() ([]byte, error) {
 	buf := make([]byte, stride*h)
 	_, _, _ = gdi32.NewProc(getGetDIBitsName()).Call(hdc, hBitmap, 0, uintptr(h), uintptr(unsafe.Pointer(&buf[0])), uintptr(unsafe.Pointer(&bmi)), 0)
 
+	for i := 0; i < len(buf); i += 4 {
+		buf[i], buf[i+2] = buf[i+2], buf[i]
+	}
+
 	img := &image.RGBA{Pix: buf, Stride: int(stride), Rect: image.Rect(0, 0, w, h)}
 	var out bytes.Buffer
 	if err := jpeg.Encode(&out, img, &jpeg.Options{Quality: 75}); err != nil {
