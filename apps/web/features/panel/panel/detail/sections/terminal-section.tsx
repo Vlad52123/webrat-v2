@@ -143,7 +143,7 @@ export function TerminalSection() {
                     role="log"
                 />
 
-                <div className="grid grid-cols-[1fr_max-content] items-center gap-[14px] border-t border-white/10 bg-[linear-gradient(180deg,rgba(18,18,18,0.98),rgba(10,10,10,0.98))] p-[10px_12px]">
+                <div className="shrink-0 grid grid-cols-[1fr_max-content] items-center gap-[14px] border-t border-white/10 bg-[linear-gradient(180deg,rgba(18,18,18,0.98),rgba(10,10,10,0.98))] p-[10px_12px]">
                     <input
                         id="terminalCommandInput"
                         className="w-full rounded-full border border-white/20 bg-[rgba(12,12,12,0.9)] px-[14px] py-[7px] text-[14px] text-white outline-none placeholder:text-white/60 focus:border-[var(--line)] focus:bg-[rgba(18,18,18,0.95)]"
