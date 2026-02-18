@@ -154,29 +154,98 @@ export function RemoteDesktopSection() {
                         />
                     </div>
 
-                    <div id="remoteDesktopLoader" className="pointer-events-none absolute left-1/2 top-1/2 z-[3] h-[130px] w-[130px] -translate-x-1/2 -translate-y-1/2">
-                        <div
-                            className="rd-square rd-square-outer absolute left-1/2 top-1/2 h-[100px] w-[100px] -ml-[50px] -mt-[50px] box-border"
-                            style={{
-                                border: "3px solid #ff4040",
-                                animation: "rdRotateOuter 15s ease-out infinite",
-                            }}
-                        />
-                        <div
-                            className="rd-square rd-square-inner absolute left-1/2 top-1/2 h-[100px] w-[100px] -ml-[50px] -mt-[50px] box-border"
-                            style={{
-                                border: "3px solid #fff",
-                                animation: "rdRotateInner 15s ease-out infinite",
-                            }}
-                        />
+                    <div id="remoteDesktopLoader" className="pointer-events-none absolute left-1/2 top-1/2 z-[3] h-[180px] w-[180px] -translate-x-1/2 -translate-y-1/2">
+                        <div className="rd-loader absolute inset-0">
+                            <div className="rd-loader-ring rd-loader-ring-outer" />
+                            <div className="rd-loader-ring rd-loader-ring-mid" />
+                            <div className="rd-loader-ring rd-loader-ring-inner" />
+                            <div className="rd-loader-glow" />
+                            <div className="rd-loader-label">
+                                Connecting
+                                <span className="rd-loader-dots">
+                                    <span>.</span>
+                                    <span>.</span>
+                                    <span>.</span>
+                                </span>
+                            </div>
+                        </div>
                         <style>{`
-                     @keyframes rdRotateOuter {
-                        0% { transform: rotate(0deg); }
-                        84%, 100% { transform: rotate(2520deg); }
+                     .rd-loader {
+                        position: absolute;
+                        inset: 0;
+                        display: grid;
+                        place-items: center;
                      }
-                     @keyframes rdRotateInner {
-                        0% { transform: rotate(2520deg); }
-                        84%, 100% { transform: rotate(0deg); }
+                     .rd-loader-ring {
+                        position: absolute;
+                        border-radius: 999px;
+                        border: 2px solid rgba(255,255,255,0.12);
+                        box-shadow: 0 0 20px rgba(255,255,255,0.06);
+                     }
+                     .rd-loader-ring-outer {
+                        width: 176px;
+                        height: 176px;
+                        border-top-color: rgba(255,64,64,0.85);
+                        border-right-color: rgba(255,255,255,0.25);
+                        animation: rdSpinOuter 9s linear infinite;
+                     }
+                     .rd-loader-ring-mid {
+                        width: 124px;
+                        height: 124px;
+                        border-left-color: rgba(255,64,64,0.6);
+                        border-bottom-color: rgba(255,255,255,0.35);
+                        animation: rdSpinMid 6.5s linear infinite reverse;
+                     }
+                     .rd-loader-ring-inner {
+                        width: 78px;
+                        height: 78px;
+                        border-top-color: rgba(255,255,255,0.7);
+                        border-right-color: rgba(255,64,64,0.7);
+                        animation: rdSpinInner 4.5s linear infinite;
+                     }
+                     .rd-loader-glow {
+                        position: absolute;
+                        width: 220px;
+                        height: 220px;
+                        border-radius: 999px;
+                        background: radial-gradient(circle, rgba(255,64,64,0.12), rgba(0,0,0,0) 62%);
+                        filter: blur(2px);
+                        animation: rdGlow 2.6s ease-in-out infinite;
+                     }
+                     .rd-loader-label {
+                        position: absolute;
+                        bottom: 8px;
+                        font-size: 12px;
+                        letter-spacing: 0.12em;
+                        text-transform: uppercase;
+                        color: rgba(255,255,255,0.78);
+                        text-shadow: 0 0 18px rgba(255,255,255,0.2);
+                     }
+                     .rd-loader-dots span {
+                        display: inline-block;
+                        animation: rdDots 1.2s infinite;
+                     }
+                     .rd-loader-dots span:nth-child(2) { animation-delay: 0.2s; }
+                     .rd-loader-dots span:nth-child(3) { animation-delay: 0.4s; }
+                     @keyframes rdSpinOuter {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                     }
+                     @keyframes rdSpinMid {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                     }
+                     @keyframes rdSpinInner {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                     }
+                     @keyframes rdGlow {
+                        0%, 100% { opacity: 0.35; transform: scale(0.96); }
+                        50% { opacity: 0.75; transform: scale(1.02); }
+                     }
+                     @keyframes rdDots {
+                        0%, 100% { opacity: 0.2; }
+                        50% { opacity: 1; }
                      }
                   `}</style>
                     </div>
