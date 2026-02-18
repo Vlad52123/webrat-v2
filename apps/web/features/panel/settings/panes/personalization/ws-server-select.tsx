@@ -83,8 +83,18 @@ export function WsServerSelect({
                                             showToast("error", "Premium subscription required");
                                             return;
                                         }
-                                        setWsHost(opt.value === "__default__" ? "" : opt.value);
+                                        const nextHost = opt.value === "__default__" ? "" : opt.value;
+                                        const currentHost = wsSelectValue === "__default__" ? "" : wsSelectValue;
+                                        if (nextHost === currentHost) {
+                                            setWsOpen(false);
+                                            return;
+                                        }
+                                        setWsHost(nextHost);
                                         setWsOpen(false);
+                                        try {
+                                            window.location.reload();
+                                        } catch {
+                                        }
                                     }}
                                     role="option"
                                     aria-selected={selected}
