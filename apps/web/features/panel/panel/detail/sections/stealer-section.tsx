@@ -79,14 +79,11 @@ export function StealerSection() {
       }
       setDownloading(true);
       try {
-         const cleanVictimId = String(victimId).trim();
-         console.log("[stealer] onDownloadLog victimId:", { victimId, cleanVictimId, length: cleanVictimId.length });
-         const res = await fetch(`/api/steal-download?victim_id=${encodeURIComponent(cleanVictimId)}`, {
+         const res = await fetch(`/api/steal-download?victim_id=${encodeURIComponent(victimId)}`, {
             credentials: "same-origin",
             headers: csrfHeaders(),
          });
          if (!res.ok) {
-            console.error("[stealer] download failed:", res.status, res.statusText);
             showToast("error", "Download failed");
             return;
          }

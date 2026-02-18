@@ -59,7 +59,6 @@ export const usePanelDetailViewStore = create<State & Actions>()((set, get) => (
     selectVictim: (victimId: string) => {
         const id = String(victimId || "").trim();
         if (!id) return;
-        console.log("[store] selectVictim called:", { input: victimId, cleaned: id });
         set({ selectedVictimId: id });
         writeSelectedVictimId(id);
     },
