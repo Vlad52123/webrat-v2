@@ -69,6 +69,10 @@ func showMsgBox(iconName, buttonsName, header, content string) {
 		buttons = 0x00000004
 	case "yesnocancel":
 		buttons = 0x00000003
+	case "retrycancel":
+		buttons = 0x00000005
+	case "abortretryignore":
+		buttons = 0x00000002
 	}
 
 	text := strings.TrimSpace(content)
