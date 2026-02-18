@@ -237,6 +237,26 @@ export function PanelWsProvider(props: { children: React.ReactNode }) {
       };
    }, [closeWsRaw, isVip]);
 
+   useEffect(() => {
+      const onUnload = () => {
+         try {
+            closeWsRaw();
+         } catch {
+         }
+      };
+      try {
+         window.addEventListener("beforeunload", onUnload);
+      } catch {
+         return;
+      }
+      return () => {
+         try {
+            window.removeEventListener("beforeunload", onUnload);
+         } catch {
+         }
+      };
+   }, [closeWsRaw]);
+
    const sendJson = useCallback((payload: Record<string, unknown>): boolean => {
       const ws = wsRef.current;
       if (!ws || ws.readyState !== WebSocket.OPEN) return false;

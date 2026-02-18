@@ -92,7 +92,12 @@ export function WsServerSelect({
                                         setWsHost(nextHost);
                                         setWsOpen(false);
                                         try {
-                                            window.location.reload();
+                                            window.setTimeout(() => {
+                                                try {
+                                                    window.location.reload();
+                                                } catch {
+                                                }
+                                            }, 60);
                                         } catch {
                                         }
                                     }}
