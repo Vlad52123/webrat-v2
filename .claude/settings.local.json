@@ -1,5 +1,10 @@
 {
   "outputStyle": "default",
   "spinnerTipsEnabled": false,
-  "prefersReducedMotion": true
+  "prefersReducedMotion": true,
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)"
+    ]
+  }
 }

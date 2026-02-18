@@ -275,6 +275,7 @@ body.hasCustomBg .content::after {
 .content>.view {
     position: relative;
     z-index: 1;
+    height: 100%;
 }
 
 .wc-scrollbar-transparent::-webkit-scrollbar {
