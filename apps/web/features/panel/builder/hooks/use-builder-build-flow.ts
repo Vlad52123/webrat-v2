@@ -51,7 +51,7 @@ export function useBuilderBuildFlow(opts: {
             method: "POST",
             credentials: "same-origin",
             headers: { ...csrfHeaders() },
-        }).catch(() => {});
+        }).catch(() => { });
 
         setBuildingUi(false, "");
     }, []);

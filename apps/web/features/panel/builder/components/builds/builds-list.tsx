@@ -51,24 +51,26 @@ export function BuildsList() {
 
     return (
         <>
-            <div id="buildsList" className="builds-list mt-[22px] ml-[32px] flex max-w-full flex-wrap gap-[12px]">
-                {items.map((b) => (
-                    <BuildCard
-                        key={b.id}
-                        item={b}
-                        onDelete={(id) => {
-                            setPendingDeleteId(id);
-                        }}
-                        onInfo={(id) => {
-                            const build = items.find((x) => String(x.id) === String(id));
-                            if (!build) return;
-                            try {
-                                window.WebRatCommon?.showToast?.("Info", `Build ${build.name || ""}\nID: ${build.id || ""}`);
-                            } catch {
-                            }
-                        }}
-                    />
-                ))}
+            <div id="buildsList" className="builds-list mt-[22px] ml-[32px] mr-[32px] max-h-[calc(100vh-320px)] overflow-y-auto pr-[8px]">
+                <div className="flex max-w-full flex-wrap gap-[12px] pb-[12px]">
+                    {items.map((b) => (
+                        <BuildCard
+                            key={b.id}
+                            item={b}
+                            onDelete={(id) => {
+                                setPendingDeleteId(id);
+                            }}
+                            onInfo={(id) => {
+                                const build = items.find((x) => String(x.id) === String(id));
+                                if (!build) return;
+                                try {
+                                    window.WebRatCommon?.showToast?.("Info", `Build ${build.name || ""}\nID: ${build.id || ""}`);
+                                } catch {
+                                }
+                            }}
+                        />
+                    ))}
+                </div>
             </div>
 
             {pendingDeleteId && (
