@@ -52,7 +52,7 @@ export function BuildsList() {
     return (
         <>
             <div id="buildsList" className="builds-list mt-[22px] ml-[32px] mr-[32px] max-h-[calc(100vh-320px)] overflow-y-auto pr-[8px]">
-                <div className="grid grid-cols-5 gap-[12px] pb-[12px]">
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(380px,380px))] gap-[12px] pb-[12px]">
                     {items.map((b) => (
                         <BuildCard
                             key={b.id}

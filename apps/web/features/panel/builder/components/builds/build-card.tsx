@@ -9,7 +9,7 @@ export function BuildCard(props: {
     const { item, onDelete, onInfo } = props;
 
     return (
-        <div className="build-card min-h-0 rounded-[16px] border border-[rgba(255,255,255,0.08)] bg-[rgba(22,22,26,0.72)] p-[16px] pb-[14px] text-[13px] shadow-[0_16px_40px_rgba(0,0,0,0.5),0_1px_0_rgba(255,255,255,0.05)_inset] backdrop-blur-[10px]">
+        <div className="build-card w-[380px] min-h-0 rounded-[16px] border border-[rgba(255,255,255,0.08)] bg-[rgba(22,22,26,0.72)] p-[16px] pb-[14px] text-[13px] shadow-[0_16px_40px_rgba(0,0,0,0.5),0_1px_0_rgba(255,255,255,0.05)_inset] backdrop-blur-[10px]">
             <div className="build-card-header mb-[10px] text-center text-[14px] font-extrabold tracking-[0.3px] text-[rgba(255,255,255,0.92)]">
                 {item.name || "build"}
             </div>
