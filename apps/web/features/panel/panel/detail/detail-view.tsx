@@ -31,7 +31,7 @@ export function DetailView(props: { victims: Victim[] }) {
     if (!isOpen) return null;
 
     return (
-        <div id="detailView" className={"view h-full min-h-0" + (isRemoteDesktop ? " isRemoteDesktop" : "")}>
+        <div id="detailView" className={"view h-[100dvh] min-h-0" + (isRemoteDesktop ? " isRemoteDesktop" : "")}>
             <div
                 id="detailViewInner"
                 className="relative grid h-full min-h-0 w-full grid-cols-[170px_1fr] bg-[var(--bg)]"
