@@ -2,6 +2,7 @@
 
 import { type Dispatch, type RefObject, type SetStateAction } from "react";
 import { createPortal } from "react-dom";
+import Image from "next/image";
 
 import { ICON_OPTIONS, type IconOptionValue } from "./icon-options";
 
@@ -18,18 +19,25 @@ interface Props {
 
 export function IconSelect({ value, onChange, wrapRef, btnRef, menuRef, open, setOpen, menuPos }: Props) {
     return (
-        <div ref={wrapRef}>
+        <div ref={wrapRef} className="w-full">
             <button
                 ref={btnRef}
                 type="button"
                 className={
-                    "flex h-[32px] items-center gap-[6px] rounded-[10px] border border-white/[0.12] bg-white/[0.04] px-[10px] text-[13px] font-semibold text-white/80 transition-all cursor-pointer " +
+                    "w-full flex h-[32px] items-center justify-between gap-[6px] rounded-[10px] border border-white/[0.12] bg-white/[0.04] px-[10px] text-[13px] font-semibold text-white/80 transition-all cursor-pointer " +
                     "hover:bg-white/[0.07] hover:border-white/[0.18] hover:text-white"
                 }
                 onClick={() => setOpen(!open)}
             >
-                {ICON_OPTIONS.find((o) => o.value === value)?.label || "Info"}
-                <span className="text-[10px] opacity-50">▼</span>
+                <span>{ICON_OPTIONS.find((o) => o.value === value)?.label || "Info"}</span>
+                <span className="pointer-events-none">
+                    <img
+                        src="/icons/arrow.svg"
+                        alt="v"
+                        draggable={false}
+                        className={"h-[10px] w-[10px] invert opacity-60 transition-transform duration-[160ms] " + (open ? "rotate-180" : "")}
+                    />
+                </span>
             </button>
 
             {open && menuPos

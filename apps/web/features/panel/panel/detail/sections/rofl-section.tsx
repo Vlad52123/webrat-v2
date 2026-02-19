@@ -115,17 +115,19 @@ export function RoflSection() {
 
                     <div className="grid grid-cols-[90px_1fr] items-center gap-[10px] my-[8px]">
                         <div className="text-[14px] font-semibold text-[rgba(235,235,235,0.94)]">Icon:</div>
-                        <IconSelect
-                            value={iconValue}
-                            onChange={setIconValue}
-                            wrapRef={iconDropdown.wrapRef}
-                            btnRef={iconDropdown.btnRef}
-                            menuRef={iconDropdown.menuRef}
-                            open={iconDropdown.open}
-                            setOpen={iconDropdown.setOpen}
-                            menuPos={iconDropdown.menuPos}
-                        />
-                        <input id="roflMsgIcon" type="hidden" value={iconValue} />
+                        <div className="w-full">
+                            <IconSelect
+                                value={iconValue}
+                                onChange={setIconValue}
+                                wrapRef={iconDropdown.wrapRef}
+                                btnRef={iconDropdown.btnRef}
+                                menuRef={iconDropdown.menuRef}
+                                open={iconDropdown.open}
+                                setOpen={iconDropdown.setOpen}
+                                menuPos={iconDropdown.menuPos}
+                            />
+                            <input id="roflMsgIcon" type="hidden" value={iconValue} />
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-[90px_1fr] items-center gap-[10px] my-[8px]">

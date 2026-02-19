@@ -2,6 +2,7 @@
 
 import { type Dispatch, type RefObject, type SetStateAction } from "react";
 import { createPortal } from "react-dom";
+import Image from "next/image";
 
 import { BUTTON_OPTIONS, type ButtonOptionValue } from "./button-options";
 
@@ -29,7 +30,14 @@ export function ButtonSelect({ value, onChange, wrapRef, btnRef, menuRef, open, 
                 onClick={() => setOpen(!open)}
             >
                 {BUTTON_OPTIONS.find((o) => o.value === value)?.label || "OK"}
-                <span className="text-[10px] opacity-50">▼</span>
+                <span className="pointer-events-none">
+                    <img
+                        src="/icons/arrow.svg"
+                        alt="v"
+                        draggable={false}
+                        className={"h-[10px] w-[10px] invert opacity-60 transition-transform duration-[160ms] " + (open ? "rotate-180" : "")}
+                    />
+                </span>
             </button>
 
             {open && menuPos
