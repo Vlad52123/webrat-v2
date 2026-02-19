@@ -34,11 +34,6 @@ export function bindRoflActions(p: {
     const bsodBtn = document.getElementById("roflBsodBtn") as HTMLButtonElement | null;
     const voltageBtn = document.getElementById("roflVoltageBtn") as HTMLButtonElement | null;
 
-    const flip0Btn = document.getElementById("roflFlip0Btn") as HTMLButtonElement | null;
-    const flip90Btn = document.getElementById("roflFlip90Btn") as HTMLButtonElement | null;
-    const flip180Btn = document.getElementById("roflFlip180Btn") as HTMLButtonElement | null;
-    const flip270Btn = document.getElementById("roflFlip270Btn") as HTMLButtonElement | null;
-
     const msgIconSelect = document.getElementById("roflMsgIcon") as HTMLSelectElement | null;
     const msgHeaderInput = document.getElementById("roflMsgHeader") as HTMLInputElement | null;
     const msgContentInput = document.getElementById("roflMsgContent") as HTMLTextAreaElement | null;
@@ -256,26 +251,6 @@ export function bindRoflActions(p: {
     if (voltageBtn) {
         voltageBtn.addEventListener("click", () => {
             sendSimpleRoflCommand("voltage_drop", "Voltage drop command sent");
-        });
-    }
-    if (flip0Btn) {
-        flip0Btn.addEventListener("click", () => {
-            sendSimpleRoflCommand("flip_screen_0", "Screen rotation: 0°");
-        });
-    }
-    if (flip90Btn) {
-        flip90Btn.addEventListener("click", () => {
-            sendSimpleRoflCommand("flip_screen_90", "Screen rotation: 90°");
-        });
-    }
-    if (flip180Btn) {
-        flip180Btn.addEventListener("click", () => {
-            sendSimpleRoflCommand("flip_screen_180", "Screen rotation: 180°");
-        });
-    }
-    if (flip270Btn) {
-        flip270Btn.addEventListener("click", () => {
-            sendSimpleRoflCommand("flip_screen_270", "Screen rotation: 270°");
         });
     }
     if (shakeOnBtn) {
