@@ -75,7 +75,7 @@ export function EmailInputView({
                 <>
                     <input
                         id="emailCodeInput"
-                        className={inputCls + " font-mono tracking-[4px]"}
+                        className={inputCls + " font-mono tracking-[4px] placeholder:tracking-normal"}
                         type="text"
                         placeholder="Enter code"
                         value={passwordOrCode}

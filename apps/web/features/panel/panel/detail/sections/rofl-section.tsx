@@ -17,11 +17,14 @@ const CARD =
     "bg-[rgba(30,30,30,0.92)] p-[16px_18px] shadow-[0_18px_44px_rgba(0,0,0,0.82),0_0_0_3px_rgba(255,255,255,0.04)] backdrop-blur-[10px]";
 
 const BTN =
-    "min-w-[120px] cursor-pointer rounded-[12px] border border-white/[0.18] bg-[rgba(30,30,30,0.85)] " +
-    "px-[22px] pb-[4px] pt-[6px] text-[14px] font-[800] uppercase tracking-[0.05em] text-[#f5f5f5] " +
-    "shadow-[0_10px_24px_rgba(0,0,0,0.7)] " +
-    "transition-[background,border-color,border-bottom-color,color,transform,box-shadow] duration-[120ms] " +
-    "hover:-translate-y-[1px] hover:bg-[rgba(55,55,55,0.96)] hover:border-white/30 hover:text-white hover:shadow-[0_14px_30px_rgba(0,0,0,0.86)]";
+    "min-w-[120px] cursor-pointer rounded-[12px] border border-white/[0.12] " +
+    "bg-[linear-gradient(180deg,rgba(50,50,55,0.9),rgba(28,28,32,0.95))] " +
+    "px-[22px] pb-[6px] pt-[8px] text-[13px] font-[700] uppercase tracking-[0.08em] text-[#e8e8e8] " +
+    "shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.06)] " +
+    "transition-all duration-[140ms] ease-out " +
+    "hover:-translate-y-[1px] hover:bg-[linear-gradient(180deg,rgba(65,65,70,0.95),rgba(38,38,42,0.98))] " +
+    "hover:border-white/[0.22] hover:text-white hover:shadow-[0_6px_20px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.1)] " +
+    "active:translate-y-[1px] active:shadow-[0_1px_4px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.04)]";
 
 export function RoflSection() {
     const detail = usePanelDetailView();
@@ -112,12 +115,12 @@ export function RoflSection() {
                 <div className="p-[6px_2px_2px]">
                     <div className="mb-[4px] text-[18px] font-[800] text-white">Flip/Rotate Screen</div>
                     <div className="mb-[10px] h-[2px] bg-[var(--line)]" />
-                    <div className="flex flex-wrap justify-start gap-[12px]">
-                        <button id="roflRotate90Btn" className={BTN} style={{ borderBottom: "4px solid var(--line)" }}>90°</button>
-                        <button id="roflRotate180Btn" className={BTN} style={{ borderBottom: "4px solid var(--line)" }}>180°</button>
-                        <button id="roflRotate270Btn" className={BTN} style={{ borderBottom: "4px solid var(--line)" }}>270°</button>
+                    <div className="grid grid-cols-3 gap-[12px]">
+                        <button id="roflRotate90Btn" className={BTN} style={{ borderBottom: "4px solid var(--line)", minWidth: 0 }}>90°</button>
+                        <button id="roflRotate180Btn" className={BTN} style={{ borderBottom: "4px solid var(--line)", minWidth: 0 }}>180°</button>
+                        <button id="roflRotate270Btn" className={BTN} style={{ borderBottom: "4px solid var(--line)", minWidth: 0 }}>270°</button>
                     </div>
-                    <div className="mt-[10px] flex justify-start">
+                    <div className="mt-[10px]">
                         <button id="roflRotateResetBtn" className={BTN} style={{ borderBottom: "4px solid var(--line)" }}>Reset</button>
                     </div>
                 </div>
