@@ -24,7 +24,7 @@ if ($hasChanges) {
   git commit -m "$CommitMessage"
 }
 
-git push --force
+git push
 
 $remote = "$User@$HostName"
 
@@ -34,10 +34,11 @@ if (-not (Test-Path -LiteralPath $scriptPath)) {
 }
 
 $scriptRaw = Get-Content -LiteralPath $scriptPath -Raw
-$scriptLf = $scriptRaw -replace "`r`n", "`n"
+$scriptUtf8 = ($scriptRaw -replace "`r`n", "`n").TrimStart([char]0xFEFF)
+$scriptUtf8 = $scriptUtf8.TrimStart([char]0x00, [char]0x1A)
+if (-not $scriptUtf8.EndsWith("`n")) { $scriptUtf8 += "`n" }
 
 $sshArgs = @("-p", "$Port")
-
 if (-not [string]::IsNullOrWhiteSpace($IdentityFile)) {
   $sshArgs += @("-i", $IdentityFile)
 }
@@ -48,7 +49,7 @@ $sshArgs += @(
   "-o", "ServerAliveInterval=20",
   "-o", "ServerAliveCountMax=3",
   $remote,
-  "bash -s"
+  "bash -lc 'cat > /tmp/deploy-remote.sh && sed -i ""1s/^\xEF\xBB\xBF//"" /tmp/deploy-remote.sh && chmod +x /tmp/deploy-remote.sh && bash /tmp/deploy-remote.sh'"
 )
 
 $psi = New-Object System.Diagnostics.ProcessStartInfo
@@ -65,7 +66,7 @@ $p = New-Object System.Diagnostics.Process
 $p.StartInfo = $psi
 [void]$p.Start()
 
-$bytes = [System.Text.Encoding]::UTF8.GetBytes($scriptLf)
+$bytes = [System.Text.Encoding]::UTF8.GetBytes($scriptUtf8)
 $stdinStream = $p.StandardInput.BaseStream
 $stdinStream.Write($bytes, 0, $bytes.Length)
 $stdinStream.Flush()
