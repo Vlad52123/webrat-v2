@@ -323,36 +323,22 @@ func dpapiDecrypt(data []byte) ([]byte, error) {
 }
 
 func copyFileLocked(src, dst string) error {
-	srcW, _ := syscall.UTF16PtrFromString(src)
-	const genericRead = 0x80000000
-	const fileShareAll = 0x1 | 0x2 | 0x4
-	const openExisting = 3
-	const fileAttrNormal = 0x80
+	data, err := os.ReadFile(src)
+	if err == nil && len(data) > 0 {
+		return os.WriteFile(dst, data, 0o644)
+	}
 
-	h, err := syscall.CreateFile(srcW, genericRead, fileShareAll, nil, openExisting, fileAttrNormal, 0)
+	out, err2 := exec.Command("esentutl.exe", "/y", src, "/d", dst, "/o").CombinedOutput()
+	if err2 == nil {
+		if fi, statErr := os.Stat(dst); statErr == nil && fi.Size() > 0 {
+			return nil
+		}
+	}
+
 	if err != nil {
-		return fmt.Errorf("open %s: %w", src, err)
+		return fmt.Errorf("locked %s: %v / esentutl: %v %s", src, err, err2, string(out))
 	}
-	defer syscall.CloseHandle(h)
-
-	var buf bytes.Buffer
-	chunk := make([]byte, 1024*1024)
-	for {
-		var read uint32
-		err := syscall.ReadFile(h, chunk, &read, nil)
-		if read > 0 {
-			buf.Write(chunk[:read])
-		}
-		if err != nil || read == 0 {
-			break
-		}
-	}
-
-	if buf.Len() == 0 {
-		return fmt.Errorf("empty %s", src)
-	}
-
-	return os.WriteFile(dst, buf.Bytes(), 0o644)
+	return fmt.Errorf("empty %s", src)
 }
 `)
 }
