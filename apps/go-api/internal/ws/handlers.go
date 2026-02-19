@@ -141,7 +141,7 @@ func (h *Hub) handleUpdate(payload map[string]any) {
 		}
 	}
 
-	h.broadcastVictims()
+	h.broadcastSingleVictimUpdate(id)
 }
 
 func (h *Hub) handlePing(ws *websocket.Conn, associatedVictimID string) {
@@ -182,6 +182,10 @@ func (h *Hub) handlePing(ws *websocket.Conn, associatedVictimID string) {
 		if h.lim.shouldPersist(pingVictimID, now) {
 			_ = h.db.UpsertVictim(victimCopy)
 		}
+	}
+
+	if pingVictimID != "" {
+		h.broadcastSingleVictimUpdate(pingVictimID)
 	}
 }
 

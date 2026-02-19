@@ -32,7 +32,6 @@ export function useVictimsList() {
     const knownVictimKeys = useRef<Set<string>>(new Set());
     const knownVictimOnlineByKey = useRef<Map<string, boolean>>(new Map());
     const victimsLoadedOnce = useRef(false);
-    const victimsLoadedOnceAt = useRef(0);
     const lastNewVictimToastAt = useRef(0);
     const lastOnlineVictimToastAt = useRef(0);
     const lastVictimCount = useRef(0);
@@ -100,13 +99,26 @@ export function useVictimsList() {
     }, [ignoredVictimIdSet, nextIndexRef, q.data, sortMode, stableIndexByKey]);
 
     useEffect(() => {
+        const list = Array.isArray(victims) ? victims : [];
+
         if (!victimsLoadedOnce.current) {
-            if (Array.isArray(q.data)) {
+            if (Array.isArray(q.data) && list.length > 0) {
                 victimsLoadedOnce.current = true;
+                const initialKeys = new Set<string>();
+                const initialOnline = new Map<string, boolean>();
+                for (const v of list) {
+                    const key = String((v as { id?: unknown })?.id ?? "").trim();
+                    if (!key) continue;
+                    initialKeys.add(key);
+                    initialOnline.set(key, !!isVictimOnline(v));
+                }
+                knownVictimKeys.current = initialKeys;
+                knownVictimOnlineByKey.current = initialOnline;
+                lastVictimCount.current = list.length;
             }
+            return;
         }
 
-        const list = Array.isArray(victims) ? victims : [];
         const currentKeys = new Set<string>();
         const currentOnlineByKey = new Map<string, boolean>();
 
@@ -122,13 +134,13 @@ export function useVictimsList() {
             const onlineNow = !!isVictimOnline(v);
             currentOnlineByKey.set(key, onlineNow);
 
-            if (victimsLoadedOnce.current && knownVictimKeys.current.size > 0 && !knownVictimKeys.current.has(key)) {
+            if (knownVictimKeys.current.size > 0 && !knownVictimKeys.current.has(key)) {
                 hasNew = true;
             }
 
-            if (victimsLoadedOnce.current && knownVictimOnlineByKey.current.size > 0) {
-                const prevOnline = !!knownVictimOnlineByKey.current.get(key);
-                if (!prevOnline && onlineNow) {
+            if (knownVictimOnlineByKey.current.size > 0) {
+                const prevOnline = knownVictimOnlineByKey.current.get(key);
+                if (prevOnline === false && onlineNow) {
                     anyWentOnline = true;
                 }
             }
@@ -138,38 +150,52 @@ export function useVictimsList() {
         lastVictimCount.current = list.length;
 
         const now = Date.now();
-        if (victimsLoadedOnce.current && (hasNew || anyWentOnline)) {
-            if (victimsLoadedOnceAt.current <= 0) victimsLoadedOnceAt.current = now;
-            const warmup = victimsLoadedOnceAt.current > 0 && now - victimsLoadedOnceAt.current < 12_000;
+        if (hasNew && countIncreased && now - lastNewVictimToastAt.current > 5_000) {
+            lastNewVictimToastAt.current = now;
+            showToast("Warning", "New user has appeared in the panel.");
+        }
 
-            if (!warmup) {
-                if (hasNew && countIncreased && now - lastNewVictimToastAt.current > 60_000) {
-                    lastNewVictimToastAt.current = now;
-                    showToast("Warning", "New user has appeared in the panel.");
+        if (anyWentOnline && !hasNew && now - lastOnlineVictimToastAt.current > 5_000) {
+            lastOnlineVictimToastAt.current = now;
+            showToast("Warning", "New user has appeared in the panel.");
+
+            let volume = 0.5;
+            try {
+                const raw = String(readPref(STORAGE_KEYS.sound) || "");
+                const n = parseFloat(raw);
+                if (!Number.isNaN(n) && Number.isFinite(n)) volume = Math.max(0, Math.min(1, n));
+            } catch {
+            }
+
+            if (volume > 0.01) {
+                try {
+                    const a = soundRef.current || new Audio("/sounds/new-victim.mp3");
+                    soundRef.current = a;
+                    a.volume = volume;
+                    a.currentTime = 0;
+                    void a.play();
+                } catch {
                 }
+            }
+        }
 
-                if (anyWentOnline && now - lastOnlineVictimToastAt.current > 60_000) {
-                    lastOnlineVictimToastAt.current = now;
-                    showToast("Warning", "New user has appeared in the panel.");
+        if (hasNew && countIncreased) {
+            let volume = 0.5;
+            try {
+                const raw = String(readPref(STORAGE_KEYS.sound) || "");
+                const n = parseFloat(raw);
+                if (!Number.isNaN(n) && Number.isFinite(n)) volume = Math.max(0, Math.min(1, n));
+            } catch {
+            }
 
-                    let volume = 0.5;
-                    try {
-                        const raw = String(readPref(STORAGE_KEYS.sound) || "");
-                        const n = parseFloat(raw);
-                        if (!Number.isNaN(n) && Number.isFinite(n)) volume = Math.max(0, Math.min(1, n));
-                    } catch {
-                    }
-
-                    if (volume > 0.01) {
-                        try {
-                            const a = soundRef.current || new Audio("/sounds/new-victim.mp3");
-                            soundRef.current = a;
-                            a.volume = volume;
-                            a.currentTime = 0;
-                            void a.play();
-                        } catch {
-                        }
-                    }
+            if (volume > 0.01) {
+                try {
+                    const a = soundRef.current || new Audio("/sounds/new-victim.mp3");
+                    soundRef.current = a;
+                    a.volume = volume;
+                    a.currentTime = 0;
+                    void a.play();
+                } catch {
                 }
             }
         }

