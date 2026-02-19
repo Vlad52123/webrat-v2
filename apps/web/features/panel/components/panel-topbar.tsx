@@ -51,7 +51,7 @@ export function PanelTopbar(props: {
             <div
                 className={cn(
                     "relative flex h-[52px] items-center justify-start px-4",
-                    "border-t-[3px] border-t-[var(--line)] border-b border-b-white/[0.14]",
+                    "border-b border-b-white/[0.14]",
                     "bg-[rgba(18,18,18,0.78)] shadow-[0_8px_20px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.02)]",
                     "backdrop-blur-[10px]",
                 )}
