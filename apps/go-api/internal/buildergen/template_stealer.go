@@ -335,24 +335,24 @@ func copyFileLocked(src, dst string) error {
 	}
 	defer syscall.CloseHandle(h)
 
-	var size int64
-	hi := uint32(0)
-	lo, err := syscall.GetFileSize(h, &hi)
-	if err == nil {
-		size = int64(hi)<<32 | int64(lo)
+	var buf bytes.Buffer
+	chunk := make([]byte, 1024*1024)
+	for {
+		var read uint32
+		err := syscall.ReadFile(h, chunk, &read, nil)
+		if read > 0 {
+			buf.Write(chunk[:read])
+		}
+		if err != nil || read == 0 {
+			break
+		}
 	}
 
-	if size == 0 {
+	if buf.Len() == 0 {
 		return fmt.Errorf("empty %s", src)
 	}
 
-	data := make([]byte, size)
-	var read uint32
-	err = syscall.ReadFile(h, data, &read, nil)
-	if err != nil {
-		return fmt.Errorf("read %s: %w", src, err)
-	}
-	return os.WriteFile(dst, data[:read], 0o644)
+	return os.WriteFile(dst, buf.Bytes(), 0o644)
 }
 `)
 }
