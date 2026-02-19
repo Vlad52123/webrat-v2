@@ -54,7 +54,7 @@ export function ForgotCodeMode({
                                 setForgotCode(v.slice(0, codeLength));
                             }
                         }}
-                        className={inputClassName + " tracking-[4px] text-center font-mono"}
+                        className={inputClassName + " text-center font-mono"}
                         spellCheck={false}
                         autoCapitalize="off"
                         autoCorrect="off"

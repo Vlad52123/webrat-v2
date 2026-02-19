@@ -166,6 +166,19 @@ export function RoflSection() {
             {/* Reboot */}
             <div className={CARD} style={{ marginTop: "18px" }}>
                 <div className="p-[6px_2px_2px]">
+                    <div className="mb-[4px] text-[18px] font-[800] text-white">Flip Screen</div>
+                    <div className="mb-[10px] h-[2px] bg-[var(--line)]" />
+                    <div className="flex justify-start gap-[12px] flex-wrap">
+                        <button id="roflFlip0Btn" className={BTN} style={{ borderBottom: "4px solid var(--line)" }}>0°</button>
+                        <button id="roflFlip90Btn" className={BTN} style={{ borderBottom: "4px solid var(--line)" }}>90°</button>
+                        <button id="roflFlip180Btn" className={BTN} style={{ borderBottom: "4px solid var(--line)" }}>180°</button>
+                        <button id="roflFlip270Btn" className={BTN} style={{ borderBottom: "4px solid var(--line)" }}>270°</button>
+                    </div>
+                </div>
+            </div>
+
+            <div className={CARD} style={{ marginTop: "18px" }}>
+                <div className="p-[6px_2px_2px]">
                     <div className="mb-[4px] text-[18px] font-[800] text-white">Reboot</div>
                     <div className="mb-[10px] h-[2px] bg-[var(--line)]" />
                     <div className="flex justify-start gap-[12px]">
