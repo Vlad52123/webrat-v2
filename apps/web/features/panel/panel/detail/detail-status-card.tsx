@@ -36,7 +36,7 @@ export function DetailStatusCard(props: { victim: Victim | null }) {
                 {victim?.hostname ?? "-"}
             </div>
             <div className="mb-[8px] h-[2px] w-full bg-[var(--line)]" />
-            <div className="mb-[4px]" id="detailStatusLabel">
+            <div className="mb-[4px] select-none" id="detailStatusLabel">
                 {label}
             </div>
             <div
