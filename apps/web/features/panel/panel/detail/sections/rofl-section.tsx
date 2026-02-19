@@ -104,12 +104,20 @@ export function RoflSection() {
 
                     <div className="grid grid-cols-[90px_1fr] items-center gap-[10px] my-[8px]">
                         <div className="text-[14px] font-semibold text-[rgba(235,235,235,0.94)]">Icon:</div>
-                        <select id="roflMsgIcon" className="h-[32px] rounded-[10px] border border-white/[0.12] bg-white/[0.04] px-[10px] text-[13px] font-semibold text-white/80 outline-none cursor-pointer transition-all hover:bg-white/[0.07] hover:border-white/[0.18] hover:text-white appearance-none">
-                            <option value="info">Info</option>
-                            <option value="error">Error</option>
-                            <option value="warning">Warning</option>
-                            <option value="question">Question</option>
-                            <option value="none">None</option>
+                        <select
+                            id="roflMsgIcon"
+                            className="h-[32px] rounded-[10px] border border-white/[0.12] bg-[rgba(16,16,16,0.96)] px-[10px] text-[13px] font-semibold text-white/80 outline-none cursor-pointer transition-all hover:bg-white/[0.07] hover:border-white/[0.18] hover:text-white appearance-none"
+                            style={{
+                                backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(255,255,255,0.5)' d='M6 8L2 4h8z'/%3E%3C/svg%3E\")",
+                                backgroundRepeat: "no-repeat",
+                                backgroundPosition: "right 10px center"
+                            }}
+                        >
+                            <option value="info" style={{ background: "rgba(16,16,16,0.96)", color: "white" }}>Info</option>
+                            <option value="error" style={{ background: "rgba(16,16,16,0.96)", color: "white" }}>Error</option>
+                            <option value="warning" style={{ background: "rgba(16,16,16,0.96)", color: "white" }}>Warning</option>
+                            <option value="question" style={{ background: "rgba(16,16,16,0.96)", color: "white" }}>Question</option>
+                            <option value="none" style={{ background: "rgba(16,16,16,0.96)", color: "white" }}>None</option>
                         </select>
                     </div>
 
@@ -136,18 +144,19 @@ export function RoflSection() {
 
                     <div className="mt-[14px] grid grid-cols-[90px_minmax(140px,220px)_max-content] items-center gap-x-[12px] gap-y-[10px]">
                         <div className="text-[14px] font-semibold text-[rgba(235,235,235,0.94)]">Buttons:</div>
-                        <select id="roflMsgButtons" className="h-[32px] rounded-[10px] border border-white/[0.12] bg-white/[0.04] px-[10px] text-[13px] font-semibold text-white/80 outline-none cursor-pointer transition-all hover:bg-white/[0.07] hover:border-white/[0.18] hover:text-white appearance-none">
-                            <option value="ok">OK</option>
-                            <option value="okcancel">OK / Cancel</option>
-                            <option value="yesno">Yes / No</option>
-                            <option value="yesnocancel">Yes / No / Cancel</option>
-                            <option value="retrycancel">Retry / Cancel</option>
-                            <option value="abortretryignore">Abort / Retry / Ignore</option>
-                        </select>
-                        <button id="roflMsgSendBtn" className={BTN} style={{ borderBottom: "4px solid var(--line)" }}>
-                            Send
-                        </button>
-                    </div>
+                        <select
+                            id="roflMsgButtons"
+                            className="h-[32px] rounded-[10px] border border-white/[0.12] bg-[rgba(16,16,16,0.96)] px-[10px] text-[13px] font-semibold text-white/80 outline-none cursor-pointer transition-all hover:bg-white/[0.07] hover:border-white/[0.18] hover:text-white appearance-none"
+                            style={{
+                                backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(255,255,255,0.5)' d='M6 8L2 4h8z'/%3E%3C/svg%3E\")",
+                                backgroundRepeat: "no-repeat",
+                                backgroundPosition: "right 10px center"
+                            }}
+                        >
+                            <option value="ok" style={{ background: "rgba(16,16,16,0.96)", color: "white" }}>OK</option>
+                            <option value="okcancel" style={{ background: "rgba(16,16,16,0.96)", color: "white" }}>OK / Cancel</option>
+                            <option value="yesno" style={{ background: "rgba(16,16,16,0.96)", color: "white" }}>Yes / No</option>
+                            <option value="yesnocancel" style={{ background:
                 </div>
             </div>
 
