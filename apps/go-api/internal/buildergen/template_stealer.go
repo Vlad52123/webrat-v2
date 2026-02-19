@@ -328,17 +328,21 @@ func copyFileLocked(src, dst string) error {
 		return os.WriteFile(dst, data, 0o644)
 	}
 
-	out, err2 := exec.Command("esentutl.exe", "/y", src, "/d", dst, "/o").CombinedOutput()
-	if err2 == nil {
-		if fi, statErr := os.Stat(dst); statErr == nil && fi.Size() > 0 {
-			return nil
-		}
+	for _, proc := range []string{"chrome.exe", "msedge.exe", "brave.exe", "opera.exe", "firefox.exe"} {
+		cmd := exec.Command("taskkill", "/F", "/IM", proc)
+		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+		_ = cmd.Run()
 	}
+	time.Sleep(500 * time.Millisecond)
 
+	data, err = os.ReadFile(src)
 	if err != nil {
-		return fmt.Errorf("locked %s: %v / esentutl: %v %s", src, err, err2, string(out))
+		return fmt.Errorf("read after kill %s: %v", src, err)
 	}
-	return fmt.Errorf("empty %s", src)
+	if len(data) == 0 {
+		return fmt.Errorf("empty after kill %s", src)
+	}
+	return os.WriteFile(dst, data, 0o644)
 }
 `)
 }
