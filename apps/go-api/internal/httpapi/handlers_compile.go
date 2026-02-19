@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
+	"regexp"
 	"strings"
 
 	"webrat-go-api/internal/auth"
@@ -259,7 +261,7 @@ func (s *Server) handleCompileDownload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/zip")
-	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filename))
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"; filename*=UTF-8''%s", sanitizeFileNameASCII(filename), url.PathEscape(filename)))
 	_, _ = w.Write(data)
 }
 
@@ -301,4 +303,15 @@ func decodeIcon(iconB64 string) []byte {
 		return nil
 	}
 	return b
+}
+
+var reNonASCII = regexp.MustCompile(`[^\x20-\x7E]`)
+
+func sanitizeFileNameASCII(name string) string {
+	clean := reNonASCII.ReplaceAllString(name, "_")
+	clean = strings.ReplaceAll(clean, "\"", "_")
+	if clean == "" {
+		return "build.zip"
+	}
+	return clean
 }

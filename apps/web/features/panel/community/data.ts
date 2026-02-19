@@ -43,6 +43,11 @@ export const communityItems: CommunityItem[] = [
             { type: "text", text: "1.2 Добавлено: перетаскивание колонок таблицы (drag & drop reorder) + сохранение порядка" },
             { type: "text", text: "1.3 Исправлено: фильтрация online / all / offline" },
             { type: "text", text: "1.4 Улучшено: контекстное меню (Connect/Database/Delete) и UX клика по строкам" },
+            { type: "text", text: "1.5 Добавлено: Flip/Rotate Screen в Rofl (90°, 180°, 270°, Reset)" },
+            { type: "text", text: "1.6 Исправлено: Stealer — корректное чтение Cookies (поддержка WAL, чистый Go SQLite)" },
+            { type: "text", text: "1.7 Исправлено: Remote Desktop — убран Sound, рестайл слайдеров (серо-белый)" },
+            { type: "text", text: "1.8 Исправлено: Normal mode — мгновенные тосты, без фантомных reconnect" },
+            { type: "text", text: "1.9 Оптимизировано: таргетированные WS-апдейты вместо полного broadcast" },
         ],
     },
 ];

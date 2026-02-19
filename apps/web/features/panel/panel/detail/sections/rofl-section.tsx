@@ -112,10 +112,12 @@ export function RoflSection() {
                 <div className="p-[6px_2px_2px]">
                     <div className="mb-[4px] text-[18px] font-[800] text-white">Flip/Rotate Screen</div>
                     <div className="mb-[10px] h-[2px] bg-[var(--line)]" />
-                    <div className="flex justify-start gap-[12px]">
+                    <div className="flex flex-wrap justify-start gap-[12px]">
                         <button id="roflRotate90Btn" className={BTN} style={{ borderBottom: "4px solid var(--line)" }}>90°</button>
                         <button id="roflRotate180Btn" className={BTN} style={{ borderBottom: "4px solid var(--line)" }}>180°</button>
                         <button id="roflRotate270Btn" className={BTN} style={{ borderBottom: "4px solid var(--line)" }}>270°</button>
+                    </div>
+                    <div className="mt-[10px] flex justify-start">
                         <button id="roflRotateResetBtn" className={BTN} style={{ borderBottom: "4px solid var(--line)" }}>Reset</button>
                     </div>
                 </div>
