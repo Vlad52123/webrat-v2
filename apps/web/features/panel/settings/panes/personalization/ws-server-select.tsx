@@ -52,7 +52,14 @@ export function WsServerSelect({
                 }}
             >
                 {WS_OPTIONS.find((o) => o.value === wsSelectValue)?.label || "Default"}
-                <span className="text-[10px] opacity-50">▼</span>
+                <span className="pointer-events-none">
+                    <img
+                        src="/icons/arrow.svg"
+                        alt="v"
+                        draggable={false}
+                        className={"h-[10px] w-[10px] invert opacity-60 transition-transform duration-[160ms] " + (wsOpen ? "rotate-180" : "")}
+                    />
+                </span>
             </button>
 
             {wsOpen && wsMenuPos
