@@ -14,7 +14,7 @@ export function useDropdownPosition() {
             const btn = btnRef.current;
             if (!btn) return;
             const r = btn.getBoundingClientRect();
-            setMenuPos({ left: r.left, top: r.bottom + 8, width: Math.max(180, r.width) });
+            setMenuPos({ left: r.right - Math.max(180, r.width), top: r.bottom + 8, width: Math.max(180, r.width) });
         };
 
         calcPos();

@@ -14,7 +14,7 @@ export function useWsMenuPosition() {
             const btn = wsBtnRef.current;
             if (!btn) return;
             const r = btn.getBoundingClientRect();
-            setWsMenuPos({ left: r.left, top: r.bottom + 8, width: Math.max(220, r.width) });
+            setWsMenuPos({ left: r.right - Math.max(220, r.width), top: r.bottom + 8, width: Math.max(220, r.width) });
         };
 
         calcPos();
