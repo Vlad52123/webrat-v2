@@ -12,41 +12,41 @@ const SLIDER_CSS = `
       -webkit-appearance: none;
       appearance: none;
       width: 120px;
-      height: 4px;
+      height: 5px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.12);
       outline: none;
       cursor: pointer;
    }
    .rd-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
-      background: #d4a843;
-      border: 2px solid rgba(255,255,255,0.9);
+      background: rgba(210,210,215,0.95);
+      border: none;
       cursor: pointer;
-      box-shadow: 0 0 8px rgba(212,168,67,0.6);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.5);
    }
    .rd-slider::-moz-range-thumb {
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
-      background: #d4a843;
-      border: 2px solid rgba(255,255,255,0.9);
+      background: rgba(210,210,215,0.95);
+      border: none;
       cursor: pointer;
-      box-shadow: 0 0 8px rgba(212,168,67,0.6);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.5);
    }
    .rd-slider::-webkit-slider-runnable-track {
-      height: 4px;
+      height: 5px;
       border-radius: 999px;
-      background: linear-gradient(90deg, #d4a843, rgba(255,255,255,0.15));
+      background: rgba(255,255,255,0.12);
    }
    .rd-slider::-moz-range-track {
-      height: 4px;
+      height: 5px;
       border-radius: 999px;
-      background: linear-gradient(90deg, #d4a843, rgba(255,255,255,0.15));
+      background: rgba(255,255,255,0.12);
    }
 `;
 
@@ -99,7 +99,7 @@ export function RemoteDesktopSection() {
 
         wire("remoteDesktopFps", "remoteDesktopFpsValue", "rd_fps", 30);
         wire("remoteDesktopResolution", "remoteDesktopResolutionValue", "rd_resolution", 75);
-        wire("remoteDesktopSound", "remoteDesktopSoundValue", "rd_sound", 50);
+
 
         return () => cleanups.forEach((fn) => fn());
     }, []);
@@ -151,20 +151,7 @@ export function RemoteDesktopSection() {
                                         {readLocal("rd_resolution", 75)}%
                                     </span>
                                 </div>
-                                <div className="inline-flex items-center gap-[8px] text-[13px] text-[#e0e0e0]">
-                                    <span className="font-semibold">Sound</span>
-                                    <input
-                                        id="remoteDesktopSound"
-                                        className="rd-slider"
-                                        type="range"
-                                        min={0}
-                                        max={100}
-                                        defaultValue={readLocal("rd_sound", 50)}
-                                    />
-                                    <span id="remoteDesktopSoundValue" className="min-w-[26px] text-right font-bold">
-                                        {readLocal("rd_sound", 50)}
-                                    </span>
-                                </div>
+
                             </div>
                             <div className="flex items-center">
                                 <button
