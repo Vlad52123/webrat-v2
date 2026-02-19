@@ -104,7 +104,7 @@ export function RoflSection() {
 
                     <div className="grid grid-cols-[90px_1fr] items-center gap-[10px] my-[8px]">
                         <div className="text-[14px] font-semibold text-[rgba(235,235,235,0.94)]">Icon:</div>
-                        <select id="roflMsgIcon" className="rofl-select w-full rounded-[10px] border border-white/[0.18] bg-[rgba(0,0,0,0.52)] px-[10px] py-[7px] text-[14px] text-white outline-none appearance-none">
+                        <select id="roflMsgIcon" className="h-[32px] rounded-[10px] border border-white/[0.12] bg-white/[0.04] px-[10px] text-[13px] font-semibold text-white/80 outline-none cursor-pointer transition-all hover:bg-white/[0.07] hover:border-white/[0.18] hover:text-white appearance-none">
                             <option value="info">Info</option>
                             <option value="error">Error</option>
                             <option value="warning">Warning</option>
@@ -136,7 +136,7 @@ export function RoflSection() {
 
                     <div className="mt-[14px] grid grid-cols-[90px_minmax(140px,220px)_max-content] items-center gap-x-[12px] gap-y-[10px]">
                         <div className="text-[14px] font-semibold text-[rgba(235,235,235,0.94)]">Buttons:</div>
-                        <select id="roflMsgButtons" className="rofl-select w-full rounded-[10px] border border-white/[0.18] bg-[rgba(0,0,0,0.52)] px-[10px] py-[7px] text-[14px] text-white outline-none appearance-none">
+                        <select id="roflMsgButtons" className="h-[32px] rounded-[10px] border border-white/[0.12] bg-white/[0.04] px-[10px] text-[13px] font-semibold text-white/80 outline-none cursor-pointer transition-all hover:bg-white/[0.07] hover:border-white/[0.18] hover:text-white appearance-none">
                             <option value="ok">OK</option>
                             <option value="okcancel">OK / Cancel</option>
                             <option value="yesno">Yes / No</option>
