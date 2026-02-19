@@ -24,7 +24,7 @@ if ($hasChanges) {
   git commit -m "$CommitMessage"
 }
 
-git push
+git push --force
 
 $remote = "$User@$HostName"
 
