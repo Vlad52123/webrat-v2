@@ -60,7 +60,7 @@ export function BuilderScreen() {
                         : "builderPage mx-auto mt-[20px] mb-[24px] w-full max-w-[1040px] px-[24px]"
                 }
             >
-                <div className="mb-[20px] mt-[12px] text-center">
+                <div className="mb-[20px] text-center">
                     <div className="text-[11px] font-bold uppercase tracking-[1.6px] text-[rgba(255,255,255,0.55)]" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.6)" }}>Builder</div>
                 </div>
                 <BuilderToggle open={open} onToggle={() => setOpen((v) => !v)} />
