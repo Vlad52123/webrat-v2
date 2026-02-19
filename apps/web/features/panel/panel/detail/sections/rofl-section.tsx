@@ -107,6 +107,20 @@ export function RoflSection() {
                 </div>
             </div>
 
+            {/* Flip/Rotate Screen */}
+            <div className={CARD} style={{ marginTop: "18px" }}>
+                <div className="p-[6px_2px_2px]">
+                    <div className="mb-[4px] text-[18px] font-[800] text-white">Flip/Rotate Screen</div>
+                    <div className="mb-[10px] h-[2px] bg-[var(--line)]" />
+                    <div className="flex justify-start gap-[12px]">
+                        <button id="roflRotate90Btn" className={BTN} style={{ borderBottom: "4px solid var(--line)" }}>90°</button>
+                        <button id="roflRotate180Btn" className={BTN} style={{ borderBottom: "4px solid var(--line)" }}>180°</button>
+                        <button id="roflRotate270Btn" className={BTN} style={{ borderBottom: "4px solid var(--line)" }}>270°</button>
+                        <button id="roflRotateResetBtn" className={BTN} style={{ borderBottom: "4px solid var(--line)" }}>Reset</button>
+                    </div>
+                </div>
+            </div>
+
             {/* Message box */}
             <div className={CARD} style={{ marginTop: "18px" }}>
                 <div className="p-[6px_2px_2px]">
