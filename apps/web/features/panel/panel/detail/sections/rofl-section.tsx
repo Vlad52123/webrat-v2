@@ -1,11 +1,16 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { usePanelDetailView } from "../panel-detail-view-provider";
 import { usePanelWS } from "../../../ws/ws-provider";
 import { bindRoflActions } from "./rofl/bind-rofl-actions";
+import { IconSelect } from "./rofl/icon-select";
+import { ButtonSelect } from "./rofl/button-select";
+import { useDropdownPosition } from "./rofl/use-dropdown-position";
+import type { IconOptionValue } from "./rofl/icon-options";
+import type { ButtonOptionValue } from "./rofl/button-options";
 
 const CARD =
     "rofl-card w-[420px] max-w-[calc(100vw-420px)] ml-[4px] rounded-[18px] border border-white/[0.14] " +
@@ -22,6 +27,12 @@ export function RoflSection() {
     const detail = usePanelDetailView();
     const ws = usePanelWS();
     const qc = useQueryClient();
+
+    const [iconValue, setIconValue] = useState<IconOptionValue>("info");
+    const [buttonValue, setButtonValue] = useState<ButtonOptionValue>("ok");
+
+    const iconDropdown = useDropdownPosition();
+    const buttonDropdown = useDropdownPosition();
 
     useEffect(() => {
         return bindRoflActions({
@@ -104,13 +115,17 @@ export function RoflSection() {
 
                     <div className="grid grid-cols-[90px_1fr] items-center gap-[10px] my-[8px]">
                         <div className="text-[14px] font-semibold text-[rgba(235,235,235,0.94)]">Icon:</div>
-                        <select id="roflMsgIcon" className="h-[32px] rounded-[10px] border border-white/[0.12] bg-white/[0.04] px-[10px] text-[13px] font-semibold text-white/80 outline-none cursor-pointer transition-all hover:bg-white/[0.07] hover:border-white/[0.18] hover:text-white appearance-none">
-                            <option value="info">Info</option>
-                            <option value="error">Error</option>
-                            <option value="warning">Warning</option>
-                            <option value="question">Question</option>
-                            <option value="none">None</option>
-                        </select>
+                        <IconSelect
+                            value={iconValue}
+                            onChange={setIconValue}
+                            wrapRef={iconDropdown.wrapRef}
+                            btnRef={iconDropdown.btnRef}
+                            menuRef={iconDropdown.menuRef}
+                            open={iconDropdown.open}
+                            setOpen={iconDropdown.setOpen}
+                            menuPos={iconDropdown.menuPos}
+                        />
+                        <input id="roflMsgIcon" type="hidden" value={iconValue} />
                     </div>
 
                     <div className="grid grid-cols-[90px_1fr] items-center gap-[10px] my-[8px]">
@@ -136,14 +151,17 @@ export function RoflSection() {
 
                     <div className="mt-[14px] grid grid-cols-[90px_minmax(140px,220px)_max-content] items-center gap-x-[12px] gap-y-[10px]">
                         <div className="text-[14px] font-semibold text-[rgba(235,235,235,0.94)]">Buttons:</div>
-                        <select id="roflMsgButtons" className="h-[32px] rounded-[10px] border border-white/[0.12] bg-white/[0.04] px-[10px] text-[13px] font-semibold text-white/80 outline-none cursor-pointer transition-all hover:bg-white/[0.07] hover:border-white/[0.18] hover:text-white appearance-none">
-                            <option value="ok">OK</option>
-                            <option value="okcancel">OK / Cancel</option>
-                            <option value="yesno">Yes / No</option>
-                            <option value="yesnocancel">Yes / No / Cancel</option>
-                            <option value="retrycancel">Retry / Cancel</option>
-                            <option value="abortretryignore">Abort / Retry / Ignore</option>
-                        </select>
+                        <ButtonSelect
+                            value={buttonValue}
+                            onChange={setButtonValue}
+                            wrapRef={buttonDropdown.wrapRef}
+                            btnRef={buttonDropdown.btnRef}
+                            menuRef={buttonDropdown.menuRef}
+                            open={buttonDropdown.open}
+                            setOpen={buttonDropdown.setOpen}
+                            menuPos={buttonDropdown.menuPos}
+                        />
+                        <input id="roflMsgButtons" type="hidden" value={buttonValue} />
                         <button id="roflMsgSendBtn" className={BTN} style={{ borderBottom: "4px solid var(--line)" }}>
                             Send
                         </button>
