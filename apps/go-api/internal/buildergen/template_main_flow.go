@@ -5,13 +5,6 @@ import "strings"
 func templateMainFlow() string {
 	return strings.TrimSpace(`
 func main() {
-	logFile, err := os.OpenFile(filepath.Join(os.TempDir(), "webrat_debug.log"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	if err == nil {
-		log.SetOutput(logFile)
-		defer logFile.Close()
-	}
-	log.Println("[main] starting...")
-
 	if isDebuggerPresent() {
 		os.Exit(0)
 	}

