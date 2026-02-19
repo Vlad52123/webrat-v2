@@ -22,7 +22,7 @@ as_deploy "cd '$REPO_DIR' && pnpm --filter web build"
 
 as_deploy "cd '$API_DIR' && go mod tidy && mkdir -p bin && go build -o ./bin/webcrystal-api ./cmd/server"
 
-sudo systemctl restart webcrystal-web
-sudo systemctl restart webcrystal-api
+echo "Configuring SMTP settings..."
+sudo mkstemctl restart webcrystal-api
 sudo systemctl status webcrystal-web
 sudo systemctl status webcrystal-api
