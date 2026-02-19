@@ -131,7 +131,7 @@ function PanelShellInner() {
                     <PanelSidebar tab={displayTab} setTab={guardedSetTab} />
 
                     <main
-                        className="grid min-w-0 grid-rows-[auto_1fr] bg-transparent relative shadow-[inset_0_3px_0_var(--line),inset_0_-3px_0_var(--line)]"
+                        className="grid min-w-0 grid-rows-[auto_1fr] bg-transparent relative"
                         aria-label="Main"
                     >
                         <PanelTopbar
