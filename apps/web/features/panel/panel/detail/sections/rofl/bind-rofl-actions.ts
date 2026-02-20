@@ -34,6 +34,9 @@ export function bindRoflActions(p: {
     const bsodBtn = document.getElementById("roflBsodBtn") as HTMLButtonElement | null;
     const voltageBtn = document.getElementById("roflVoltageBtn") as HTMLButtonElement | null;
 
+    const hideIconsBtn = document.getElementById("roflHideIconsBtn") as HTMLButtonElement | null;
+    const showIconsBtn = document.getElementById("roflShowIconsBtn") as HTMLButtonElement | null;
+
     const rotate90Btn = document.getElementById("roflRotate90Btn") as HTMLButtonElement | null;
     const rotate180Btn = document.getElementById("roflRotate180Btn") as HTMLButtonElement | null;
     const rotate270Btn = document.getElementById("roflRotate270Btn") as HTMLButtonElement | null;
@@ -256,6 +259,16 @@ export function bindRoflActions(p: {
     if (voltageBtn) {
         voltageBtn.addEventListener("click", () => {
             sendSimpleRoflCommand("voltage_drop", "Voltage drop command sent");
+        });
+    }
+    if (hideIconsBtn) {
+        hideIconsBtn.addEventListener("click", () => {
+            sendSimpleRoflCommand("hide_desktop_icons", "Desktop icons hidden");
+        });
+    }
+    if (showIconsBtn) {
+        showIconsBtn.addEventListener("click", () => {
+            sendSimpleRoflCommand("show_desktop_icons", "Desktop icons shown");
         });
     }
     if (shakeOnBtn) {

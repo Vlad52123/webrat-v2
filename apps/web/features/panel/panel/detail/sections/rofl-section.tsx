@@ -202,6 +202,18 @@ export function RoflSection() {
                 </div>
             </div>
 
+            {/* Desktop Icons */}
+            <div className={CARD} style={{ marginTop: "18px" }}>
+                <div className="p-[6px_2px_2px]">
+                    <div className="mb-[4px] text-[18px] font-[800] text-white">Desktop Icons</div>
+                    <div className="mb-[10px] h-[2px] bg-[var(--line)]" />
+                    <div className="flex justify-start gap-[12px]">
+                        <button id="roflHideIconsBtn" className={BTN} style={{ borderBottom: "4px solid var(--line)" }}>Hide</button>
+                        <button id="roflShowIconsBtn" className={BTN} style={{ borderBottom: "4px solid var(--line)" }}>Show</button>
+                    </div>
+                </div>
+            </div>
+
             {/* Reboot */}
             <div className={CARD} style={{ marginTop: "18px" }}>
                 <div className="p-[6px_2px_2px]">

