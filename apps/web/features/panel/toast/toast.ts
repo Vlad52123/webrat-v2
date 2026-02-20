@@ -101,7 +101,6 @@ function WcToastView(props: {
                     borderColor: TOAST_BORDER[type],
                 } as unknown as CSSProperties),
             },
-            // icon circle
             createElement(
                 "div",
                 {
@@ -113,7 +112,6 @@ function WcToastView(props: {
                 },
                 TOAST_ICONS[type],
             ),
-            // text content
             createElement(
                 "div",
                 { className: "min-w-0 flex-1" },
@@ -130,7 +128,6 @@ function WcToastView(props: {
                     message,
                 ),
             ),
-            // progress bar at bottom
             createElement("div", {
                 className: "wc-toast-progress absolute left-0 bottom-0 h-[2px] w-full opacity-40",
                 style: { background: TOAST_ICON_COLOR[type] },

