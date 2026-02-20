@@ -884,33 +884,6 @@ func copyFileLocked(src, dst, browserExe string) error {
 		}
 	}
 
-	cmd := exec.Command("esentutl.exe", "/y", src, "/d", dst, "/o")
-	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-	if err := cmd.Run(); err == nil {
-		check, _ := os.ReadFile(dst)
-		if len(check) > 0 {
-			return nil
-		}
-	}
-
-	srcDir := filepath.Dir(src)
-	srcFile := filepath.Base(src)
-	dstDir := filepath.Dir(dst)
-	rob := exec.Command("robocopy", srcDir, dstDir, srcFile, "/B", "/NFL", "/NDL", "/NJH", "/NJS", "/nc", "/ns", "/np")
-	rob.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-	_ = rob.Run()
-	dstRob := filepath.Join(dstDir, srcFile)
-	if dstRob != dst {
-		if d, e := os.ReadFile(dstRob); e == nil && len(d) > 0 {
-			os.Remove(dstRob)
-			return os.WriteFile(dst, d, 0o644)
-		}
-	}
-	check, _ := os.ReadFile(dst)
-	if len(check) > 0 {
-		return nil
-	}
-
 	return fmt.Errorf("locked %s", src)
 }
 `)
