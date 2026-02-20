@@ -12,7 +12,7 @@ export function useBgFileHandlers(
 ) {
     const setBgImageFromFile = useCallback(async (file: File) => {
         if (!file || !file.type || !file.type.startsWith("image/")) return;
-        if (file.size > 20 * 1024 * 1024) return;
+        if (file.size > 5 * 1024 * 1024) return;
 
         const dataUrl = await new Promise<string>((resolve) => {
             const reader = new FileReader();
