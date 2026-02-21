@@ -426,14 +426,6 @@ func CompileZip(ctx context.Context, baseDir string, req Request) ([]byte, strin
 		return nil, "", errors.New("compile error:\n" + msg)
 	}
 
-	if upxPath, err := exec.LookPath("upx"); err == nil && strings.TrimSpace(upxPath) != "" {
-		upxCtx, upxCancel := context.WithTimeout(ctx, 2*time.Minute)
-		defer upxCancel()
-		upxCmd := exec.CommandContext(upxCtx, upxPath, "--best", "--force", exePath)
-		upxCmd.Dir = tmpDir
-		_ = upxCmd.Run()
-	}
-
 	exeFile, err := os.Open(exePath)
 	if err != nil {
 		return nil, "", err

