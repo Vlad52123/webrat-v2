@@ -1,5 +1,14 @@
 "use client";
 
+import {
+    modalOverlayCn,
+    MODAL_CARD_360,
+    MODAL_HEADER,
+    MODAL_CLOSE_BTN,
+    MODAL_CONFIRM_BTN_WIDE,
+    MODAL_INPUT,
+} from "../../ui-classes";
+
 export function ChangePasswordModal(props: {
     open: boolean;
     onClose: () => void;
@@ -28,28 +37,25 @@ export function ChangePasswordModal(props: {
     return (
         <div
             id="passwordModalBackdrop"
-            className={
-                "fixed inset-0 z-[2000] items-center justify-center bg-black/[0.62] backdrop-blur-[10px] " +
-                (open ? "flex" : "hidden")
-            }
+            className={modalOverlayCn(open)}
             aria-hidden={!open}
             onMouseDown={(e) => {
                 if (e.target === e.currentTarget) onClose();
             }}
         >
             <div
-                className="w-[360px] max-w-[calc(100vw-40px)] overflow-hidden rounded-[16px] border border-white/[0.18] bg-[rgba(18,18,18,0.92)] shadow-[0_24px_60px_rgba(0,0,0,0.75)] backdrop-blur-[8px]"
+                className={MODAL_CARD_360}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="passwordModalTitle"
             >
-                <div className="flex items-center justify-between border-b border-white/[0.20] px-[14px] py-[12px]">
+                <div className={MODAL_HEADER}>
                     <div id="passwordModalTitle" className="text-[15px] font-bold text-white">
                         Change password
                     </div>
                     <button
                         id="passwordModalClose"
-                        className="grid h-[30px] w-[30px] cursor-pointer place-items-center rounded-[10px] border border-white/[0.14] bg-white/[0.06] text-[18px] leading-none text-white/[0.95] transition-[background,border-color,transform] hover:bg-white/[0.10] hover:border-white/[0.22] active:translate-y-[1px]"
+                        className={MODAL_CLOSE_BTN}
                         type="button"
                         aria-label="Close"
                         onClick={onClose}
@@ -64,7 +70,7 @@ export function ChangePasswordModal(props: {
                     <div className="grid gap-[4px]">
                         <input
                             id="passwordOldInput"
-                            className="h-[38px] rounded-[12px] border border-white/[0.14] bg-[rgba(0,0,0,0.28)] px-[12px] text-center text-[14px] text-white outline-none placeholder:text-[rgba(200,200,200,0.8)] focus:border-white/[0.28]"
+                            className={MODAL_INPUT}
                             type="password"
                             autoComplete="current-password"
                             placeholder="Old password"
@@ -75,7 +81,7 @@ export function ChangePasswordModal(props: {
                     <div className="grid gap-[4px]">
                         <input
                             id="passwordNewInput"
-                            className="h-[38px] rounded-[12px] border border-white/[0.14] bg-[rgba(0,0,0,0.28)] px-[12px] text-center text-[14px] text-white outline-none placeholder:text-[rgba(200,200,200,0.8)] focus:border-white/[0.28]"
+                            className={MODAL_INPUT}
                             type="password"
                             autoComplete="new-password"
                             placeholder="New password"
@@ -86,7 +92,7 @@ export function ChangePasswordModal(props: {
                     <div className="grid gap-[4px]">
                         <input
                             id="passwordNewAgainInput"
-                            className="h-[38px] rounded-[12px] border border-white/[0.14] bg-[rgba(0,0,0,0.28)] px-[12px] text-center text-[14px] text-white outline-none placeholder:text-[rgba(200,200,200,0.8)] focus:border-white/[0.28]"
+                            className={MODAL_INPUT}
                             type="password"
                             autoComplete="new-password"
                             placeholder="New password again"
@@ -99,7 +105,7 @@ export function ChangePasswordModal(props: {
                         <button
                             id="passwordModalConfirm"
                             className={
-                                "min-w-[150px] cursor-pointer rounded-[12px] border border-white/[0.18] border-b-[4px] bg-white/[0.10] px-[22px] py-[10px] text-[14px] font-semibold text-white transition-[background,border-color,transform] hover:bg-white/[0.14] hover:border-white/[0.28] active:translate-y-[1px]" +
+                                MODAL_CONFIRM_BTN_WIDE +
                                 (isLoading ? " pointer-events-none opacity-60" : "")
                             }
                             style={{ borderBottomColor: "var(--line)" }}

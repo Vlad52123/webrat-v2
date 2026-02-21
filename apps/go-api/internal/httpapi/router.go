@@ -61,7 +61,7 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.StripSlashes)
 	r.Use(middleware.Compress(5))
-	r.Use(maxBodyMiddleware(256 * 1024)) // 256KB default body limit
+	r.Use(maxBodyMiddleware(256 * 1024))
 
 	r.Use(s.ensureCSRF)
 

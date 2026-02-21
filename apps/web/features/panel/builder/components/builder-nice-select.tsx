@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { DROPDOWN_MENU } from "../../ui-classes";
 
 type Opt = { value: string; label: ReactNode };
 
@@ -142,7 +143,7 @@ export function BuilderNiceSelect(props: {
                         ref={menuRef}
                         className={
                             menuClassName ??
-                            "fixed z-[9999] max-h-[240px] overflow-auto rounded-[14px] border border-white/[0.12] bg-[rgba(16,16,16,0.96)] p-[6px] text-white shadow-[0_14px_34px_rgba(0,0,0,0.55)]"
+                            DROPDOWN_MENU
                         }
                         style={{ left: menuPos.left, top: menuPos.top, width: menuPos.width }}
                         role="listbox"

@@ -2,9 +2,9 @@
 
 import { type Dispatch, type RefObject, type SetStateAction } from "react";
 import { createPortal } from "react-dom";
-import Image from "next/image";
 
 import { ICON_OPTIONS, type IconOptionValue } from "./icon-options";
+import { DROPDOWN_MENU, dropdownOptionCn } from "../../../../ui-classes";
 
 interface Props {
     value: IconOptionValue;
@@ -44,7 +44,7 @@ export function IconSelect({ value, onChange, wrapRef, btnRef, menuRef, open, se
                 ? createPortal(
                     <div
                         ref={menuRef}
-                        className="fixed z-[9999] max-h-[240px] overflow-auto rounded-[14px] border border-white/[0.12] bg-[rgba(16,16,16,0.96)] p-[6px] text-white shadow-[0_14px_34px_rgba(0,0,0,0.55)]"
+                        className={DROPDOWN_MENU}
                         style={{ left: menuPos.left, top: menuPos.top, minWidth: menuPos.width }}
                         role="listbox"
                     >
@@ -54,12 +54,7 @@ export function IconSelect({ value, onChange, wrapRef, btnRef, menuRef, open, se
                                 <button
                                     key={opt.value}
                                     type="button"
-                                    className={
-                                        "w-full flex items-center justify-between px-[10px] py-[9px] rounded-[12px] text-[13px] leading-[1.15] font-semibold transition-[background,border-color] cursor-pointer border " +
-                                        (selected
-                                            ? "bg-white/[0.07] border-white/[0.16] text-white"
-                                            : "bg-transparent border-transparent text-white/90 hover:bg-white/[0.045] hover:border-white/[0.10]")
-                                    }
+                                    className={dropdownOptionCn(selected)}
                                     onClick={() => {
                                         onChange(opt.value);
                                         setOpen(false);

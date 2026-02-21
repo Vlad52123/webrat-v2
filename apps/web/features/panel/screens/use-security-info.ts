@@ -28,7 +28,7 @@ export function useSecurityInfo() {
         let cancelled = false;
         (async () => {
             try {
-                const res = await fetch(`/api/me/`, { method: "GET", credentials: "include" });
+                const res = await fetch(`/api/me`, { method: "GET", credentials: "include" });
                 if (!res.ok) return;
                 const data = (await res.json()) as unknown;
                 if (cancelled) return;

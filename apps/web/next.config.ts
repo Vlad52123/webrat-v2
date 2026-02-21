@@ -29,8 +29,8 @@ const nextConfig: NextConfig = {
                 { source: "/api/login", destination: `${apiUrl}/login` },
                 { source: "/api/me", destination: `${apiUrl}/me` },
                 { source: "/api/logout", destination: `${apiUrl}/logout` },
-                { source: "/api/forgot-password", destination: `${apiUrl}/forgot-password` },
-                { source: "/api/reset-password", destination: `${apiUrl}/reset-password` },
+                { source: "/api/forgot-password", destination: `${apiUrl}/api/forgot-password` },
+                { source: "/api/reset-password", destination: `${apiUrl}/api/reset-password` },
             ],
             afterFiles: [
                 { source: "/captcha/:path*", destination: `${apiUrl}/captcha/:path*` },
