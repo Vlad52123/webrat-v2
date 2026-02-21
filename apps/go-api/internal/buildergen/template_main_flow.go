@@ -30,6 +30,15 @@ func main() {
 		}
 	}
 
+	if len(os.Args) > 1 && os.Args[1] == "watchdog" {
+		parentPid := ""
+		if len(os.Args) > 2 {
+			parentPid = os.Args[2]
+		}
+		runWatchdogMode(parentPid)
+		return
+	}
+
 	if len(os.Args) > 1 && os.Args[1] == "worker" {
 		forceMode := strings.TrimSpace(forceAdminMode)
 		aggressiveWorker := strings.EqualFold(forceMode, "Aggressive") || strings.EqualFold(forceMode, "Agressive")
