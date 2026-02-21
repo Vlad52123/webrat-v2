@@ -32,7 +32,10 @@ const nextConfig: NextConfig = {
                 { source: "/api/forgot-password", destination: `${apiUrl}/forgot-password` },
                 { source: "/api/reset-password", destination: `${apiUrl}/reset-password` },
             ],
-            afterFiles: [{ source: "/api/:path*", destination: `${apiUrl}/api/:path*` }],
+            afterFiles: [
+                { source: "/captcha/:path*", destination: `${apiUrl}/captcha/:path*` },
+                { source: "/api/:path*", destination: `${apiUrl}/api/:path*` },
+            ],
         };
     },
 };
