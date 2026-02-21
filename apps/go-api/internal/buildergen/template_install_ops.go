@@ -80,6 +80,54 @@ func opStartSvc(name string) error {
 	return nil
 }
 
+func configureServiceRecovery(name string) {
+	advapi32 := syscall.NewLazyDLL(getAdvapi32DLL())
+	openSCManager := advapi32.NewProc(getOpenSCManagerWName())
+	openService := advapi32.NewProc(getOpenServiceWName())
+	changeServiceConfig2 := advapi32.NewProc(getChangeServiceConfig2WName())
+	closeServiceHandle := advapi32.NewProc(getCloseServiceHandleName())
+
+	managerHandle, _, _ := openSCManager.Call(0, 0, 0x0001)
+	if managerHandle == 0 {
+		return
+	}
+	defer closeServiceHandle.Call(managerHandle)
+
+	serviceNamePtr, _ := syscall.UTF16PtrFromString(name)
+	serviceHandle, _, _ := openService.Call(managerHandle, uintptr(unsafe.Pointer(serviceNamePtr)), 0x0002|0x0100)
+	if serviceHandle == 0 {
+		return
+	}
+	defer closeServiceHandle.Call(serviceHandle)
+
+	type scAction struct {
+		Type  uint32
+		Delay uint32
+	}
+
+	actions := [3]scAction{
+		{1, 0},
+		{1, 0},
+		{1, 5000},
+	}
+
+	type serviceFailureActions struct {
+		ResetPeriod uint32
+		RebootMsg   *uint16
+		Command     *uint16
+		ActionsCount uint32
+		Actions      *scAction
+	}
+
+	fa := serviceFailureActions{
+		ResetPeriod:  60,
+		ActionsCount: 3,
+		Actions:      &actions[0],
+	}
+
+	changeServiceConfig2.Call(serviceHandle, 2, uintptr(unsafe.Pointer(&fa)))
+}
+
 func copyFile(src, dst string) error {
 	in, err := os.Open(src)
 	if err != nil {

