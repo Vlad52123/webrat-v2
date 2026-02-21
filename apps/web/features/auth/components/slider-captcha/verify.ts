@@ -1,4 +1,4 @@
-import { getCookie } from "./utils";
+import { getCookie } from "@/lib/cookie";
 
 export async function verifyCaptchaServerSide(): Promise<{ ok: boolean; status: number }> {
     try {

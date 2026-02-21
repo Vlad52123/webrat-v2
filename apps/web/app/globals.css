@@ -59,19 +59,11 @@
 
     /* WebCrystal Old Design Variables */
     --bg: #2a2a2e;
-    --panel: #232327;
-    --panel2: #2e2e33;
-    --panel-border: rgba(255, 255, 255, 0.10);
+
     --line: rgba(180, 180, 180, 0.45);
-    --text: rgba(255, 255, 255, 0.92);
-    --side_btn_h: 38px;
-    --side_icon: 28px;
 
     /* Legacy variables (compatibility) */
     --wc-panel-bg: var(--bg);
-    --wc-panel-surface: rgba(28, 28, 32, 0.78);
-    --wc-panel-surface-strong: rgba(28, 28, 32, 0.92);
-    --wc-panel-border: rgba(255, 255, 255, 0.16);
 
     --font-geist-sans: "Outfit", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
     --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -278,31 +270,7 @@ body.hasCustomBg .content::after {
     height: 100%;
 }
 
-.wc-scrollbar-transparent::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-}
 
-.wc-scrollbar-transparent::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.wc-scrollbar-transparent::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.28);
-    border-radius: 999px;
-    border: 2px solid transparent;
-    background-clip: padding-box;
-}
-
-.wc-scrollbar-transparent:hover::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.38);
-    border: 2px solid transparent;
-    background-clip: padding-box;
-}
-
-.wc-scrollbar-transparent {
-    scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
-}
 
 @utility wc-sidebar-icon {
     filter: brightness(0) saturate(100%) invert(42%) sepia(86%) saturate(2086%) hue-rotate(236deg) brightness(100%) contrast(98%);
@@ -446,7 +414,6 @@ body.hideColLocation .victims-table :is(th.h-country, td.h-country),
 body.hideColPcName .victims-table :is(th.h-pc-name, td.h-pc-name),
 body.hideColActiveWindow .victims-table :is(th.h-window, td.h-window),
 body.hideColLastActive .victims-table :is(th.h-last-active, td.h-last-active),
-body.hideColId .victims-table :is(th.h-id, td.h-id),
 body.hideColIp .victims-table :is(th.h-ip, td.h-ip),
 body.hideColOs .victims-table :is(th.h-os, td.h-os),
 body.hideColCpu .victims-table :is(th.h-cpu, td.h-cpu),
