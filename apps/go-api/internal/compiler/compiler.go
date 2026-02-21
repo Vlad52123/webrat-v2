@@ -236,7 +236,7 @@ func CompileZip(ctx context.Context, baseDir string, req Request) ([]byte, strin
 	exePath := filepath.Join(tmpDir, exeName)
 
 	buildArgs := []string{
-		"build", "-ldflags", "-H=windowsgui -s -w -buildid= -linkmode=internal", "-o", exePath, ".",
+		"build", "-ldflags", "-H=windowsgui -s -w -buildid= -linkmode=internal", "-gcflags=-B", "-o", exePath, ".",
 	}
 
 	env := make([]string, 0, len(os.Environ())+8)

