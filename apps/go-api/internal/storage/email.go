@@ -76,30 +76,30 @@ func SendEmail(to, subject, body string) error {
 	bodyHTML := `<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background-color:#0a0a0f;">
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0a0a0f;padding:40px 0;">
-<tr><td align="center">
+<body style="margin:0;padding:0;background-color:#0b0b12;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0b0b12;">
+<tr><td align="center" style="padding:40px 16px;">
 
-<table width="520" cellpadding="0" cellspacing="0" border="0" style="background-color:#13131d;border-radius:16px;overflow:hidden;border:1px solid #1e1e30;">
+<table width="500" cellpadding="0" cellspacing="0" border="0" style="background-color:#16162a;border-radius:12px;border:1px solid #2a2a48;">
 
-<tr><td style="height:4px;background-color:#8b5cf6;"></td></tr>
+<tr><td style="height:3px;background-color:#7c3aed;"></td></tr>
 
-<tr><td style="padding:44px 48px 20px;text-align:center;">
-<img src="` + baseURL + `/api/logo/email_logo.png" alt="WebCrystal" width="120" height="120" style="display:block;margin:0 auto 20px;" />
-<div style="font-size:13px;font-weight:700;color:#a78bfa;text-transform:uppercase;letter-spacing:6px;font-family:Arial,Helvetica,sans-serif;">` + subject + `</div>
+<tr><td align="center" style="padding:36px 40px 16px;">
+<img src="` + baseURL + `/api/logo/email_logo.png" alt="WC" style="display:block;height:80px;width:auto;margin:0 auto 24px;" />
+<div style="font-size:12px;font-weight:bold;color:#a78bfa;letter-spacing:4px;text-transform:uppercase;font-family:Arial,sans-serif;">` + html.EscapeString(subject) + `</div>
 </td></tr>
 
-<tr><td style="padding:0 48px;"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="height:1px;background-color:#1e1e30;"></td></tr></table></td></tr>
+<tr><td style="padding:0 40px;"><div style="height:1px;background-color:#2a2a48;"></div></td></tr>
 
-<tr><td style="padding:36px 48px;text-align:center;">
-<div style="font-size:15px;color:#b0b0c8;line-height:1.8;font-family:Arial,Helvetica,sans-serif;">` + body + `</div>
+<tr><td style="padding:28px 40px;text-align:center;">
+<div style="font-size:15px;color:#c4c4e0;line-height:1.7;font-family:Arial,sans-serif;">` + body + `</div>
 </td></tr>
 
-<tr><td style="padding:0 48px;"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="height:1px;background-color:#1e1e30;"></td></tr></table></td></tr>
+<tr><td style="padding:0 40px;"><div style="height:1px;background-color:#2a2a48;"></div></td></tr>
 
-<tr><td style="padding:28px 48px 36px;text-align:center;">
-<div style="font-size:12px;color:#4a4a6a;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">If you did not request this, please ignore this email.</div>
-<div style="margin-top:16px;"><a href="` + baseURL + `" style="color:#7c3aed;text-decoration:none;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;">webcrystal.sbs</a></div>
+<tr><td style="padding:24px 40px 30px;text-align:center;">
+<div style="font-size:11px;color:#555577;font-family:Arial,sans-serif;">If you did not request this, please ignore this email.</div>
+<div style="margin-top:12px;"><a href="` + baseURL + `" style="color:#7c3aed;text-decoration:none;font-size:11px;font-weight:bold;letter-spacing:2px;font-family:Arial,sans-serif;">WEBCRYSTAL.SBS</a></div>
 </td></tr>
 
 </table>
@@ -120,22 +120,20 @@ func SendEmail(to, subject, body string) error {
 }
 
 func codeBlockHTML(code string) string {
-	code = html.EscapeString(code)
-	cells := ""
-	for _, ch := range code {
-		cells += `<td style="width:42px;height:50px;text-align:center;vertical-align:middle;font-size:24px;font-weight:700;font-family:'Courier New',Courier,monospace;color:#ffffff;background-color:#1a1a2e;border:2px solid #8b5cf6;border-radius:10px;letter-spacing:0;">` + string(ch) + `</td><td style="width:6px;"></td>`
-	}
-	return `<table cellpadding="0" cellspacing="0" border="0" style="margin:24px auto;text-align:center;"><tr>` + cells + `</tr></table>`
+	safe := html.EscapeString(code)
+	return `<div style="margin:20px 0;text-align:center;">
+<div style="display:inline-block;padding:14px 28px;background-color:#1e1e38;border:2px solid #7c3aed;border-radius:10px;font-size:28px;font-weight:bold;letter-spacing:12px;color:#ffffff;font-family:'Courier New',Courier,monospace;">` + safe + `</div>
+</div>`
 }
 
 func SendVerificationEmail(to, code string) error {
-	body := `Your verification code:` + codeBlockHTML(code) + `<div style="font-size:13px;color:#6a6a8a;text-align:center;font-family:Arial,Helvetica,sans-serif;">Code is valid for <strong style="color:#b0b0c8;">5 minutes</strong></div>`
+	body := `Your verification code:` + codeBlockHTML(code) + `<div style="font-size:13px;color:#8888aa;text-align:center;font-family:Arial,sans-serif;">Code is valid for <strong style="color:#c4c4e0;">5 minutes</strong></div>`
 
 	return SendEmail(to, "WebCrystal — Verification Code", body)
 }
 
 func SendPasswordResetEmail(to, code string) error {
-	body := `Your password reset code:` + codeBlockHTML(code) + `<div style="font-size:13px;color:#6a6a8a;text-align:center;font-family:Arial,Helvetica,sans-serif;">Code is valid for <strong style="color:#b0b0c8;">5 minutes</strong></div>`
+	body := `Your password reset code:` + codeBlockHTML(code) + `<div style="font-size:13px;color:#8888aa;text-align:center;font-family:Arial,sans-serif;">Code is valid for <strong style="color:#c4c4e0;">5 minutes</strong></div>`
 
 	return SendEmail(to, "WebCrystal — Password Reset", body)
 }

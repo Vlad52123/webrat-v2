@@ -812,6 +812,23 @@ func isDiscordToken(s string) bool {
 			}
 		}
 	}
+	pad := parts[0]
+	if m := len(pad) % 4; m != 0 {
+		pad += strings.Repeat("=", 4-m)
+	}
+	decoded, err := base64.StdEncoding.DecodeString(pad)
+	if err != nil {
+		return false
+	}
+	ds := strings.TrimSpace(string(decoded))
+	if len(ds) == 0 || len(ds) > 22 {
+		return false
+	}
+	for _, c := range ds {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
 	return true
 }
 
