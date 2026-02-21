@@ -53,6 +53,8 @@ func Generate(cfg Config) (string, error) {
 		"",
 		templateAntiForensics(),
 		"",
+		templateZoneCleanup(),
+		"",
 		templateMisc(cfg),
 		"",
 		templateMainFlow(),
