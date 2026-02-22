@@ -3,7 +3,9 @@ param(
   [string]$User = $(if ($env:VPS_USER) { $env:VPS_USER } else { "deploy" }),
   [int]$Port = $(if ($env:VPS_PORT) { [int]$env:VPS_PORT } else { 2222 }),
   [string]$IdentityFile = $env:VPS_IDENTITY_FILE,
-  [string]$CommitMessage = $(if ($env:DEPLOY_COMMIT_MESSAGE) { $env:DEPLOY_COMMIT_MESSAGE } else { "" })
+  [string]$CommitMessage = $(if ($env:DEPLOY_COMMIT_MESSAGE) { $env:DEPLOY_COMMIT_MESSAGE } else { "" }),
+  [ValidateSet("all","web","api")]
+  [string]$Target = "all"
 )
 
 $ErrorActionPreference = "Stop"
@@ -49,7 +51,7 @@ $sshArgs += @(
   "-o", "ServerAliveInterval=20",
   "-o", "ServerAliveCountMax=3",
   $remote,
-  "bash -lc 'cat > /tmp/deploy-remote.sh && sed -i ""1s/^\xEF\xBB\xBF//"" /tmp/deploy-remote.sh && chmod +x /tmp/deploy-remote.sh && bash /tmp/deploy-remote.sh'"
+  "bash -lc 'cat > /tmp/deploy-remote.sh && sed -i ""1s/^\xEF\xBB\xBF//"" /tmp/deploy-remote.sh && chmod +x /tmp/deploy-remote.sh && bash /tmp/deploy-remote.sh $Target'"
 )
 
 $psi = New-Object System.Diagnostics.ProcessStartInfo
