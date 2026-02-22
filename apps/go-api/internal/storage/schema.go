@@ -138,6 +138,21 @@ func (d *DB) InitSchema() error {
 		CREATE INDEX IF NOT EXISTS idx_user_sessions_expires_at ON user_sessions(expires_at);
 		CREATE INDEX IF NOT EXISTS idx_compile_jobs_login_created ON compile_jobs(login, created_at);
 		CREATE INDEX IF NOT EXISTS idx_compile_jobs_status_created ON compile_jobs(status, created_at);
+
+		CREATE TABLE IF NOT EXISTS chat_messages (
+			id SERIAL PRIMARY KEY,
+			login TEXT NOT NULL,
+			message TEXT NOT NULL,
+			image_url TEXT NOT NULL DEFAULT '',
+			created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+		);
+		CREATE INDEX IF NOT EXISTS idx_chat_messages_created ON chat_messages(created_at);
 	`)
-	return err
+	if err != nil {
+		return err
+	}
+
+	_, _ = d.sql.Exec(`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT NOT NULL DEFAULT ''`)
+
+	return nil
 }

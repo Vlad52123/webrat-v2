@@ -10,6 +10,7 @@ import { WsServerSelect } from "./personalization/ws-server-select";
 import { BackgroundPreview } from "./personalization/background-preview";
 import { BackgroundControls } from "./personalization/background-controls";
 import { ToggleRow } from "./personalization/toggle-row";
+import { AvatarPicker } from "./personalization/avatar-picker";
 
 export function PersonalizationPane(props: {
     tab: SettingsTabKey;
@@ -77,6 +78,8 @@ export function PersonalizationPane(props: {
             </div>
 
             <div className="mt-5 overflow-hidden rounded-[16px] border border-white/[0.14] bg-[rgba(32,32,32,0.6)] p-[14px] shadow-[0_18px_40px_rgba(0,0,0,0.55),0_0_0_4px_rgba(255,255,255,0.05)] backdrop-blur-[8px]">
+                <AvatarPicker />
+
                 <div className="my-[10px] flex items-center justify-between gap-3 rounded-[12px] border border-white/[0.12] bg-white/[0.03] p-[10px]">
                     <div className="text-[14px] font-semibold text-white">Sound</div>
                     <input

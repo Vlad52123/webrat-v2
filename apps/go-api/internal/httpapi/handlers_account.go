@@ -307,10 +307,12 @@ func (s *Server) handleGetAccount(w http.ResponseWriter, r *http.Request) {
 	resp := struct {
 		Login     string    `json:"login"`
 		Email     string    `json:"email"`
+		AvatarURL string    `json:"avatar_url"`
 		CreatedAt time.Time `json:"created_at"`
 	}{
 		Login:     profile.Login,
 		Email:     profile.Email,
+		AvatarURL: profile.AvatarURL,
 		CreatedAt: profile.CreatedAt,
 	}
 

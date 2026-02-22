@@ -166,6 +166,7 @@ func (d *DB) DeleteUserCascade(login string) error {
 type UserProfile struct {
 	Login     string
 	Email     string
+	AvatarURL string
 	CreatedAt time.Time
 }
 
@@ -182,8 +183,8 @@ func (d *DB) GetUserProfile(login string) (UserProfile, bool, error) {
 	defer cancel()
 
 	var out UserProfile
-	row := d.sql.QueryRowContext(ctx, `SELECT login, COALESCE(email,''), created_at FROM users WHERE login = $1`, login)
-	if err := row.Scan(&out.Login, &out.Email, &out.CreatedAt); err != nil {
+	row := d.sql.QueryRowContext(ctx, `SELECT login, COALESCE(email,''), COALESCE(avatar_url,''), created_at FROM users WHERE login = $1`, login)
+	if err := row.Scan(&out.Login, &out.Email, &out.AvatarURL, &out.CreatedAt); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return UserProfile{}, false, nil
 		}
@@ -191,6 +192,56 @@ func (d *DB) GetUserProfile(login string) (UserProfile, bool, error) {
 	}
 	out.Login = strings.TrimSpace(out.Login)
 	out.Email = strings.TrimSpace(out.Email)
+	return out, true, nil
+}
+
+func (d *DB) SetUserAvatar(login, avatarURL string) error {
+	login = strings.TrimSpace(login)
+	if login == "" {
+		return errors.New("empty login")
+	}
+	if d == nil || d.sql == nil {
+		return errors.New("db is nil")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := d.sql.ExecContext(ctx, `UPDATE users SET avatar_url=$2 WHERE login=$1`, login, strings.TrimSpace(avatarURL))
+	return err
+}
+
+type UserPublicProfile struct {
+	Login              string    `json:"login"`
+	AvatarURL          string    `json:"avatar_url"`
+	CreatedAt          time.Time `json:"created_at"`
+	SubscriptionStatus string    `json:"subscription_status"`
+}
+
+func (d *DB) GetUserPublicProfile(login string) (UserPublicProfile, bool, error) {
+	login = strings.TrimSpace(login)
+	if login == "" {
+		return UserPublicProfile{}, false, nil
+	}
+	if d == nil || d.sql == nil {
+		return UserPublicProfile{}, false, errors.New("db is nil")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var out UserPublicProfile
+	var subStatus sql.NullString
+	row := d.sql.QueryRowContext(ctx, `SELECT login, COALESCE(avatar_url,''), created_at, subscription_status FROM users WHERE login=$1`, login)
+	if err := row.Scan(&out.Login, &out.AvatarURL, &out.CreatedAt, &subStatus); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return UserPublicProfile{}, false, nil
+		}
+		return UserPublicProfile{}, false, err
+	}
+	if subStatus.Valid {
+		out.SubscriptionStatus = subStatus.String
+	}
 	return out, true, nil
 }
 

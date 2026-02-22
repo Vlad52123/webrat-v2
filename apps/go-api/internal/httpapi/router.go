@@ -80,6 +80,14 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 	logoDir := filepath.Join("static", "logo")
 	r.Handle("/api/logo/*", http.StripPrefix("/api/logo/", http.FileServer(http.Dir(logoDir))))
 
+	avatarsDir := "avatars"
+	_ = os.MkdirAll(avatarsDir, 0o755)
+	r.Handle("/api/avatars/*", http.StripPrefix("/api/avatars/", http.FileServer(http.Dir(avatarsDir))))
+
+	chatImagesDir := "chat_images"
+	_ = os.MkdirAll(chatImagesDir, 0o755)
+	r.Handle("/api/chat-images/*", http.StripPrefix("/api/chat-images/", http.FileServer(http.Dir(chatImagesDir))))
+
 	r.Get("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("ok"))
@@ -125,6 +133,12 @@ func NewRouter(db *storage.DB, hub *ws.Hub) http.Handler {
 		r.Get("/compile-status", s.requireVIP(s.handleCompileStatus))
 		r.Get("/compile-download", s.requireVIP(s.handleCompileDownload))
 		r.Post("/compile-cancel", s.requireVIP(s.handleCompileCancel))
+
+		r.Get("/chat", s.requireAPIAuth(s.handleListChat))
+		r.Post("/chat", s.requireVIP(s.handleSendChat))
+		r.Post("/chat-image", s.requireVIP(s.handleUploadChatImage))
+		r.Post("/avatar", s.requireAPIAuth(s.handleUploadAvatar))
+		r.Get("/user-profile", s.requireAPIAuth(s.handleGetUserProfile))
 	})
 
 	r.Route("/api/tg", func(r chi.Router) {

@@ -105,8 +105,8 @@ export function useBuilderBuildFlow(opts: {
         }
 
         const buildsHistory = loadBuildsHistory(login);
-        if (buildsHistory.length >= 30) {
-            showToastSafe("warning", "You cannot create more than 30 exe!");
+        if (buildsHistory.length >= 25) {
+            showToastSafe("warning", "You cannot create more than 25 builds!");
             return;
         }
         const duplicate = buildsHistory.some((b) => String(b.name || "").trim() === rawName);
