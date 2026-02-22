@@ -15,11 +15,18 @@ as_deploy() {
 as_deploy "cd '$REPO_DIR' && git fetch --all --prune && git reset --hard origin/main && git clean -fd"
 as_deploy "cd '$REPO_DIR' && corepack enable"
 as_deploy "cd '$REPO_DIR' && pnpm -w install"
+
+as_deploy "cd '$API_DIR' && go mod tidy && mkdir -p bin && go build -o ./bin/webcrystal-api.tmp ./cmd/server && mv -f ./bin/webcrystal-api.tmp ./bin/webcrystal-api"
+
+sudo systemctl stop webcrystal-web
+sudo systemctl stop webcrystal-api
+
 as_deploy "rm -rf '$WEB_DIR/.next'"
 as_deploy "cd '$REPO_DIR' && pnpm --filter web build"
-as_deploy "cd '$API_DIR' && go mod tidy && mkdir -p bin && go build -o ./bin/webcrystal-api ./cmd/server"
 
-sudo systemctl restart webcrystal-web
-sudo systemctl restart webcrystal-api
-sudo systemctl status webcrystal-web
-sudo systemctl status webcrystal-api
+sudo systemctl start webcrystal-api
+sudo systemctl start webcrystal-web
+
+echo "=== deploy complete ==="
+sudo systemctl status webcrystal-web --no-pager
+sudo systemctl status webcrystal-api --no-pager
