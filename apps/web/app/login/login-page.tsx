@@ -32,10 +32,12 @@ export function LoginPage() {
                 <div className="relative flex w-[min(380px,92vw)] flex-col items-center justify-center">
                     <div className="grid w-full place-items-center pb-0 mb-[clamp(-60px,-6vh,-20px)]">
                         <img
-                            className="mt-2 h-[clamp(160px,26vh,280px)] w-auto select-none [image-rendering:pixelated] wc-no-copy"
+                            className="mt-2 h-[clamp(160px,26vh,280px)] w-auto select-none [image-rendering:pixelated] wc-no-copy pointer-events-none"
                             src="/logo/register_logo.ico"
                             alt="WebCrystal"
                             onContextMenu={(e) => e.preventDefault()}
+                            onDragStart={(e) => e.preventDefault()}
+                            onCopy={(e) => e.preventDefault()}
                             draggable={false}
                         />
                     </div>
