@@ -363,6 +363,16 @@ body.isLoginSnow.isSnowEnabled .snowflakeInner {
     animation: none;
 }
 
+body.isLoginSnow ::selection {
+    background: Highlight;
+    color: HighlightText;
+}
+
+body.isLoginSnow ::-moz-selection {
+    background: Highlight;
+    color: HighlightText;
+}
+
 .wc-toast.toast--show {
     animation: toast-in 280ms cubic-bezier(0.2, 0, 0, 1) both;
     will-change: transform, opacity;
