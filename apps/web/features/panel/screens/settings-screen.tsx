@@ -7,7 +7,7 @@ import { ChangePasswordModal } from "../settings/modals/change-password-modal";
 import { DeleteAccountModal } from "../settings/modals/delete-account-modal";
 import { LogoutModal } from "../settings/modals/logout-modal";
 import { SetEmailModal } from "../settings/modals/set-email-modal";
-import { csrfHeaders } from "../builder/utils/csrf";
+
 import { PersonalizationPane } from "../settings/panes/personalization-pane";
 import { SecurityPane } from "../settings/panes/security-pane";
 import type { SettingsTabKey } from "../state/settings-tab";
@@ -16,7 +16,7 @@ import { useWsMenuPosition } from "./use-ws-menu-position";
 import { logoutAndRedirect } from "./settings-actions/logout";
 import { deleteAccountAction } from "./settings-actions/delete-account";
 import { changePasswordAction } from "./settings-actions/change-password";
-import { setEmailConfirmAction, detachEmailAction, loadEmailPending, clearEmailPending } from "./settings-actions/email";
+import { setEmailConfirmAction, detachEmailAction, loadEmailPending } from "./settings-actions/email";
 
 export function SettingsScreen(props: { tab: SettingsTabKey }) {
     const { tab } = props;

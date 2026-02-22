@@ -26,9 +26,7 @@ export function LoginForm() {
 
     const {
         cooldownTick,
-        submitCooldownUntilRef,
         clearSubmitCooldown,
-        ensureSubmitCooldownTimer,
         startCooldownForSeconds,
         isCooldownActive,
         showCooldownNoticeNow,

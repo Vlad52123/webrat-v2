@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+
 
 import type { Victim } from "../../api/victims";
 

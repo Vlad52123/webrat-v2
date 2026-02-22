@@ -18,17 +18,6 @@ export function processedJobKey(login: string, jobId: string): string {
     return `webrat_processed_job_${safeLogin}_${safeJob}`;
 }
 
-export function markJobFinalized(login: string, jobId: string): boolean {
-    const key = processedJobKey(login, jobId);
-    try {
-        if (sessionStorage.getItem(key) === "1") return false;
-        sessionStorage.setItem(key, "1");
-        return true;
-    } catch {
-        return true;
-    }
-}
-
 export function dedupeHistoryByBuildId(items: BuildHistoryItem[]): BuildHistoryItem[] {
     const seen = new Set<string>();
     const out: BuildHistoryItem[] = [];

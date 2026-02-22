@@ -186,9 +186,3 @@ export async function downloadCompileResult(
 
     return { blob, filename };
 }
-
-export async function compileGoFromConfig(req: CompileGoConfigRequest): Promise<{ blob: Blob; filename: string }> {
-    const jobId = await enqueueCompileGoFromConfig(req);
-    await waitCompileDone(jobId);
-    return downloadCompileResult(jobId, req.name);
-}

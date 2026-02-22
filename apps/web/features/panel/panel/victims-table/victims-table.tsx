@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
@@ -14,7 +13,7 @@ import { DeleteVictimModal } from "./delete-victim-modal";
 import { cn } from "../../../../lib/utils";
 import { victimsColumnSizeClass, type VictimsColumnKey } from "./victims-columns";
 import { useVictimsTableColumnReorder } from "./use-victims-table-column-reorder";
-import { isVictimOnline } from "../utils/victim-status";
+
 
 export function VictimsTable(props: {
     victims: Victim[];

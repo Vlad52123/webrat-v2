@@ -218,25 +218,3 @@ func (d *DB) LoadBannedVictimIDs() ([]string, error) {
 	}
 	return out, nil
 }
-
-func (d *DB) BanVictimID(id string) error {
-	id = strings.TrimSpace(id)
-	if id == "" {
-		return errors.New("id is empty")
-	}
-	if d == nil || d.SQL() == nil {
-		return errors.New("db is nil")
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	_, err := d.SQL().ExecContext(ctx, `
-		INSERT INTO banned_victims (id)
-		VALUES ($1)
-		ON CONFLICT (id) DO NOTHING
-	`, id)
-	return err
-}
-
-

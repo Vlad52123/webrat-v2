@@ -78,7 +78,6 @@ export function useVictimsTableColumns(columnOrder: VictimsColumnKey[]): Array<C
                 cell: (ctx) => {
                     const v = ctx.row.original;
                     const online = isVictimOnline(v);
-                    const id = String(v.id ?? "");
                     const flag = countryCodeToFlagEmoji(v.country);
                     const formatLastActive = (victim: Victim): string => {
                         const ms = getLastActiveMs(victim);

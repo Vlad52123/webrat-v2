@@ -2,7 +2,7 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useCallback, type MutableRefObject } from "react";
+import { type MutableRefObject } from "react";
 
 import { login } from "../../api";
 import { type LoginValues } from "../../schemas";

@@ -6,8 +6,6 @@ export const MODAL_OVERLAY_FLEX = MODAL_OVERLAY + " flex";
 export const modalOverlayCn = (open: boolean) =>
     MODAL_OVERLAY + " " + (open ? "flex" : "hidden");
 
-export const MODAL_CARD = (width = 340) =>
-    `w-[${width}px] max-w-[calc(100vw-40px)] overflow-hidden rounded-[16px] border border-white/[0.18] bg-[rgba(18,18,18,0.92)] shadow-[0_24px_60px_rgba(0,0,0,0.75)] backdrop-blur-[8px]`;
 
 export const MODAL_CARD_340 =
     "w-[340px] max-w-[calc(100vw-40px)] overflow-hidden rounded-[16px] border border-white/[0.18] bg-[rgba(18,18,18,0.92)] shadow-[0_24px_60px_rgba(0,0,0,0.75)] backdrop-blur-[8px]";
@@ -21,7 +19,6 @@ export const MODAL_CARD_420 =
 export const MODAL_HEADER =
     "flex items-center justify-between border-b border-white/[0.20] px-[14px] py-[12px]";
 
-export const MODAL_TITLE = "text-[15px] font-bold text-white";
 
 export const MODAL_CLOSE_BTN =
     "grid h-[30px] w-[30px] cursor-pointer place-items-center rounded-[10px] border border-white/[0.14] bg-white/[0.06] text-[18px] leading-none text-white/[0.95] transition-[background,border-color,transform] hover:bg-white/[0.10] hover:border-white/[0.22] active:translate-y-[1px]";

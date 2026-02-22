@@ -115,34 +115,7 @@ func (d *DB) GetVictimOwnerByID(id string) (string, bool, error) {
 	return owner, true, nil
 }
 
-func (d *DB) GetVictimByID(id string) (*Victim, bool, error) {
-	id = strings.TrimSpace(id)
-	if id == "" {
-		return nil, false, nil
-	}
-	if d == nil || d.SQL() == nil {
-		return nil, false, errors.New("db is nil")
-	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	var v Victim
-	row := d.SQL().QueryRowContext(ctx, `
-		SELECT `+victimColumns+`
-		FROM victims WHERE id = $1
-	`, id)
-	vp, err := scanVictimRow(row)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, false, nil
-		}
-		return nil, false, err
-	}
-
-	v = *vp
-	return &v, true, nil
-}
 
 func (d *DB) HideVictimForOwner(owner, victimID string) error {
 	owner = strings.ToLower(strings.TrimSpace(owner))

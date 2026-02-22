@@ -175,7 +175,7 @@ export const SliderCaptcha = forwardRef<
         return () => window.removeEventListener("resize", onResize);
     }, [placeTargets, updateMoverFromThumb]);
 
-    const { draggingRef, onPointerDown, onPointerMove, endDrag } = useSliderDrag({
+    const { onPointerDown, onPointerMove, endDrag } = useSliderDrag({
         locked,
         verified,
         thumbRef,
