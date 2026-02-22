@@ -15,8 +15,11 @@ as_deploy() {
 }
 
 as_deploy "cd '$REPO_DIR' && git fetch --all --prune && git reset --hard origin/main && git clean -fd"
-as_deploy "cd '$REPO_DIR' && corepack enable"
-as_deploy "cd '$REPO_DIR' && pnpm -w install"
+
+if [ "$TARGET" = "all" ]; then
+  as_deploy "cd '$REPO_DIR' && corepack enable"
+  as_deploy "cd '$REPO_DIR' && pnpm -w install"
+fi
 
 if [ "$TARGET" = "all" ] || [ "$TARGET" = "api" ]; then
   as_deploy "cd '$API_DIR' && go mod tidy && mkdir -p bin && go build -o ./bin/webcrystal-api.tmp ./cmd/server && mv -f ./bin/webcrystal-api.tmp ./bin/webcrystal-api"
