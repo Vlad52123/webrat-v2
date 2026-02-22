@@ -30,7 +30,7 @@ export function LoginPage() {
         <div className="relative min-h-screen min-h-[100dvh] overflow-hidden bg-[#120a22] text-white">
             <main className="relative z-10 grid min-h-screen min-h-[100dvh] place-items-center overflow-y-auto p-[18px] py-[clamp(8px,2vh,18px)]">
                 <div className="relative flex w-[min(380px,92vw)] flex-col items-center justify-center">
-                    <div className="grid w-full place-items-center pb-0 mb-[clamp(-60px,-6vh,-20px)]">
+                    <div className="grid w-full place-items-center pb-0 mb-[clamp(-80px,-8vh,-40px)]">
                         <img
                             className="mt-2 h-[clamp(160px,26vh,280px)] w-auto select-none [image-rendering:pixelated] wc-no-copy pointer-events-none"
                             src="/logo/register_logo.ico"
