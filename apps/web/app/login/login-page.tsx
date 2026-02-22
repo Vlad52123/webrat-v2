@@ -27,12 +27,12 @@ export function LoginPage() {
     }, []);
 
     return (
-        <div className="relative min-h-screen overflow-hidden bg-[#120a22] text-white">
-            <main className="relative z-10 grid min-h-screen place-items-center p-[18px]">
+        <div className="relative min-h-screen min-h-[100dvh] overflow-hidden bg-[#120a22] text-white">
+            <main className="relative z-10 grid min-h-screen min-h-[100dvh] place-items-center overflow-y-auto p-[18px] py-[clamp(8px,2vh,18px)]">
                 <div className="relative flex w-[min(460px,92vw)] flex-col items-center justify-center">
-                    <div className="grid w-full place-items-center pb-0 mb-[-78px]">
+                    <div className="grid w-full place-items-center pb-0 mb-[clamp(-78px,-8vh,-30px)]">
                         <img
-                            className="mt-2 h-[220px] w-auto select-none [image-rendering:pixelated] wc-no-copy"
+                            className="mt-2 h-[clamp(120px,22vh,220px)] w-auto select-none [image-rendering:pixelated] wc-no-copy"
                             src="/logo/register_logo.ico"
                             alt="WebCrystal"
                             onContextMenu={(e) => e.preventDefault()}
