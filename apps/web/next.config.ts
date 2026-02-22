@@ -21,6 +21,14 @@ const nextConfig: NextConfig = {
         removeConsole: process.env.NODE_ENV === "production",
     },
     turbopack: {},
+    webpack: (config, { isServer }) => {
+        if (!isServer) {
+            config.ignoreWarnings = [
+                { module: /main\.js/ },
+            ];
+        }
+        return config;
+    },
     async rewrites() {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL?.trim() || "http://localhost:3001";
 
