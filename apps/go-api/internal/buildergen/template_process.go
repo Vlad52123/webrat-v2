@@ -6,7 +6,7 @@ func templateProcess() string {
 	return strings.TrimSpace(`
 const stillActive uint32 = 259
 
-type webratService struct{}Я
+type webratService struct{}
 
 func isProcessRunning(pid int) bool {
 	if pid <= 0 {
