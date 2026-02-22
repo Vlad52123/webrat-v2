@@ -150,7 +150,7 @@ export function ShopScreen() {
 
     return (
         <div id="shopView" className="h-full overflow-x-hidden overflow-y-auto">
-            <div className={shopClasses.page}>
+            <div className={shopClasses.page + " pb-[40px]"}>
                 <div className="mb-[20px] w-full text-center">
                     <div className="text-[11px] font-bold uppercase tracking-[1.6px] text-[rgba(255,255,255,0.55)]" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.6)" }}>Shop</div>
                 </div>
